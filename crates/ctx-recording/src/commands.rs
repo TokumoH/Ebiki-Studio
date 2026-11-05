@@ -133,7 +133,10 @@ pub struct SetLatencyCompensation {
 impl SetLatencyCompensation {
     pub const MAX_FRAMES: u32 = 48_000;
     pub fn new(frames: u32) -> Self {
-        Self { frames, previous: None }
+        Self {
+            frames,
+            previous: None,
+        }
     }
 }
 impl Command<RecordingSetup> for SetLatencyCompensation {
@@ -141,7 +144,10 @@ impl Command<RecordingSetup> for SetLatencyCompensation {
         if self.frames > Self::MAX_FRAMES {
             return Err(RecordingError::OutOfRange.into());
         }
-        self.previous = Some(std::mem::replace(&mut r.latency_compensation_frames, self.frames));
+        self.previous = Some(std::mem::replace(
+            &mut r.latency_compensation_frames,
+            self.frames,
+        ));
         Ok(())
     }
     fn revert(&mut self, r: &mut RecordingSetup) -> R {

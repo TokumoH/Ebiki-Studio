@@ -19,7 +19,8 @@ fn main() {
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
-            let library = infra_persistence::library::LibraryDb::open(&data_dir.join("library.db")).ok();
+            let library =
+                infra_persistence::library::LibraryDb::open(&data_dir.join("library.db")).ok();
             let saved_request = library
                 .as_ref()
                 .and_then(|db| db.setting("audio.request").ok().flatten())
@@ -29,9 +30,15 @@ fn main() {
                 let mut audio = lock(&state.audio);
                 let mut studio = lock(&state.studio);
                 let req = DeviceRequest {
-                    output_id: saved_request.as_ref().and_then(|v| v["outputId"].as_str().map(str::to_owned)),
-                    input_id: saved_request.as_ref().and_then(|v| v["inputId"].as_str().map(str::to_owned)),
-                    buffer_size: saved_request.as_ref().and_then(|v| v["bufferSize"].as_u64().map(|b| b as u32)),
+                    output_id: saved_request
+                        .as_ref()
+                        .and_then(|v| v["outputId"].as_str().map(str::to_owned)),
+                    input_id: saved_request
+                        .as_ref()
+                        .and_then(|v| v["inputId"].as_str().map(str::to_owned)),
+                    buffer_size: saved_request
+                        .as_ref()
+                        .and_then(|v| v["bufferSize"].as_u64().map(|b| b as u32)),
                     sample_rate: 48_000,
                 };
                 audio.start(req, &mut studio);

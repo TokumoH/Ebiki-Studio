@@ -1,7 +1,7 @@
 //! Garante que os processadores de tempo real não alocam após a preparação.
 //! (Binário de teste próprio: o alocador global é substituído pelo `AllocDisabler`.)
 
-use assert_no_alloc::{assert_no_alloc, AllocDisabler};
+use assert_no_alloc::{assert_no_alloc, reset_violation_count, violation_count, AllocDisabler};
 use dsp_pitch::corrector::{CorrectorSettings, PitchCorrector, ScaleMask};
 use dsp_pitch::detector::{PitchDetector, YinConfig, YinDetector};
 use dsp_pitch::shifter::{PitchShifter, PsolaConfig, PsolaShifter};
@@ -19,7 +19,7 @@ const BLOCK: usize = 256;
 fn yin_detect_does_not_allocate() {
     let mut yin = YinDetector::new(YinConfig::default(), SR);
     let sig = signal::sine(220.0, SR, yin.frame_len(), 0.5);
-    let est = assert_no_alloc(|| yin.detect(&sig));
+    let est = strict(|| yin.detect(&sig));
     assert!(est.voiced);
 }
 
@@ -27,7 +27,7 @@ fn yin_detect_does_not_allocate() {
 fn tuner_processor_does_not_allocate() {
     let mut tuner = TunerProcessor::new(SR, 440.0, YinConfig::default(), 0);
     let sig = signal::sine(440.0, SR, 9600, 0.5);
-    assert_no_alloc(|| {
+    strict(|| {
         for block in sig.chunks(BLOCK) {
             tuner.process(block);
         }
@@ -43,7 +43,7 @@ fn psola_shifter_does_not_allocate() {
     let sig = signal::sine(220.0, SR, 9600, 0.5);
     let ratios = vec![1.5f32; BLOCK];
     let mut out = vec![0.0f32; BLOCK];
-    assert_no_alloc(|| {
+    strict(|| {
         for block in sig.chunks(BLOCK) {
             shifter.process(block, &mut out[..block.len()], 2.0);
             shifter.process_varying(block, &mut out[..block.len()], &ratios);
@@ -66,7 +66,7 @@ fn pitch_corrector_does_not_allocate() {
     corrector.prepare(SR, BLOCK);
     let sig = signal::sine(452.0, SR, 9600, 0.5);
     let mut out = vec![0.0f32; BLOCK];
-    assert_no_alloc(|| {
+    strict(|| {
         for block in sig.chunks(BLOCK) {
             corrector.process(block, &mut out[..block.len()]);
         }
@@ -78,4 +78,20 @@ fn pitch_corrector_does_not_allocate() {
         corrector.process(&sig[..BLOCK], &mut out);
     });
     assert!(out.iter().all(|v| v.is_finite()));
+}
+
+/// Executa `f` sob o detector (modo contagem, padrão do workspace) e falha se houve alocação.
+fn strict<R>(f: impl FnOnce() -> R) -> R {
+    reset_violation_count();
+    let r = assert_no_alloc(f);
+    assert_eq!(violation_count(), 0, "alocação detectada em código de tempo real");
+    r
+}
+
+#[test]
+fn guard_detects_allocation() {
+    reset_violation_count();
+    assert_no_alloc(|| drop(std::hint::black_box(vec![0u8; 32])));
+    assert!(violation_count() > 0);
+    reset_violation_count();
 }

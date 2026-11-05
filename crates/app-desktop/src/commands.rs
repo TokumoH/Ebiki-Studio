@@ -41,7 +41,10 @@ fn user_path(p: &str) -> Res<PathBuf> {
 }
 
 fn now() -> i64 {
-    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0)
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_secs() as i64)
+        .unwrap_or(0)
 }
 
 fn touch_recent(state: &AppState, v: &SessionView) {
@@ -74,13 +77,25 @@ pub struct AudioConfigReq {
 pub fn audio_configure(state: State<AppState>, req: AudioConfigReq) -> Res<AudioStatus> {
     if let Some(b) = req.buffer_size {
         if !(16..=8192).contains(&b) || !b.is_power_of_two() {
-            return Err(bad("tamanho de buffer deve ser potência de 2 entre 16 e 8192"));
+            return Err(bad(
+                "tamanho de buffer deve ser potência de 2 entre 16 e 8192",
+            ));
         }
     }
     let mut audio = lock(&state.audio);
     let mut studio = lock(&state.studio);
-    let sr = studio.session().map_or(48_000, |s| s.project.format.sample_rate.hz());
-    let status = audio.start(DeviceRequest { output_id: req.output_id, input_id: req.input_id, buffer_size: req.buffer_size, sample_rate: sr }, &mut studio);
+    let sr = studio
+        .session()
+        .map_or(48_000, |s| s.project.format.sample_rate.hz());
+    let status = audio.start(
+        DeviceRequest {
+            output_id: req.output_id,
+            input_id: req.input_id,
+            buffer_size: req.buffer_size,
+            sample_rate: sr,
+        },
+        &mut studio,
+    );
     if let Some(db) = lock(&state.library).as_ref() {
         let _ = db.set_setting("audio.request", &serde_json::json!({
             "outputId": audio.request.output_id, "inputId": audio.request.input_id, "bufferSize": audio.request.buffer_size
@@ -146,13 +161,17 @@ pub fn project_close(state: State<AppState>) -> Res<()> {
 
 #[tauri::command]
 pub fn project_recent(state: State<AppState>) -> Vec<RecentProject> {
-    lock(&state.library).as_ref().and_then(|db| db.recent().ok()).unwrap_or_default()
+    lock(&state.library)
+        .as_ref()
+        .and_then(|db| db.recent().ok())
+        .unwrap_or_default()
 }
 
 #[tauri::command]
 pub fn project_forget_recent(state: State<AppState>, path: String) -> Res<()> {
     if let Some(db) = lock(&state.library).as_ref() {
-        db.remove_recent(&path).map_err(|e| AppError::new(e.code(), e.to_string()))?;
+        db.remove_recent(&path)
+            .map_err(|e| AppError::new(e.code(), e.to_string()))?;
     }
     Ok(())
 }
@@ -160,7 +179,11 @@ pub fn project_forget_recent(state: State<AppState>, path: String) -> Res<()> {
 #[tauri::command]
 pub fn project_recovery_check(path: String) -> Res<bool> {
     let root = user_path(&path)?;
-    let root = if root.ends_with(DB_FILE) { root.parent().map(Path::to_path_buf).unwrap_or(root) } else { root };
+    let root = if root.ends_with(DB_FILE) {
+        root.parent().map(Path::to_path_buf).unwrap_or(root)
+    } else {
+        root
+    };
     Ok(Studio::recovery_candidate(&root).is_some())
 }
 
@@ -204,8 +227,14 @@ pub fn history_end_gesture(state: State<AppState>) {
 // ----------------------------------------------------------- faixas/clipes
 
 #[tauri::command]
-pub fn track_create(state: State<AppState>, name: String, index: Option<usize>) -> Res<SessionView> {
-    lock(&state.studio).create_track(&name, index).map(|(_, v)| v)
+pub fn track_create(
+    state: State<AppState>,
+    name: String,
+    index: Option<usize>,
+) -> Res<SessionView> {
+    lock(&state.studio)
+        .create_track(&name, index)
+        .map(|(_, v)| v)
 }
 
 #[tauri::command]
@@ -224,18 +253,36 @@ pub fn track_move(state: State<AppState>, track_id: String, to: usize) -> Res<Se
 }
 
 #[tauri::command]
-pub fn audio_import(state: State<AppState>, paths: Vec<String>, track_id: Option<String>, at_tick: i64) -> Res<SessionView> {
+pub fn audio_import(
+    state: State<AppState>,
+    paths: Vec<String>,
+    track_id: Option<String>,
+    at_tick: i64,
+) -> Res<SessionView> {
     if paths.len() > 256 {
         return Err(bad("no máximo 256 arquivos por vez"));
     }
-    let paths = paths.iter().map(|p| user_path(p)).collect::<Res<Vec<_>>>()?;
+    let paths = paths
+        .iter()
+        .map(|p| user_path(p))
+        .collect::<Res<Vec<_>>>()?;
     let track = track_id.map(|t| id::<TrackId>(&t)).transpose()?;
     lock(&state.studio).import_audio(&paths, track, Tick(at_tick.max(0)))
 }
 
 #[tauri::command]
-pub fn clip_move(state: State<AppState>, clip_id: String, track_id: String, start: i64, gesture: Option<u64>) -> Res<SessionView> {
-    let cmd = on_project(MoveClip::new(id::<ClipId>(&clip_id)?, id(&track_id)?, Tick(start.max(0))));
+pub fn clip_move(
+    state: State<AppState>,
+    clip_id: String,
+    track_id: String,
+    start: i64,
+    gesture: Option<u64>,
+) -> Res<SessionView> {
+    let cmd = on_project(MoveClip::new(
+        id::<ClipId>(&clip_id)?,
+        id(&track_id)?,
+        Tick(start.max(0)),
+    ));
     lock(&state.studio).execute(cmd, gesture)
 }
 
@@ -245,8 +292,16 @@ pub fn clip_delete(state: State<AppState>, clip_id: String) -> Res<SessionView> 
 }
 
 #[tauri::command]
-pub fn clip_set_gain(state: State<AppState>, clip_id: String, gain_db: f32, gesture: Option<u64>) -> Res<SessionView> {
-    lock(&state.studio).execute(on_project(SetClipGain::new(id(&clip_id)?, Db(gain_db))), gesture)
+pub fn clip_set_gain(
+    state: State<AppState>,
+    clip_id: String,
+    gain_db: f32,
+    gesture: Option<u64>,
+) -> Res<SessionView> {
+    lock(&state.studio).execute(
+        on_project(SetClipGain::new(id(&clip_id)?, Db(gain_db))),
+        gesture,
+    )
 }
 
 // ------------------------------------------------------------------ tempo
@@ -262,8 +317,16 @@ pub fn tempo_remove(state: State<AppState>, tick: i64) -> Res<SessionView> {
 }
 
 #[tauri::command]
-pub fn meter_set(state: State<AppState>, tick: i64, numerator: u8, denominator: u8) -> Res<SessionView> {
-    lock(&state.studio).execute(on_project(SetMeter::new(Tick(tick), numerator, denominator)), None)
+pub fn meter_set(
+    state: State<AppState>,
+    tick: i64,
+    numerator: u8,
+    denominator: u8,
+) -> Res<SessionView> {
+    lock(&state.studio).execute(
+        on_project(SetMeter::new(Tick(tick), numerator, denominator)),
+        None,
+    )
 }
 
 #[tauri::command]
@@ -274,13 +337,22 @@ pub fn meter_remove(state: State<AppState>, tick: i64) -> Res<SessionView> {
 // ------------------------------------------------------------------ mixer
 
 #[tauri::command]
-pub fn mixer_edit(state: State<AppState>, target: StripTarget, edit: StripEdit, gesture: Option<u64>) -> Res<SessionView> {
+pub fn mixer_edit(
+    state: State<AppState>,
+    target: StripTarget,
+    edit: StripEdit,
+    gesture: Option<u64>,
+) -> Res<SessionView> {
     lock(&state.studio).execute(on_mixer(EditStrip::new(target, edit)), gesture)
 }
 
 #[tauri::command]
 pub fn bus_create(state: State<AppState>, name: String) -> Res<SessionView> {
-    let bus = Bus { id: BusId::new(), name, strip: ChannelStrip::default() };
+    let bus = Bus {
+        id: BusId::new(),
+        name,
+        strip: ChannelStrip::default(),
+    };
     lock(&state.studio).execute(on_mixer(CreateBus::new(bus, usize::MAX)), None)
 }
 
@@ -303,12 +375,22 @@ pub struct PresetInfo {
 
 #[tauri::command]
 pub fn mixer_presets() -> Vec<PresetInfo> {
-    InstrumentPreset::ALL.iter().map(|p| PresetInfo { id: *p, label: p.label() }).collect()
+    InstrumentPreset::ALL
+        .iter()
+        .map(|p| PresetInfo {
+            id: *p,
+            label: p.label(),
+        })
+        .collect()
 }
 
 /// Aplica um preset: substitui os efeitos do canal pela cadeia do preset (um único desfazer).
 #[tauri::command]
-pub fn mixer_apply_preset(state: State<AppState>, target: StripTarget, preset: InstrumentPreset) -> Res<SessionView> {
+pub fn mixer_apply_preset(
+    state: State<AppState>,
+    target: StripTarget,
+    preset: InstrumentPreset,
+) -> Res<SessionView> {
     let mut studio = lock(&state.studio);
     let current: Vec<_> = studio
         .session()
@@ -325,9 +407,15 @@ pub fn mixer_apply_preset(state: State<AppState>, target: StripTarget, preset: I
         .map(|eid| on_mixer(EditStrip::new(target, StripEdit::RemoveEffect { id: eid })))
         .collect();
     for slot in preset.chain() {
-        steps.push(on_mixer(EditStrip::new(target, StripEdit::AddEffect { slot, index: None })));
+        steps.push(on_mixer(EditStrip::new(
+            target,
+            StripEdit::AddEffect { slot, index: None },
+        )));
     }
-    studio.execute(Box::new(Composite::new(format!("Preset: {}", preset.label()), steps)), None)
+    studio.execute(
+        Box::new(Composite::new(format!("Preset: {}", preset.label()), steps)),
+        None,
+    )
 }
 
 #[derive(Debug, Serialize)]
@@ -358,7 +446,9 @@ pub struct TrackRecordingReq {
 
 mod double_option {
     use serde::{Deserialize, Deserializer};
-    pub fn deserialize<'de, T: Deserialize<'de>, D: Deserializer<'de>>(d: D) -> Result<Option<Option<T>>, D::Error> {
+    pub fn deserialize<'de, T: Deserialize<'de>, D: Deserializer<'de>>(
+        d: D,
+    ) -> Result<Option<Option<T>>, D::Error> {
         Option::<T>::deserialize(d).map(Some)
     }
 }
@@ -367,7 +457,11 @@ mod double_option {
 pub fn recording_track(state: State<AppState>, req: TrackRecordingReq) -> Res<SessionView> {
     let track: TrackId = id(&req.track_id)?;
     let mut studio = lock(&state.studio);
-    let mut tr = studio.session().ok_or_else(|| AppError::new("app.no_project", "Nenhum projeto aberto."))?.recording.track(track);
+    let mut tr = studio
+        .session()
+        .ok_or_else(|| AppError::new("app.no_project", "Nenhum projeto aberto."))?
+        .recording
+        .track(track);
     if let Some(a) = req.armed {
         tr.armed = a;
     }
@@ -377,7 +471,10 @@ pub fn recording_track(state: State<AppState>, req: TrackRecordingReq) -> Res<Se
     if let Some(m) = req.monitor {
         tr.monitor = m;
     }
-    studio.execute(on_recording(SetTrackRecording::new(track, tr, "Configurar gravação")), None)
+    studio.execute(
+        on_recording(SetTrackRecording::new(track, tr, "Configurar gravação")),
+        None,
+    )
 }
 
 #[tauri::command]
@@ -387,12 +484,18 @@ pub fn recording_metronome(state: State<AppState>, config: MetronomeConfig) -> R
 
 #[tauri::command]
 pub fn recording_punch(state: State<AppState>, range: Option<(i64, i64)>) -> Res<SessionView> {
-    lock(&state.studio).execute(on_recording(SetPunch::new(range.map(|(a, b)| (Tick(a), Tick(b))))), None)
+    lock(&state.studio).execute(
+        on_recording(SetPunch::new(range.map(|(a, b)| (Tick(a), Tick(b))))),
+        None,
+    )
 }
 
 #[tauri::command]
 pub fn recording_loop(state: State<AppState>, range: Option<(i64, i64)>) -> Res<SessionView> {
-    lock(&state.studio).execute(on_recording(SetLoop::new(range.map(|(a, b)| (Tick(a), Tick(b))))), None)
+    lock(&state.studio).execute(
+        on_recording(SetLoop::new(range.map(|(a, b)| (Tick(a), Tick(b))))),
+        None,
+    )
 }
 
 #[tauri::command]
@@ -439,7 +542,11 @@ pub fn transport_state(state: State<AppState>) -> Res<TransportView> {
 
 /// Picos da forma de onda em binário (f32 little-endian: mín, máx, mín, máx…).
 #[tauri::command]
-pub fn waveform_peaks(state: State<AppState>, source_id: String, frames_per_peak: u32) -> Res<tauri::ipc::Response> {
+pub fn waveform_peaks(
+    state: State<AppState>,
+    source_id: String,
+    frames_per_peak: u32,
+) -> Res<tauri::ipc::Response> {
     let src: AudioSourceId = id(&source_id)?;
     let peaks = lock(&state.studio).waveform(src, frames_per_peak)?;
     let bytes: Vec<u8> = peaks.iter().flat_map(|x| x.to_le_bytes()).collect();
@@ -454,15 +561,28 @@ pub fn export_formats(state: State<AppState>) -> Vec<ExportFormatKind> {
 }
 
 #[tauri::command]
-pub async fn export_mix(state: State<'_, AppState>, path: String, settings: ExportSettings, range: Option<(i64, i64)>) -> Res<()> {
+pub async fn export_mix(
+    state: State<'_, AppState>,
+    path: String,
+    settings: ExportSettings,
+    range: Option<(i64, i64)>,
+) -> Res<()> {
     let file = user_path(&path)?;
     lock(&state.studio).export_mix(&file, &settings, range.map(|(a, b)| (Tick(a), Tick(b))))
 }
 
 #[tauri::command]
-pub async fn export_stems(state: State<'_, AppState>, dir: String, settings: ExportSettings) -> Res<Vec<String>> {
+pub async fn export_stems(
+    state: State<'_, AppState>,
+    dir: String,
+    settings: ExportSettings,
+) -> Res<Vec<String>> {
     let d = user_path(&dir)?;
-    Ok(lock(&state.studio).export_stems(&d, &settings)?.into_iter().map(|p| p.to_string_lossy().into_owned()).collect())
+    Ok(lock(&state.studio)
+        .export_stems(&d, &settings)?
+        .into_iter()
+        .map(|p| p.to_string_lossy().into_owned())
+        .collect())
 }
 
 #[cfg(test)]
@@ -474,7 +594,11 @@ mod tests {
         assert!(user_path("relativo/x.wav").is_err());
         assert!(user_path("").is_err());
         assert!(user_path("/tmp/a\u{0}b").is_err());
-        let abs = if cfg!(windows) { "C:\\x\\y.wav" } else { "/x/y.wav" };
+        let abs = if cfg!(windows) {
+            "C:\\x\\y.wav"
+        } else {
+            "/x/y.wav"
+        };
         assert!(user_path(abs).is_ok());
     }
 
@@ -484,7 +608,14 @@ mod tests {
         assert!(a.input.is_none());
         let b: TrackRecordingReq = serde_json::from_str(r#"{"trackId":"x","input":null}"#).unwrap();
         assert_eq!(b.input, Some(None));
-        let c: TrackRecordingReq = serde_json::from_str(r#"{"trackId":"x","input":{"left":0,"right":1}}"#).unwrap();
-        assert_eq!(c.input, Some(Some(InputAssignment { left: 0, right: Some(1) })));
+        let c: TrackRecordingReq =
+            serde_json::from_str(r#"{"trackId":"x","input":{"left":0,"right":1}}"#).unwrap();
+        assert_eq!(
+            c.input,
+            Some(Some(InputAssignment {
+                left: 0,
+                right: Some(1)
+            }))
+        );
     }
 }

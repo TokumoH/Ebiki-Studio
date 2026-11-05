@@ -42,11 +42,16 @@ impl AudioRuntime {
     pub fn start(&mut self, request: DeviceRequest, studio: &mut Studio) -> AudioStatus {
         self.stop(studio);
         self.request = request.clone();
-        let (handle, core) = create_engine(EngineConfig { sample_rate: request.sample_rate, ..Default::default() });
+        let (handle, core) = create_engine(EngineConfig {
+            sample_rate: request.sample_rate,
+            ..Default::default()
+        });
         match DeviceHost::start(core, request.clone()) {
             Ok(host) => {
                 let info = host.info.clone();
-                let lat = info.buffer_size.map(|b| 2.0 * b as f64 * 1000.0 / info.sample_rate as f64);
+                let lat = info
+                    .buffer_size
+                    .map(|b| 2.0 * b as f64 * 1000.0 / info.sample_rate as f64);
                 self.status = AudioStatus {
                     mode: "device".into(),
                     output_name: Some(info.output_name.clone()),
@@ -62,7 +67,10 @@ impl AudioRuntime {
             }
             Err(e) => {
                 // sem hardware utilizável: mantém o app funcional com um dispositivo nulo
-                let (handle, core) = create_engine(EngineConfig { sample_rate: request.sample_rate, ..Default::default() });
+                let (handle, core) = create_engine(EngineConfig {
+                    sample_rate: request.sample_rate,
+                    ..Default::default()
+                });
                 let null = NullDevice::start(core, 512, 0, None);
                 self.status = AudioStatus {
                     mode: "null".into(),
@@ -92,7 +100,10 @@ impl AudioRuntime {
         if self.running.is_some() && self.request.sample_rate == sample_rate {
             return self.status.clone();
         }
-        let req = DeviceRequest { sample_rate, ..self.request.clone() };
+        let req = DeviceRequest {
+            sample_rate,
+            ..self.request.clone()
+        };
         self.start(req, studio)
     }
 }

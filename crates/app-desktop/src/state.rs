@@ -22,7 +22,11 @@ impl AppState {
             factory: Arc::new(DspProcessorFactory),
             clock: Arc::new(SystemClock),
         };
-        Self { studio: Mutex::new(Studio::new(deps)), audio: Mutex::new(AudioRuntime::default()), library: Mutex::new(library) }
+        Self {
+            studio: Mutex::new(Studio::new(deps)),
+            audio: Mutex::new(AudioRuntime::default()),
+            library: Mutex::new(library),
+        }
     }
 }
 
