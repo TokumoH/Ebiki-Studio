@@ -1,0 +1,109 @@
+{
+  "beatsPerBar": 4,
+  "bpm": 120.0,
+  "chords": [
+    {
+      "bass": 36,
+      "durationTicks": 3840,
+      "notes": [
+        60,
+        64,
+        67
+      ],
+      "startTick": 0,
+      "symbol": "C"
+    },
+    {
+      "bass": 43,
+      "durationTicks": 3840,
+      "notes": [
+        59,
+        62,
+        65,
+        67
+      ],
+      "startTick": 3840,
+      "symbol": "G7"
+    }
+  ],
+  "events": [
+    {
+      "channel": 0,
+      "durationTicks": 3840,
+      "key": 60,
+      "program": 0,
+      "startTick": 0,
+      "velocity": 90
+    },
+    {
+      "channel": 0,
+      "durationTicks": 3840,
+      "key": 64,
+      "program": 0,
+      "startTick": 0,
+      "velocity": 90
+    },
+    {
+      "channel": 0,
+      "durationTicks": 3840,
+      "key": 67,
+      "program": 0,
+      "startTick": 0,
+      "velocity": 90
+    },
+    {
+      "channel": 1,
+      "durationTicks": 3840,
+      "key": 36,
+      "program": 33,
+      "startTick": 0,
+      "velocity": 95
+    },
+    {
+      "channel": 0,
+      "durationTicks": 3840,
+      "key": 59,
+      "program": 0,
+      "startTick": 3840,
+      "velocity": 90
+    },
+    {
+      "channel": 0,
+      "durationTicks": 3840,
+      "key": 62,
+      "program": 0,
+      "startTick": 3840,
+      "velocity": 90
+    },
+    {
+      "channel": 0,
+      "durationTicks": 3840,
+      "key": 65,
+      "program": 0,
+      "startTick": 3840,
+      "velocity": 90
+    },
+    {
+      "channel": 0,
+      "durationTicks": 3840,
+      "key": 67,
+      "program": 0,
+      "startTick": 3840,
+      "velocity": 90
+    },
+    {
+      "channel": 1,
+      "durationTicks": 3840,
+      "key": 43,
+      "program": 33,
+      "startTick": 3840,
+      "velocity": 95
+    }
+  ],
+  "key": {
+    "mode": "ionian",
+    "tonic": 0
+  },
+  "name": "Progressão",
+  "totalTicks": 7680
+}

@@ -1,0 +1,27 @@
+{
+  "beats": [
+    4,
+    4,
+    4,
+    4
+  ],
+  "beatsPerBar": 4,
+  "genres": [
+    "samba"
+  ],
+  "mode": "ionian",
+  "name": "Minha samba",
+  "origin": "user",
+  "ref": {
+    "id": "00000000-0000-7000-8000-000000000000",
+    "kind": "user"
+  },
+  "roman": [
+    "I",
+    "VI7",
+    "ii7",
+    "V7"
+  ],
+  "stepsText": "I:4 VI7:4 ii7:4 V7:4",
+  "universal": false
+}

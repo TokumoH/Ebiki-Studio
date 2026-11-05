@@ -106,3 +106,51 @@ export const api = {
 };
 
 export type Api = typeof api;
+
+// ---- Harmonia e bases (Fases 4–5) ----
+// (import no fim do arquivo de propósito: seção só acrescentada, para facilitar o merge)
+import type { BaseKey, BaseQuery, GenerateBaseRequest, HarmonyKey, InsertBaseRequest, NewUserBase, RealizeRequest, SaveGeneratedBaseRequest, UserProgressionInput } from "./types";
+
+async function callBinary(cmd: string, args?: Record<string, unknown>): Promise<ArrayBuffer> {
+  try {
+    return await transport().invokeBinary(cmd, args);
+  } catch (e) {
+    throw toFailure(e);
+  }
+}
+
+/** Comandos de composição (harmonia, bases, biblioteca e sintetizador). Áudio de audição = WAV. */
+export const compositionApi = {
+  // harmonia
+  harmonyKeys: () => call(S.HarmonyKeysCatalog, "harmony_keys"),
+  harmonyField: (key: HarmonyKey) => call(S.HarmonicField, "harmony_field", { key }),
+  harmonyProgressions: (req: { key: HarmonyKey; genre?: string | null; limit?: number }) => call(S.ProgressionSuggestion.array(), "harmony_progressions", { req }),
+  harmonyUserProgressions: () => call(S.ProgressionView.array(), "harmony_user_progressions"),
+  harmonySuggestNext: (req: { key: HarmonyKey; history: string[]; limit?: number }) => call(S.ChordSuggestion.array(), "harmony_suggest_next", { req }),
+  harmonyRealize: (req: RealizeRequest) => call(S.Realization, "harmony_realize", { req }),
+  harmonyAudition: (req: RealizeRequest) => callBinary("harmony_audition", { req }),
+  harmonyInsertProgression: (req: { realize: RealizeRequest; atTick: number; trackId?: string | null }) => call(S.InsertedClip, "harmony_insert_progression", { req }),
+  harmonyUserProgressionAdd: (input: UserProgressionInput) => call(S.ProgressionView, "harmony_user_progression_add", { input }),
+  harmonyUserProgressionEdit: (id: string, input: UserProgressionInput) => call(S.ProgressionView, "harmony_user_progression_edit", { id, input }),
+  harmonyUserProgressionRemove: (id: string) => call(S.LibraryHistory, "harmony_user_progression_remove", { id }),
+  // histórico da biblioteca (separado do histórico do projeto)
+  libraryHistory: () => call(S.LibraryHistory, "library_history"),
+  libraryUndo: () => call(S.LibraryHistory, "library_undo"),
+  libraryRedo: () => call(S.LibraryHistory, "library_redo"),
+  // bases
+  basesOptions: () => call(S.BaseOptions, "bases_options"),
+  basesSearch: (query: BaseQuery) => call(S.LibraryBase.array(), "bases_search", { query }),
+  basesAddUser: (path: string, meta: NewUserBase) => call(S.LibraryBase, "bases_add_user", { path, meta }),
+  basesGenerate: (req: GenerateBaseRequest) => call(S.GeneratedBase, "bases_generate", { req }),
+  basesGeneratedAudition: (req: GenerateBaseRequest) => callBinary("bases_generated_audition", { req }),
+  basesSaveGenerated: (req: SaveGeneratedBaseRequest) => call(S.LibraryBase, "bases_save_generated", { req }),
+  basesRemove: (id: string) => call(S.LibraryHistory, "bases_remove", { id }),
+  basesAudition: (id: string) => callBinary("bases_audition", { id }),
+  basesMismatch: (req: { baseId: string; atTick: number; projectKey?: BaseKey | null }) => call(S.MismatchReport, "bases_mismatch", { req }),
+  basesInsert: (req: InsertBaseRequest) => call(S.InsertBaseOutcome, "bases_insert", { req }),
+  // sintetizador
+  synthStatus: () => call(S.SynthStatus, "synth_status"),
+  synthSetSoundfont: (path: string | null) => call(S.SynthStatus, "synth_set_soundfont", { path }),
+};
+
+export type CompositionApi = typeof compositionApi;

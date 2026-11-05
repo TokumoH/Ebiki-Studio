@@ -1,0 +1,30 @@
+[
+  {
+    "reason": "authenticCadence",
+    "reasonLabel": "Cadência autêntica (V → I)",
+    "roman": "I",
+    "score": 1.0,
+    "symbol": "C"
+  },
+  {
+    "reason": "authenticCadence",
+    "reasonLabel": "Cadência autêntica (V → I)",
+    "roman": "Imaj7",
+    "score": 0.9772080183029175,
+    "symbol": "Cmaj7"
+  },
+  {
+    "reason": "authenticCadence",
+    "reasonLabel": "Cadência autêntica (V → I)",
+    "roman": "V7/IV",
+    "score": 0.6262108683586121,
+    "symbol": "C7"
+  },
+  {
+    "reason": "deceptiveCadence",
+    "reasonLabel": "Cadência deceptiva (V → vi)",
+    "roman": "vi",
+    "score": 0.621082603931427,
+    "symbol": "Am"
+  }
+]

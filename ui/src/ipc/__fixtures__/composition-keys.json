@@ -1,0 +1,269 @@
+{
+  "genres": [
+    {
+      "code": "pop",
+      "genre": "pop",
+      "namePt": "Pop"
+    },
+    {
+      "code": "rock",
+      "genre": "rock",
+      "namePt": "Rock"
+    },
+    {
+      "code": "mpb",
+      "genre": "mpb",
+      "namePt": "MPB"
+    },
+    {
+      "code": "samba",
+      "genre": "samba",
+      "namePt": "Samba"
+    },
+    {
+      "code": "bossa_nova",
+      "genre": "bossaNova",
+      "namePt": "Bossa nova"
+    },
+    {
+      "code": "sertanejo",
+      "genre": "sertanejo",
+      "namePt": "Sertanejo"
+    },
+    {
+      "code": "forro",
+      "genre": "forro",
+      "namePt": "Forró"
+    },
+    {
+      "code": "gospel",
+      "genre": "gospel",
+      "namePt": "Gospel"
+    },
+    {
+      "code": "jazz",
+      "genre": "jazz",
+      "namePt": "Jazz"
+    },
+    {
+      "code": "blues",
+      "genre": "blues",
+      "namePt": "Blues"
+    },
+    {
+      "code": "funk",
+      "genre": "funk",
+      "namePt": "Funk"
+    },
+    {
+      "code": "reggae",
+      "genre": "reggae",
+      "namePt": "Reggae"
+    },
+    {
+      "code": "rnb_soul",
+      "genre": "rnbSoul",
+      "namePt": "R&B / Soul"
+    },
+    {
+      "code": "edm",
+      "genre": "edm",
+      "namePt": "Eletrônica (EDM)"
+    },
+    {
+      "code": "ballad",
+      "genre": "ballad",
+      "namePt": "Balada"
+    }
+  ],
+  "modes": [
+    {
+      "code": "ionian",
+      "isMinor": false,
+      "mode": "ionian",
+      "namePt": "maior (jônio)"
+    },
+    {
+      "code": "dorian",
+      "isMinor": true,
+      "mode": "dorian",
+      "namePt": "dórico"
+    },
+    {
+      "code": "phrygian",
+      "isMinor": true,
+      "mode": "phrygian",
+      "namePt": "frígio"
+    },
+    {
+      "code": "lydian",
+      "isMinor": false,
+      "mode": "lydian",
+      "namePt": "lídio"
+    },
+    {
+      "code": "mixolydian",
+      "isMinor": false,
+      "mode": "mixolydian",
+      "namePt": "mixolídio"
+    },
+    {
+      "code": "aeolian",
+      "isMinor": true,
+      "mode": "aeolian",
+      "namePt": "menor natural (eólio)"
+    },
+    {
+      "code": "locrian",
+      "isMinor": true,
+      "mode": "locrian",
+      "namePt": "lócrio"
+    },
+    {
+      "code": "harmonic_minor",
+      "isMinor": true,
+      "mode": "harmonicMinor",
+      "namePt": "menor harmônica"
+    },
+    {
+      "code": "locrian_natural6",
+      "isMinor": true,
+      "mode": "locrianNatural6",
+      "namePt": "lócrio ♮6"
+    },
+    {
+      "code": "ionian_augmented",
+      "isMinor": false,
+      "mode": "ionianAugmented",
+      "namePt": "jônio aumentado"
+    },
+    {
+      "code": "dorian_sharp4",
+      "isMinor": true,
+      "mode": "dorianSharp4",
+      "namePt": "dórico ♯4"
+    },
+    {
+      "code": "phrygian_dominant",
+      "isMinor": false,
+      "mode": "phrygianDominant",
+      "namePt": "frígio dominante"
+    },
+    {
+      "code": "lydian_sharp2",
+      "isMinor": false,
+      "mode": "lydianSharp2",
+      "namePt": "lídio ♯2"
+    },
+    {
+      "code": "super_locrian_bb7",
+      "isMinor": true,
+      "mode": "superLocrianDoubleFlat7",
+      "namePt": "superlócrio ♭♭7"
+    },
+    {
+      "code": "melodic_minor",
+      "isMinor": true,
+      "mode": "melodicMinor",
+      "namePt": "menor melódica"
+    },
+    {
+      "code": "dorian_flat2",
+      "isMinor": true,
+      "mode": "dorianFlat2",
+      "namePt": "dórico ♭2"
+    },
+    {
+      "code": "lydian_augmented",
+      "isMinor": false,
+      "mode": "lydianAugmented",
+      "namePt": "lídio aumentado"
+    },
+    {
+      "code": "lydian_dominant",
+      "isMinor": false,
+      "mode": "lydianDominant",
+      "namePt": "lídio dominante"
+    },
+    {
+      "code": "mixolydian_flat6",
+      "isMinor": false,
+      "mode": "mixolydianFlat6",
+      "namePt": "mixolídio ♭6"
+    },
+    {
+      "code": "locrian_natural2",
+      "isMinor": true,
+      "mode": "locrianNatural2",
+      "namePt": "lócrio ♮2"
+    },
+    {
+      "code": "altered",
+      "isMinor": true,
+      "mode": "altered",
+      "namePt": "alterada (superlócrio)"
+    }
+  ],
+  "tonics": [
+    {
+      "flat": "C",
+      "sharp": "C",
+      "value": 0
+    },
+    {
+      "flat": "Db",
+      "sharp": "C#",
+      "value": 1
+    },
+    {
+      "flat": "D",
+      "sharp": "D",
+      "value": 2
+    },
+    {
+      "flat": "Eb",
+      "sharp": "D#",
+      "value": 3
+    },
+    {
+      "flat": "E",
+      "sharp": "E",
+      "value": 4
+    },
+    {
+      "flat": "F",
+      "sharp": "F",
+      "value": 5
+    },
+    {
+      "flat": "Gb",
+      "sharp": "F#",
+      "value": 6
+    },
+    {
+      "flat": "G",
+      "sharp": "G",
+      "value": 7
+    },
+    {
+      "flat": "Ab",
+      "sharp": "G#",
+      "value": 8
+    },
+    {
+      "flat": "A",
+      "sharp": "A",
+      "value": 9
+    },
+    {
+      "flat": "Bb",
+      "sharp": "A#",
+      "value": 10
+    },
+    {
+      "flat": "B",
+      "sharp": "B",
+      "value": 11
+    }
+  ]
+}

@@ -119,3 +119,101 @@ flowchart TB
 2. Contrato IPC validado contra fixtures geradas pelo Rust (Vitest).
 3. Nenhum contexto importa outro contexto (teste de arquitetura).
 4. Fluxo E2E simulado: criar projeto → importar → mixar → desfazer → salvar.
+
+<!-- ---- Harmonia e Bases ---- -->
+
+## Mockups — Harmonia e Bases
+
+Painéis inferiores "Harmonia" (`contexts/harmony`) e "Bases" (`contexts/library`), Fases 4–5.
+Contrato IPC: `docs/specs/2026-11-05-fase-5-harmonia-e-4-bases.md` §11.5. Os dois contextos não se
+importam: o tom escolhido na Harmonia chega às Bases por `core/composition.ts` (estado de UI
+compartilhado), e a audição (WAV → WebAudio) é um serviço técnico em `core/audition.ts`.
+
+### H.1 Painel Harmonia
+
+```
+┌ Harmonia ──────────────────────────────────────────────────────────────────────────────┐
+│ Tom [Dó ▾] Modo [Jônio (maior) ▾]  (Cifra|Graus) (Tríades|Tétrades)      [■ Parar]     │
+│ Campo: │ C  I │ Dm ii │ Em iii │ F IV │ G V │ Am vi │ Bdim vii° │   (clique = ouvir)    │
+├─(Progressões)─(Próximo acorde)─(Minhas progressões)────────────────────────────────────┤
+│ Gênero [Pop ▾]                                                                          │
+│ ┌──────────────────────────────────────────────────────────────────────────────────┐   │
+│ │ Eixo pop  · Pop  [universal]   C  G  Am  F           [▶ Ouvir] [Inserir no arranjo]│   │
+│ │ Doo-wop   · Pop                C  Am F  G            [▶ Ouvir] [Inserir no arranjo]│   │
+│ └──────────────────────────────────────────────────────────────────────────────────┘   │
+│ Inserir em: (●) nova faixa ( ) faixa selecionada "Voz"     · no cursor (compasso 3)     │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+Aba **Próximo acorde** (sequência montada clicando nas sugestões):
+
+```
+│ Sequência: [Dm7] [G7] [C]   [↶ Remover último] [Limpar] [▶ Ouvir] [Inserir no arranjo] │
+│ Sugestões após G7:                                                                    │
+│  [ C  · I   — Cadência autêntica ▮▮▮▮▮ ]  [ Am · vi — Cadência deceptiva ▮▮▮ ] …        │
+│ (sequência vazia → sugestões a partir da tônica)                                       │
+```
+
+Aba **Minhas progressões** (CRUD + histórico da biblioteca):
+
+```
+│ [+ Nova] [↶ Desfazer: Adicionar progressão] [↷ Refazer]                                 │
+│ Minha samba · Samba   I VI7 ii7 V7        [▶] [Inserir] [Editar] [Remover]              │
+│ ┌ Diálogo "Nova progressão" ─────────────────────┐                                      │
+│ │ Nome [        ]  Modo [Jônio ▾] Tempos/comp. [4]│                                      │
+│ │ Graus [I VI7 ii7 V7          ] Gêneros [☑ Samba]│                                      │
+│ │                         [Cancelar] [Salvar]     │                                      │
+│ └─────────────────────────────────────────────────┘                                     │
+```
+
+### H.2 Painel Bases
+
+```
+┌ Bases ─────────────────────────────────────────────────────────────────────────────────┐
+│ [Buscar…      ] BPM [ 60]–[180] Tom [qualquer ▾] Gênero [▾] Instrumento [▾] Tipo [▾]   │
+│ Tags [suave, loop]                     [Gerar base…] [Adicionar áudio…] [SoundFont…]   │
+├─────────────────────────────────────────────────────────────────────────────────────────┤
+│ Nome              Tipo      BPM   Tom   Compasso  Gênero                                │
+│ Pop básico        gerada    100   C     4/4       pop       [▶] [Inserir] [Remover]    │
+│ Loop bateria      áudio      96   Am    4/4       pop       [▶] [Inserir] [Remover]    │
+│ …                                                       (rolagem própria)               │
+│ [↶ Desfazer] [↷ Refazer] (histórico da biblioteca)                                     │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+Diálogo **Gerar base** (ouvir antes de salvar):
+
+```
+┌ Gerar base ──────────────────────────────────────────────┐
+│ Progressão (cifra) [C:4 G:4 Am:4 F:4  ]  ou  graus [  ]  │
+│ Tom [Dó ▾] [Maior|Menor]  BPM [100] Compassos [8]        │
+│ Estilo [Pop (palhetada) ▾] Bateria [auto ▾] Baixo [auto ▾]│
+│ Nome [Minha base] Gênero [pop] Tags [suave]              │
+│ Resultado: 4/4 · 8 compassos · 312 eventos                │
+│            [Gerar] [▶ Ouvir] [Cancelar] [Salvar na biblioteca]│
+└──────────────────────────────────────────────────────────┘
+```
+
+Diálogo **Inserir base** (RF-4.5: sempre pergunta quando há divergência):
+
+```
+┌ Inserir "Loop bateria" ─────────────────────────────────┐
+│ Tom do projeto [Dó ▾] [Maior|Menor]  (padrão: tom da Harmonia) │
+│ Divergência:                                            │
+│   BPM da base 96 → projeto 120  (×1,25)                 │
+│   Tom: 3 semitons acima · modo diferente (vai à relativa)│
+│ Como inserir?                                           │
+│   [Manter original]   [Adaptar ao projeto]   [Cancelar]  │
+└─────────────────────────────────────────────────────────┘
+```
+
+Diálogo **SoundFont**: estado do sintetizador (`simples` | `SoundFont: banco, n presets, caminho`),
+[Escolher arquivo .sf2…] [Usar sintetizador simples].
+
+### H.3 Critérios de aceite (UI)
+
+1. Fixtures `ui/src/ipc/__fixtures__/composition-*.json` geradas pelo Rust e validadas pelo zod
+   (`ipc/composition.contract.test.ts`).
+2. E2E `e2e/composition.spec.ts` (simulado): tom/gênero → ouvir → inserir (faixa aparece, desfazer
+   remove) → sequência de próximo acorde → gerar base → inserir base com divergência → "Adaptar" →
+   clipe inserido; sem rolagem horizontal em 1280×720.

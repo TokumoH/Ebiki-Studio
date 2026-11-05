@@ -23,3 +23,13 @@ export const PANELS: PanelDef[] = [
   { id: "tempo", title: "Mapa de tempo", area: "bottom", component: TempoPanel },
   { id: "advisor", title: "Análise da mixagem", area: "bottom", component: AdvisorPanel },
 ];
+
+// ---- Harmonia e bases (Fases 4–5) ----
+// (imports no fim de propósito: seção só acrescentada, para facilitar o merge)
+import { HarmonyPanel } from "../contexts/harmony/HarmonyPanel";
+import { BasesPanel } from "../contexts/library/BasesPanel";
+
+PANELS.push(
+  { id: "harmony", title: "Harmonia", area: "bottom", component: HarmonyPanel },
+  { id: "bases", title: "Bases", area: "bottom", component: BasesPanel },
+);

@@ -1,0 +1,119 @@
+[
+  {
+    "bpm": 72.0,
+    "genre": "ballad",
+    "id": "00000000-0000-7000-8000-000000000000",
+    "instruments": [
+      "drums",
+      "bass",
+      "piano"
+    ],
+    "key": {
+      "mode": "major",
+      "tonic": 7
+    },
+    "kind": {
+      "bars": 8,
+      "bass": "rootWhole",
+      "drums": "ballad",
+      "kind": "generated",
+      "progression": "I:4 vi:4 IV:4 V:4",
+      "style": "balladArpeggio"
+    },
+    "meter": {
+      "denominator": 4,
+      "numerator": 4
+    },
+    "name": "Balada em Sol",
+    "tags": [
+      "calma",
+      "inicial"
+    ]
+  },
+  {
+    "bpm": 130.0,
+    "genre": "bossa_nova",
+    "id": "00000000-0000-7000-8000-000000000001",
+    "instruments": [
+      "drums",
+      "bass",
+      "nylonGuitar"
+    ],
+    "key": {
+      "mode": "major",
+      "tonic": 2
+    },
+    "kind": {
+      "bars": 8,
+      "bass": "bossaRootFifth",
+      "drums": "bossa",
+      "kind": "generated",
+      "progression": "ii7:4 V7:4 Imaj7:8",
+      "style": "bossaComping"
+    },
+    "meter": {
+      "denominator": 4,
+      "numerator": 4
+    },
+    "name": "Bossa em Ré (ii–V–I)",
+    "tags": [
+      "inicial",
+      "suave"
+    ]
+  },
+  {
+    "bpm": 90.0,
+    "genre": "pop",
+    "id": "00000000-0000-7000-8000-000000000002",
+    "instruments": [
+      "drums",
+      "bass",
+      "acousticGuitar"
+    ],
+    "key": {
+      "mode": "minor",
+      "tonic": 9
+    },
+    "kind": {
+      "bars": 1,
+      "bass": "rootFifth",
+      "drums": "popRock",
+      "kind": "generated",
+      "progression": "i:4 VI:4",
+      "style": "popStrum"
+    },
+    "meter": {
+      "denominator": 4,
+      "numerator": 4
+    },
+    "name": "Pop em Lá menor",
+    "tags": [
+      "suave"
+    ]
+  },
+  {
+    "bpm": 96.0,
+    "genre": "pop",
+    "id": "00000000-0000-7000-8000-000000000003",
+    "instruments": [
+      "drums"
+    ],
+    "key": {
+      "mode": "minor",
+      "tonic": 9
+    },
+    "kind": {
+      "kind": "userAudio",
+      "path": "00000000-0000-7000-8000-00000000ffff.wav",
+      "progression": "Am F C G"
+    },
+    "meter": {
+      "denominator": 4,
+      "numerator": 4
+    },
+    "name": "Loop",
+    "tags": [
+      "loop"
+    ]
+  }
+]
