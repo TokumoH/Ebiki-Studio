@@ -47,10 +47,23 @@ fn process_does_not_allocate() {
     let mut out = vec![0.0f32; 2048 * 2];
     let input = vec![0.1f32; 2048 * 2];
     // a primeira chamada troca o grafo: o grafo antigo vai para a fila de lixo, sem liberar
+    reset_violation_count();
     assert_no_alloc(|| {
         for _ in 0..200 {
             core.process(&mut out, 2, &input, 2);
         }
     });
+    assert_eq!(violation_count(), 0, "o núcleo alocou memória no callback");
     h.collect_garbage();
+}
+
+#[test]
+fn guard_detects_allocation() {
+    reset_violation_count();
+    assert_no_alloc(|| {
+        let v = std::hint::black_box(vec![1u8; 16]);
+        drop(v);
+    });
+    assert!(violation_count() > 0, "o detector precisa acusar alocações");
+    reset_violation_count();
 }
