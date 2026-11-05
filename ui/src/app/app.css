@@ -11,7 +11,7 @@
 .panel-host { height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); }
 .start { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; overflow: auto; }
 .start header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--line); }
-.start main { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: var(--space-5); padding: var(--space-5); max-width: 1100px; width: 100%; margin: 0 auto; }
+.start main { display: grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); align-items: start; gap: var(--space-5); padding: var(--space-5); max-width: 1100px; width: 100%; margin: 0 auto; }
 .start h2 { margin: 0 0 var(--space-3); font-size: var(--text-lg); }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
 .recent { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
