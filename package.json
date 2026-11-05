@@ -1,0 +1,12 @@
+{
+  "name": "appmusica",
+  "private": true,
+  "description": "Raiz do monorepo: atalhos para o app desktop (Tauri) e a UI.",
+  "scripts": {
+    "tauri": "node ui/node_modules/@tauri-apps/cli/tauri.js",
+    "dev": "npm run tauri dev",
+    "build": "npm run tauri build",
+    "ui": "npm --prefix ui run dev:mock",
+    "test": "cargo test --workspace && npm --prefix ui test"
+  }
+}

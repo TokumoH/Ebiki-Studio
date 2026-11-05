@@ -1,0 +1,112 @@
+/* Design tokens — tema escuro (padrão de estúdio) e claro. Cores só via tokens. */
+:root {
+  --bg: #15171a;
+  --bg-raised: #1c1f23;
+  --bg-sunken: #101214;
+  --panel: #1f2328;
+  --panel-2: #262b31;
+  --line: #2f353c;
+  --line-strong: #3d444d;
+  --fg: #e6e4df;
+  --fg-muted: #9aa0a8;
+  --fg-faint: #6b7179;
+  --accent: #e59a3c;
+  --accent-fg: #1a1206;
+  --accent-soft: #3a2a17;
+  --rec: #e5484d;
+  --solo: #e8c547;
+  --mute: #5b8def;
+  --ok: #4cc38a;
+  --warn: #e8a33d;
+  --crit: #ef5f5f;
+  --meter-low: #4cc38a;
+  --meter-mid: #d8c24a;
+  --meter-high: #ef5f5f;
+  --clip-bg: #2b4a63;
+  --clip-fg: #9fd0f5;
+  --clip-sel: #e59a3c;
+  --font-ui: "Inter Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --radius: 6px;
+  --radius-sm: 4px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 16px;
+  --text-xl: 22px;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --focus: 0 0 0 2px var(--accent);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f1f0ec;
+  --bg-raised: #fbfaf7;
+  --bg-sunken: #e6e4de;
+  --panel: #ffffff;
+  --panel-2: #f3f2ee;
+  --line: #d9d6cf;
+  --line-strong: #bdb9b0;
+  --fg: #1d1f22;
+  --fg-muted: #5d6168;
+  --fg-faint: #8b9097;
+  --accent: #b8640f;
+  --accent-fg: #ffffff;
+  --accent-soft: #f3e3cf;
+  --clip-bg: #cfe3f3;
+  --clip-fg: #1f4a6b;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  overflow: hidden;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  user-select: text;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

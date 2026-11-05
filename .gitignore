@@ -6,3 +6,4 @@ ui/playwright-report/
 *.amproj/
 .DS_Store
 .claude/worktrees/
+node_modules/

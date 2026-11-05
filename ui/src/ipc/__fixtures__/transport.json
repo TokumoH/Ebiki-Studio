@@ -1,0 +1,13 @@
+{
+  "barBeat": {
+    "bar": 1,
+    "beat": 1,
+    "tickInBeat": 82
+  },
+  "bpm": 120.0,
+  "frame": 2048,
+  "recordStart": null,
+  "seconds": 0.042666666666666665,
+  "state": "playing",
+  "tick": 82
+}

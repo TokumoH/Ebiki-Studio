@@ -92,6 +92,7 @@ dependencies = [
  "infra-persistence",
  "proptest",
  "serde",
+ "serde_json",
  "shared-kernel",
  "tempfile",
  "thiserror 2.0.21",

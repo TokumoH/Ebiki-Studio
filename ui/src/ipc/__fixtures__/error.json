@@ -1,0 +1,4 @@
+{
+  "code": "project.invalid_name",
+  "message": "nome inválido: deve ter de 1 a 64 caracteres visíveis"
+}
