@@ -5,3 +5,4 @@ ui/test-results/
 ui/playwright-report/
 *.amproj/
 .DS_Store
+.claude/worktrees/
