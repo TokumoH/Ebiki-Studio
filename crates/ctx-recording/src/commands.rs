@@ -125,6 +125,34 @@ impl Command<RecordingSetup> for SetMetronome {
     }
 }
 
+/// Compensação de latência de ida e volta (amostras) aplicada às gravações.
+pub struct SetLatencyCompensation {
+    pub frames: u32,
+    previous: Option<u32>,
+}
+impl SetLatencyCompensation {
+    pub const MAX_FRAMES: u32 = 48_000;
+    pub fn new(frames: u32) -> Self {
+        Self { frames, previous: None }
+    }
+}
+impl Command<RecordingSetup> for SetLatencyCompensation {
+    fn apply(&mut self, r: &mut RecordingSetup) -> R {
+        if self.frames > Self::MAX_FRAMES {
+            return Err(RecordingError::OutOfRange.into());
+        }
+        self.previous = Some(std::mem::replace(&mut r.latency_compensation_frames, self.frames));
+        Ok(())
+    }
+    fn revert(&mut self, r: &mut RecordingSetup) -> R {
+        r.latency_compensation_frames = self.previous.take().ok_or_else(missing)?;
+        Ok(())
+    }
+    fn label(&self) -> &str {
+        "Compensação de latência"
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -154,6 +182,7 @@ mod tests {
                 enabled: true,
                 ..Default::default()
             })),
+            Box::new(SetLatencyCompensation::new(256)),
         ];
         for c in cmds {
             let before = r.clone();

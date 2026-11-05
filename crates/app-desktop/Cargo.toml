@@ -1,0 +1,37 @@
+[package]
+name = "app-desktop"
+description = "AppMusica — aplicativo desktop (Tauri): adaptador de entrada (comandos IPC) e composition root."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+default-run = "appmusica"
+
+[[bin]]
+name = "appmusica"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+shared-kernel.workspace = true
+ctx-project.workspace = true
+ctx-mixing.workspace = true
+ctx-recording.workspace = true
+app-core.workspace = true
+audio-engine = { workspace = true, features = ["device"] }
+infra-persistence.workspace = true
+infra-adapters = { path = "../infra-adapters" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+tauri = { version = "2.12", features = [] }
+tauri-plugin-dialog = "2.8"
+
+[features]
+# Windows: habilita o driver ASIO (requer SDK ASIO no build)
+asio = ["audio-engine/asio"]
+
+[dev-dependencies]
+tempfile = "3"

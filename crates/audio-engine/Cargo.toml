@@ -14,6 +14,7 @@ asio = ["device", "cpal/asio"]
 [dependencies]
 shared-kernel.workspace = true
 thiserror.workspace = true
+serde.workspace = true
 rtrb = "0.4"
 hound = "3.5"
 cpal = { version = "0.18", optional = true }
