@@ -35,6 +35,13 @@ Outras arquiteturas **só podem ser adotadas após discussão e decisão explíc
 
 ## 4. Restrições (OBRIGATÓRIAS)
 
+> **Modo autônomo (autorizado pelo usuário em 2026-11-05):** neste projeto o assistente está autorizado a
+> trabalhar de forma **autônoma e integral**: decidir, implementar, commitar e fazer push na `branchTrabalho`
+> sem aguardar aprovação a cada etapa. As regras de "sugerir/aguardar/perguntar" abaixo passam a ser
+> cumpridas **registrando** as decisões (specs, ADRs, mockups em `docs/`) em vez de bloquear o trabalho.
+> A arquitetura obrigatória (seção 3), as boas práticas e as regras de banco continuam **inegociáveis**.
+> Ao fim de **cada grande trabalho**, executar a **varredura** de [`docs/processo/varredura.md`](docs/processo/varredura.md).
+
 - **SEMPRE sugerir e discutir antes de implementar**, e **aguardar a decisão do usuário**.
 - **NUNCA alterar o código sem autorização explícita.**
 - **NUNCA criar, atualizar, fazer merge ou push em branches sem autorização explícita.**
@@ -56,7 +63,7 @@ Requisitos completos: [`docs/requisitos/2026-11-05-levantamento-requisitos.md`](
 
 - **Produto:** estúdio musical desktop multiplataforma (Windows/macOS/Linux), uso pessoal, sem IA (arquitetura preparada para IA, plugins VST3/CLAP e automação).
 - **Stack:** Tauri + Rust (domínio, aplicação, engine de áudio) + React/TypeScript (UI) + SQLite.
-- **Branch de trabalho:** `branchTrabalho`. Commits livres nela; **push somente com autorização**.
+- **Branch de trabalho:** `branchTrabalho`. Commits e push livres nela (modo autônomo).
 - **Idioma:** UI em PT-BR; código em inglês.
 - **Testes:** TDD completo. **CI:** GitHub Actions nos 3 sistemas.
 - **Documentação por fase:** especificação, diagramas (casos de uso, estados, componentes, classes, sequência, serviços, processos), arquitetura, DER, ADRs, manual.
@@ -66,8 +73,9 @@ Requisitos completos: [`docs/requisitos/2026-11-05-levantamento-requisitos.md`](
 ## 6. Fluxo de Trabalho
 
 1. Entender a demanda e fazer perguntas quando necessário.
-2. Propor solução (com diagramas/tabelas/mockups quando útil).
-3. Discutir alternativas e trade-offs.
-4. **Aguardar decisão do usuário.**
-5. Implementar somente o que foi aprovado.
-6. Commit/push somente com autorização.
+2. Propor solução (com diagramas/tabelas/mockups quando útil) e registrar em `docs/`.
+3. Discutir alternativas e trade-offs (registrar em ADR).
+4. Em modo autônomo: decidir com base nos requisitos aprovados; caso contrário, aguardar decisão do usuário.
+5. Implementar com TDD.
+6. Commit e push na `branchTrabalho`.
+7. Executar a varredura ([`docs/processo/varredura.md`](docs/processo/varredura.md)) ao fim de cada grande trabalho e entregar o relatório.
