@@ -12,6 +12,10 @@ rust-version = "1.87"
 shared-kernel = { path = "crates/shared-kernel" }
 ctx-project = { path = "crates/ctx-project" }
 ctx-mixing = { path = "crates/ctx-mixing" }
+ctx-recording = { path = "crates/ctx-recording" }
+app-core = { path = "crates/app-core" }
+infra-persistence = { path = "crates/infra-persistence" }
+audio-engine = { path = "crates/audio-engine" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

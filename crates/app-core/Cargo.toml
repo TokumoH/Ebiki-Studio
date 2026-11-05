@@ -1,0 +1,18 @@
+[package]
+name = "app-core"
+description = "Camada de aplicação: sessão (agregados abertos), casos de uso, histórico e portas para infraestrutura."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+ctx-project.workspace = true
+ctx-mixing.workspace = true
+ctx-recording.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
