@@ -133,7 +133,7 @@ impl Command<Mixer> for CreateBus {
 
 pub struct DeleteBus {
     pub id: BusId,
-    removed: Option<(Bus, usize, Vec<(TrackId, ChannelStrip)>)>,
+    removed: Option<RemovedBus>,
 }
 impl DeleteBus {
     pub fn new(id: BusId) -> Self {

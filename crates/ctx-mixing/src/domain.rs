@@ -198,6 +198,9 @@ pub enum StripEdit {
     },
 }
 
+/// Resultado da remoção de um bus: (bus, índice, canais afetados antes da remoção).
+pub type RemovedBus = (Bus, usize, Vec<(TrackId, ChannelStrip)>);
+
 /// Agregado raiz da mixagem.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
@@ -321,7 +324,7 @@ impl Mixer {
     pub fn remove_bus(
         &mut self,
         id: BusId,
-    ) -> Result<(Bus, usize, Vec<(TrackId, ChannelStrip)>), MixingError> {
+    ) -> Result<RemovedBus, MixingError> {
         let i = self
             .buses
             .iter()
