@@ -1,0 +1,216 @@
+<title>Paletas do Ebiki Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: prancha de estúdio — cada paleta é uma "faixa" com amostras, mini-workspace e contraste */
+:root {
+  --page: #0f131a; --page-2: #161c26; --ink: #ece7e1; --ink-muted: #9ea8b8; --rule: #263142;
+  --sunset: linear-gradient(90deg, #2b4f7a 0%, #6a6f9e 38%, #e6889a 70%, #f3a46b 100%);
+  --display: "Zen Kaku Gothic New", "Hiragino Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--display); line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+header.hero { padding-block: 48px 8px; display: flex; flex-direction: column; gap: 14px; }
+.kana { font-size: 13px; letter-spacing: .3em; color: var(--ink-muted); }
+h1 { font-weight: 900; font-size: clamp(34px, 6vw, 58px); line-height: 1.02; margin: 0; text-wrap: balance; }
+.horizon { height: 6px; border-radius: 3px; background: var(--sunset); max-width: 520px; }
+.lead { max-width: 66ch; color: var(--ink-muted); margin: 0; font-size: 16px; }
+.lead strong { color: var(--ink); font-weight: 500; }
+section.pal { display: flex; flex-direction: column; gap: 18px; border-top: 1px solid var(--rule); padding-top: 28px; }
+.pal-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px; }
+.pal-head h2 { margin: 0; font-size: 28px; font-weight: 700; }
+.pal-head .jp { color: var(--ink-muted); font-size: 15px; }
+.badge { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; border: 1px solid currentColor; }
+.badge.rec { color: #f39c6b; }
+.mood { margin: 0; max-width: 70ch; color: var(--ink-muted); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.sw { border-radius: 8px; overflow: hidden; border: 1px solid var(--rule); background: var(--page-2); min-width: 0; }
+.sw .chip { height: 54px; }
+.sw .meta { padding: 7px 9px 9px; display: flex; flex-direction: column; gap: 1px; }
+.sw .role { font-size: 12.5px; font-weight: 500; }
+.sw .hex { font-family: var(--mono); font-size: 12px; color: var(--ink-muted); }
+.contrast { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.contrast span { font-family: var(--mono); font-size: 12px; padding: 4px 8px; border-radius: 6px; background: var(--page-2); border: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+.contrast b { font-weight: 500; color: var(--ink); }
+
+/* mini-workspace: usa as variáveis --w-* definidas inline por paleta */
+.ws { border-radius: 10px; overflow: hidden; border: 1px solid var(--w-line); background: var(--w-bg); color: var(--w-fg); font-size: 12px; min-width: 0; }
+.ws-top { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: var(--w-raised); border-bottom: 1px solid var(--w-line); flex-wrap: wrap; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--w-accent); }
+.ws-name { font-weight: 700; margin-right: 6px; }
+.btn { display: inline-grid; place-items: center; min-width: 26px; height: 24px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--w-line-strong); background: var(--w-panel2); color: var(--w-fg); font-size: 11px; }
+.btn.primary { background: var(--w-accent); border-color: var(--w-accent); color: var(--w-accent-fg); font-weight: 700; }
+.btn.rec { color: var(--w-rec); border-color: var(--w-rec); }
+.btn.on-s { background: var(--w-solo); border-color: var(--w-solo); color: #1b1600; }
+.btn.on-m { background: var(--w-mute); border-color: var(--w-mute); color: #fff; }
+.pos { font-family: var(--mono); font-size: 15px; padding: 0 10px; border-left: 1px solid var(--w-line); margin-left: 4px; }
+.pos small { display: block; font-size: 10px; color: var(--w-muted); }
+.spacer { flex: 1; }
+.ws-body { display: grid; grid-template-columns: 96px minmax(0, 1fr); }
+.heads { border-right: 1px solid var(--w-line); background: var(--w-raised); }
+.head { height: 52px; border-bottom: 1px solid var(--w-line); padding: 6px 8px; display: flex; flex-direction: column; gap: 4px; }
+.head.sel { box-shadow: inset 3px 0 0 var(--w-accent); background: var(--w-panel2); }
+.head .row { display: flex; gap: 3px; }
+.head .row .btn { min-width: 18px; height: 18px; padding: 0 4px; font-size: 10px; }
+.lanes { position: relative; }
+.lane { height: 52px; border-bottom: 1px solid var(--w-line); position: relative; background-image: repeating-linear-gradient(90deg, var(--w-line) 0 1px, transparent 1px 25%); }
+.clip { position: absolute; top: 4px; bottom: 4px; border-radius: 4px; background: var(--w-clip-bg); border: 1px solid color-mix(in srgb, var(--w-clip-fg) 40%, transparent); overflow: hidden; }
+.clip.sel { border-color: var(--w-accent); box-shadow: 0 0 0 1px var(--w-accent); }
+.clip svg { position: absolute; inset: 12px 0 0 0; width: 100%; height: calc(100% - 12px); }
+.clip i { position: absolute; left: 4px; top: 0; font-style: normal; font-size: 10px; color: var(--w-clip-fg); }
+.playhead { position: absolute; top: 0; bottom: 0; left: 46%; width: 2px; background: var(--w-accent); }
+.ws-mixer { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--w-line); background: var(--w-bg); overflow-x: auto; }
+.strip { flex: none; width: 74px; background: var(--w-panel); border: 1px solid var(--w-line); border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 5px; align-items: center; }
+.strip b { font-size: 11px; }
+.ins { width: 100%; font-size: 10px; background: var(--w-sunken); border: 1px solid var(--w-line); border-radius: 3px; padding: 1px 4px; }
+.fm { display: flex; gap: 6px; height: 74px; align-items: stretch; }
+.fader { width: 4px; background: var(--w-sunken); border-radius: 2px; position: relative; }
+.fader::after { content: ""; position: absolute; left: -7px; width: 18px; height: 9px; border-radius: 2px; background: var(--w-fg); top: var(--f, 30%); }
+.meter { width: 5px; background: var(--w-sunken); border-radius: 1px; position: relative; overflow: hidden; }
+.meter::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--m, 60%); background: linear-gradient(to top, var(--w-m1) 0 70%, var(--w-m2) 85%, var(--w-m3) 100%); }
+.advice { margin: 0 10px 10px; padding: 6px 9px; border-left: 3px solid var(--w-warn); background: var(--w-panel); border-radius: 4px; font-size: 11px; }
+.light-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 20px; }
+@media (max-width: 860px) { .light-row { grid-template-columns: minmax(0, 1fr); } }
+.note { font-size: 13px; color: var(--ink-muted); margin: 0; }
+.compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.compare div { background: var(--page-2); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; }
+.compare h3 { margin: 0 0 4px; font-size: 15px; }
+.compare p { margin: 0; font-size: 13px; color: var(--ink-muted); }
+footer { color: var(--ink-muted); font-size: 12.5px; border-top: 1px solid var(--rule); padding-top: 18px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <span class="kana">エビキ ・ スタジオ</span>
+    <h1>Paletas do Ebiki Studio</h1>
+    <div class="horizon" role="img" aria-label="Gradiente do horizonte: azul do rio ao laranja do pôr do sol"></div>
+    <p class="lead">Três direções para <strong>cores frias com sensação quente</strong>, a partir de Solanin e Odoriko: o rio azulado no fim da tarde, a noite violeta com luz de lanterna, o <strong>agridoce</strong> de algo bonito que está acabando. Toda paleta mantém as convenções de estúdio: gravar em vermelho, solo amarelo, mute azul e medidores verde → amarelo → vermelho.</p>
+  </header>
+
+  <!-- PALETA 1 -->
+  <section class="pal" id="solanin" aria-labelledby="t-solanin">
+    <div class="pal-head">
+      <h2 id="t-solanin">Solanin</h2><span class="jp">ソラニン · entardecer no rio</span>
+    </div>
+    <p class="mood">Azul-ardósia do céu que escurece, papel quente para o texto e o coral do último sol como destaque. A mais nostálgica das três.</p>
+    <div class="grid">
+      <div>
+        <div class="swatches" data-pal="solanin"></div>
+        <div class="contrast"><span>texto <b>14,5:1</b></span><span>secundário <b>6,4:1</b></span><span>botão principal <b>7,2:1</b></span><span>clipe <b>5,8:1</b></span></div>
+      </div>
+      <div class="ws" data-ws="solanin"></div>
+    </div>
+  </section>
+
+  <!-- PALETA 2 -->
+  <section class="pal" id="odoriko" aria-labelledby="t-odoriko">
+    <div class="pal-head">
+      <h2 id="t-odoriko">Odoriko</h2><span class="jp">踊り子 · noite que dança</span>
+    </div>
+    <p class="mood">Índigo-violeta da noite e rosa-sakura de lanterna, com o azul elétrico nos clipes. A mais sonhadora e a de mais contraste.</p>
+    <div class="grid">
+      <div>
+        <div class="swatches" data-pal="odoriko"></div>
+        <div class="contrast"><span>texto <b>15,3:1</b></span><span>secundário <b>6,8:1</b></span><span>botão principal <b>9,1:1</b></span><span>clipe <b>6,9:1</b></span></div>
+      </div>
+      <div class="ws" data-ws="odoriko"></div>
+    </div>
+  </section>
+
+  <!-- PALETA 3 -->
+  <section class="pal" id="agridoce" aria-labelledby="t-agridoce">
+    <div class="pal-head">
+      <h2 id="t-agridoce">Agridoce</h2><span class="jp">甘じょっぱい · doce e salgado</span><span class="badge rec">Recomendada</span>
+    </div>
+    <p class="mood">A mistura das duas. A base é a noite azul-petróleo do rio, fria e calma para longas sessões. O calor vem do damasco do pôr do sol nos controles principais, do branco-papel no texto e de um azul-rio claro como segunda cor. O resultado é "frio que abraça".</p>
+    <div class="grid">
+      <div>
+        <div class="swatches" data-pal="agridoce"></div>
+        <div class="contrast"><span>texto <b>14,5:1</b></span><span>secundário <b>6,9:1</b></span><span>botão principal <b>8,3:1</b></span><span>clipe <b>6,6:1</b></span><span>gravar <b>5,8:1</b></span></div>
+      </div>
+      <div class="ws" data-ws="agridoce"></div>
+    </div>
+    <h3 style="margin:8px 0 0;font-size:18px">Agridoce — tema claro (manhã)</h3>
+    <div class="light-row">
+      <div>
+        <div class="swatches" data-pal="agridoce-claro"></div>
+        <div class="contrast"><span>texto <b>13,6:1</b></span><span>secundário <b>6,2:1</b></span><span>botão principal <b>5,5:1</b></span><span>clipe <b>7,2:1</b></span></div>
+      </div>
+      <div class="ws" data-ws="agridoce-claro"></div>
+    </div>
+  </section>
+
+  <section class="pal" aria-labelledby="t-cmp">
+    <div class="pal-head"><h2 id="t-cmp">Como escolher</h2></div>
+    <div class="compare">
+      <div><h3>Solanin</h3><p>Mais quente e nostálgica. Coral perto do vermelho de gravar: diferenciados por brilho e posição.</p></div>
+      <div><h3>Odoriko</h3><p>Mais noturna e vibrante. O rosa do destaque é a cor mais "assinatura", ótima para o logo.</p></div>
+      <div><h3>Agridoce</h3><p>Melhor equilíbrio para uso longo: fundo frio descansa a vista, destaque quente guia a mão. Damasco não se confunde com gravar nem com solo.</p></div>
+    </div>
+    <p class="note">Para o logo: o gradiente do horizonte (azul do rio → lilás → rosa → damasco) no topo desta página funciona como elemento de marca em qualquer uma das três.</p>
+  </section>
+
+  <footer>Valores de contraste pela fórmula WCAG 2.1 (mínimo 4,5:1 para texto). Tokens prontos para `ui/src/shared/tokens.css`.</footer>
+</div>
+
+<script>
+const P = {
+  solanin: { bg:"#12161f", raised:"#161b26", panel:"#1a2030", panel2:"#222a3c", sunken:"#0d1118", line:"#2a3346", lineStrong:"#38435a", fg:"#ebe5dc", muted:"#9aa3b5", accent:"#f08a6b", accentFg:"#2a120a", clipBg:"#2a4c66", clipFg:"#a6d6ea", rec:"#e5484d", solo:"#e8c547", mute:"#6f95e8", m1:"#4cc38a", m2:"#d8c24a", m3:"#ef5f5f", warn:"#e8a33d" },
+  odoriko: { bg:"#14121d", raised:"#18162a", panel:"#1d1a2b", panel2:"#262239", sunken:"#0f0d17", line:"#302b48", lineStrong:"#40395c", fg:"#eee7f2", muted:"#a7a1bb", accent:"#f4a3b6", accentFg:"#2b0f18", clipBg:"#2f3466", clipFg:"#b9c4ff", rec:"#ff5a5f", solo:"#f2cf5b", mute:"#7c9dff", m1:"#5fd4a0", m2:"#e9cf62", m3:"#ff6b6b", warn:"#f0b45a" },
+  agridoce: { bg:"#111821", raised:"#141c27", panel:"#182230", panel2:"#1f2b3b", sunken:"#0c1219", line:"#283646", lineStrong:"#34465a", fg:"#ece7e1", muted:"#9eabbb", accent:"#f39c6b", accentFg:"#24130a", accent2:"#8cc4e0", clipBg:"#24485c", clipFg:"#a8dcef", rec:"#ff5a5f", solo:"#f2c94c", mute:"#7aa2f7", m1:"#5fd4a0", m2:"#e9cf62", m3:"#ff6b6b", warn:"#f0b45a" },
+  "agridoce-claro": { bg:"#f3efe9", raised:"#ebe5dc", panel:"#fffdf9", panel2:"#f1ece5", sunken:"#e4ddd2", line:"#ddd4c9", lineStrong:"#c6bbad", fg:"#1d2430", muted:"#566173", accent:"#ab4e25", accentFg:"#ffffff", accent2:"#2f6f8f", clipBg:"#cfe5f0", clipFg:"#1d4b62", rec:"#d93a3f", solo:"#d9a92a", mute:"#3f6fd8", m1:"#2f9e6c", m2:"#c9a227", m3:"#d94848", warn:"#c27c16" },
+};
+const ROLES = [["bg","Fundo"],["panel","Painel"],["fg","Texto"],["muted","Texto secundário"],["accent","Destaque"],["accent2","Segunda cor"],["clipBg","Clipe"],["clipFg","Onda do clipe"],["rec","Gravar"],["solo","Solo"],["mute","Mute"]];
+document.querySelectorAll(".swatches").forEach(el => {
+  const p = P[el.dataset.pal];
+  el.innerHTML = ROLES.filter(([k]) => p[k]).map(([k, r]) =>
+    `<div class="sw"><div class="chip" style="background:${p[k]}"></div><div class="meta"><span class="role">${r}</span><span class="hex">${p[k]}</span></div></div>`).join("");
+});
+function wave(seed, n = 90) {
+  let s = seed, d = "";
+  for (let i = 0; i < n; i++) {
+    s = (s * 9301 + 49297) % 233280;
+    const a = 0.25 + 0.65 * Math.abs(Math.sin(i / 7 + seed)) * (0.55 + 0.45 * (s / 233280));
+    d += `<rect x="${i}" y="${50 - a * 48}" width="0.7" height="${a * 96}"/>`;
+  }
+  return `<svg viewBox="0 0 ${n} 100" preserveAspectRatio="none" fill="currentColor" aria-hidden="true">${d}</svg>`;
+}
+document.querySelectorAll(".ws").forEach(el => {
+  const p = P[el.dataset.ws];
+  const vars = { bg:p.bg, raised:p.raised, panel:p.panel, panel2:p.panel2, sunken:p.sunken, line:p.line, "line-strong":p.lineStrong, fg:p.fg, muted:p.muted, accent:p.accent, "accent-fg":p.accentFg, "clip-bg":p.clipBg, "clip-fg":p.clipFg, rec:p.rec, solo:p.solo, mute:p.mute, m1:p.m1, m2:p.m2, m3:p.m3, warn:p.warn };
+  Object.entries(vars).forEach(([k, v]) => el.style.setProperty(`--w-${k}`, v));
+  el.setAttribute("role", "img");
+  el.setAttribute("aria-label", `Prévia do workspace com a paleta ${el.dataset.ws}`);
+  const clip = (l, w, name, sel, seed) => `<div class="clip${sel ? " sel" : ""}" style="left:${l}%;width:${w}%;color:${p.clipFg}"><i>${name}</i>${wave(seed)}</div>`;
+  el.innerHTML = `
+    <div class="ws-top"><span class="dot"></span><span class="ws-name">Ebiki Studio</span>
+      <span class="btn">⏮</span><span class="btn">▶</span><span class="btn">■</span><span class="btn rec">●</span>
+      <span class="pos">005.2.480<small>00:09.240 · ♩ 92</small></span><span class="spacer"></span><span class="btn primary">Salvar</span></div>
+    <div class="ws-body">
+      <div class="heads">
+        <div class="head sel"><b>Voz</b><div class="row"><span class="btn">M</span><span class="btn on-s">S</span><span class="btn rec">●</span></div></div>
+        <div class="head"><b>Guitarra</b><div class="row"><span class="btn on-m">M</span><span class="btn">S</span><span class="btn">●</span></div></div>
+        <div class="head"><b>Baixo</b><div class="row"><span class="btn">M</span><span class="btn">S</span><span class="btn">●</span></div></div>
+      </div>
+      <div class="lanes">
+        <div class="lane">${clip(4, 58, "voz_take3.wav", true, 1.3)}</div>
+        <div class="lane">${clip(0, 42, "guitarra.flac", false, 2.1)}${clip(48, 46, "solo.wav", false, 3.7)}</div>
+        <div class="lane">${clip(0, 92, "baixo.wav", false, 4.2)}</div>
+        <div class="playhead"></div>
+      </div>
+    </div>
+    <div class="ws-mixer">
+      ${[["Voz","EQ","Comp",28,72],["Guitarra","Sat","Reverb",38,55],["Baixo","Comp","—",34,48],["Master","Limit","—",30,80]].map(([n,a,b,f,m]) =>
+        `<div class="strip"><b>${n}</b><span class="ins">${a}</span><span class="ins">${b}</span><div class="fm"><div class="fader" style="--f:${f}%"></div><div class="meter" style="--m:${m}%"></div><div class="meter" style="--m:${m - 6}%"></div></div></div>`).join("")}
+    </div>
+    <div class="advice">Loudness −11,2 LUFS: 2,8 dB acima da meta de streaming.</div>`;
+});
+</script>
