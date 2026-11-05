@@ -11,6 +11,7 @@ ctx-project.workspace = true
 ctx-mixing.workspace = true
 ctx-recording.workspace = true
 audio-engine.workspace = true
+dsp = { path = "../dsp" }
 serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true

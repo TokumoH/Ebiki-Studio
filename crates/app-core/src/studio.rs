@@ -885,6 +885,131 @@ impl Studio {
         self.execute(Box::new(Composite::new("Escolher take", steps)), None)
     }
 
+    // --------------------------------------------------- exportação e análise
+
+    /// Renderiza a mixagem final offline (mesma engine do tempo real, processadores novos).
+    /// `tail_seconds` acrescenta cauda para reverbs/delays.
+    pub fn render_mixdown(
+        &self,
+        range: Option<(Tick, Tick)>,
+        tail_seconds: f64,
+    ) -> AppResult<(Vec<f32>, Vec<f32>)> {
+        let op = self.open.as_ref().ok_or_else(AppError::no_project)?;
+        crate::render::render_session(
+            &op.session,
+            &op.sources,
+            self.deps.factory.as_ref(),
+            range,
+            tail_seconds,
+        )
+    }
+
+    /// Exporta a mixagem para `file` no formato pedido.
+    pub fn export_mix(
+        &self,
+        file: &Path,
+        settings: &ExportSettings,
+        range: Option<(Tick, Tick)>,
+    ) -> AppResult<()> {
+        let sr = self
+            .session()
+            .ok_or_else(AppError::no_project)?
+            .project
+            .format
+            .sample_rate
+            .hz();
+        if settings.format == ExportFormatKind::Mp3 && sr > 48_000 {
+            return Err(AppError::new("app.mp3_rate", "MP3 suporta no máximo 48 kHz. Exporte em WAV/FLAC ou use um projeto de 44,1/48 kHz."));
+        }
+        let (mut l, mut r) = self.render_mixdown(range, 2.0)?;
+        if settings.normalize {
+            crate::render::normalize(&mut l, &mut r, Db(-1.0).to_linear());
+        }
+        self.deps.media.encode(file, settings, sr, &[l, r])?;
+        Ok(())
+    }
+
+    /// Exporta uma faixa por arquivo (stems) em `dir`. Retorna os arquivos criados.
+    pub fn export_stems(&self, dir: &Path, settings: &ExportSettings) -> AppResult<Vec<PathBuf>> {
+        let op = self.open.as_ref().ok_or_else(AppError::no_project)?;
+        let sr = op.session.project.format.sample_rate.hz();
+        std::fs::create_dir_all(dir).map_err(AppError::io)?;
+        let mut out = Vec::new();
+        for (i, t) in op.session.project.tracks().iter().enumerate() {
+            let solo = crate::render::solo_session(&op.session, t.id);
+            let (l, r) = crate::render::render_session(
+                &solo,
+                &op.sources,
+                self.deps.factory.as_ref(),
+                None,
+                2.0,
+            )?;
+            let name = format!(
+                "{:02} - {}.{}",
+                i + 1,
+                sanitize_folder_name(&t.name),
+                settings.format.extension()
+            );
+            let file = dir.join(name);
+            self.deps.media.encode(&file, settings, sr, &[l, r])?;
+            out.push(file);
+        }
+        Ok(out)
+    }
+
+    /// Analisa a mixagem (offline) e devolve as medições + conselhos por regras.
+    pub fn analyze_mix(
+        &self,
+        target_lufs: f32,
+    ) -> AppResult<(
+        ctx_mixing::advisor::MixAnalysis,
+        Vec<ctx_mixing::advisor::Advice>,
+    )> {
+        use ctx_mixing::advisor::{MixAdvisor, RuleBasedMixAdvisor};
+        let op = self.open.as_ref().ok_or_else(AppError::no_project)?;
+        let sr = op.session.project.format.sample_rate.hz();
+        let (l, r) = self.render_mixdown(None, 0.5)?;
+        let master = crate::render::analyze_master(&l, &r, sr);
+        let mut channels = Vec::new();
+        for t in op.session.project.tracks().iter().take(64) {
+            let solo = crate::render::solo_session(&op.session, t.id);
+            let (tl, tr) = crate::render::render_session(
+                &solo,
+                &op.sources,
+                self.deps.factory.as_ref(),
+                None,
+                0.0,
+            )?;
+            channels.push(crate::render::analyze_channel(&t.name, &tl, &tr));
+        }
+        let analysis = ctx_mixing::advisor::MixAnalysis {
+            master,
+            channels,
+            target_lufs,
+        };
+        let advice = RuleBasedMixAdvisor.advise(&analysis);
+        Ok((analysis, advice))
+    }
+
+    /// Picos (mín./máx. intercalados por bloco, canais combinados) para desenhar a forma de onda.
+    pub fn waveform(&self, source: AudioSourceId, frames_per_peak: u32) -> AppResult<Vec<f32>> {
+        let op = self.open.as_ref().ok_or_else(AppError::no_project)?;
+        let buf = op.sources.get(&source).ok_or_else(|| {
+            AppError::new(
+                "app.source_unavailable",
+                "Áudio indisponível (arquivo ausente ou corrompido).",
+            )
+        })?;
+        Ok(crate::render::peaks(
+            buf,
+            frames_per_peak.clamp(16, 65_536) as usize,
+        ))
+    }
+
+    pub fn available_formats(&self) -> Vec<ExportFormatKind> {
+        self.deps.media.available_formats()
+    }
+
     /// Fontes decodificadas (para exportação e análise).
     pub fn sources(&self) -> Option<&HashMap<AudioSourceId, Arc<SourceBuffer>>> {
         self.open.as_ref().map(|o| &o.sources)

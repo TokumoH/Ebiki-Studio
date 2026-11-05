@@ -5,6 +5,7 @@
 
 pub mod compile;
 pub mod ports;
+pub mod render;
 pub mod session;
 pub mod studio;
 pub mod view;

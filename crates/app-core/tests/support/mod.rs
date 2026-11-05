@@ -68,6 +68,19 @@ impl MediaPort for WavMedia {
             &std::fs::read(file).map_err(|e| PortError::new("codec.io", e.to_string()))?,
         ))
     }
+    fn encode(
+        &self,
+        file: &Path,
+        _s: &ExportSettings,
+        _sr: u32,
+        planes: &[Vec<f32>],
+    ) -> Result<(), PortError> {
+        write_wav(file, planes.to_vec());
+        Ok(())
+    }
+    fn available_formats(&self) -> Vec<ExportFormatKind> {
+        vec![ExportFormatKind::Wav]
+    }
 }
 
 /// Efeito de teste: ganho fixo de 0,5 para qualquer tipo.

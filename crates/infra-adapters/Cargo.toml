@@ -1,0 +1,19 @@
+[package]
+name = "infra-adapters"
+description = "Adaptadores das portas do app-core: DSP (fábrica de processadores) e codecs (mídia)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+ctx-mixing.workspace = true
+app-core.workspace = true
+audio-engine.workspace = true
+dsp = { path = "../dsp" }
+infra-codecs = { path = "../infra-codecs" }
+
+[dev-dependencies]
+tempfile = "3"
+infra-persistence.workspace = true
+ctx-project.workspace = true

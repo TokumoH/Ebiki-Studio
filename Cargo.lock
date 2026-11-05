@@ -51,6 +51,7 @@ dependencies = [
  "ctx-mixing",
  "ctx-project",
  "ctx-recording",
+ "dsp",
  "hound",
  "infra-persistence",
  "proptest",
@@ -692,6 +693,21 @@ checksum = "cc4e190f5d26ca7051642629da2c52fc03bde85a03197c99408dcd291734c855"
 dependencies = [
  "equivalent",
  "hashbrown",
+]
+
+[[package]]
+name = "infra-adapters"
+version = "0.1.0"
+dependencies = [
+ "app-core",
+ "audio-engine",
+ "ctx-mixing",
+ "ctx-project",
+ "dsp",
+ "infra-codecs",
+ "infra-persistence",
+ "shared-kernel",
+ "tempfile",
 ]
 
 [[package]]
