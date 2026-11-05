@@ -1,0 +1,13 @@
+[package]
+name = "dsp-pitch"
+description = "Pure Fabrication de DSP de altura: detecção (YIN), afinador, pitch shift (PSOLA), correção de afinação, análise de notas e time-stretch (WSOLA)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+assert_no_alloc = "1.1.2"
