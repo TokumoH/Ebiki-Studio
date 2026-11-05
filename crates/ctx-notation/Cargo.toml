@@ -1,0 +1,15 @@
+[package]
+name = "ctx-notation"
+description = "Bounded context Notation: partitura e tablatura (modelo, edição desfazível, auxílios, transposição e reprodução)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true

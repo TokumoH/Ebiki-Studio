@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Subconjunto GPIF (Guitar Pro 7) escrito à mão para testes de importação. -->
+<GPIF version="7">
+  <Score>
+    <Title><![CDATA[Riff de Teste]]></Title>
+    <Artist><![CDATA[Banda]]></Artist>
+    <Music><![CDATA[Compositora]]></Music>
+  </Score>
+  <MasterTrack>
+    <Tracks>0</Tracks>
+    <Automations>
+      <Automation><Type>Tempo</Type><Linear>false</Linear><Bar>0</Bar><Position>0</Position><Value>100 2</Value></Automation>
+      <Automation><Type>Tempo</Type><Linear>false</Linear><Bar>1</Bar><Position>0</Position><Value>140 2</Value></Automation>
+    </Automations>
+  </MasterTrack>
+  <Tracks>
+    <Track id="0">
+      <Name><![CDATA[Guitarra]]></Name>
+      <Staves>
+        <Staff>
+          <Properties>
+            <Property name="Tuning"><Pitches>40 45 50 55 59 64</Pitches></Property>
+            <Property name="CapoFret"><Fret>0</Fret></Property>
+          </Properties>
+        </Staff>
+      </Staves>
+      <Sounds><Sound><MIDI><LSB>0</LSB><MSB>0</MSB><Program>29</Program></MIDI></Sound></Sounds>
+      <MidiConnection><PrimaryChannel>0</PrimaryChannel></MidiConnection>
+    </Track>
+  </Tracks>
+  <MasterBars>
+    <MasterBar>
+      <Key><AccidentalCount>-1</AccidentalCount><Mode>Minor</Mode></Key>
+      <Time>4/4</Time>
+      <Repeat start="true" end="false" count="0"/>
+      <Bars>0</Bars>
+    </MasterBar>
+    <MasterBar>
+      <Key><AccidentalCount>-1</AccidentalCount><Mode>Minor</Mode></Key>
+      <Time>3/4</Time>
+      <Repeat start="false" end="true" count="3"/>
+      <Bars>1</Bars>
+    </MasterBar>
+  </MasterBars>
+  <Bars>
+    <Bar id="0"><Clef>G2</Clef><Voices>0 -1 -1 -1</Voices></Bar>
+    <Bar id="1"><Clef>G2</Clef><Voices>1 -1 -1 -1</Voices></Bar>
+  </Bars>
+  <Voices>
+    <Voice id="0"><Beats>0 1 2 3 4</Beats></Voice>
+    <Voice id="1"><Beats>5 6</Beats></Voice>
+  </Voices>
+  <Beats>
+    <Beat id="0"><Dynamic>F</Dynamic><Rhythm ref="0"/><Notes>0</Notes></Beat>
+    <Beat id="1"><Dynamic>F</Dynamic><Rhythm ref="0"/><Notes>1</Notes></Beat>
+    <Beat id="2"><Dynamic>F</Dynamic><Rhythm ref="1"/><Notes>2</Notes></Beat>
+    <Beat id="3"><Dynamic>F</Dynamic><Rhythm ref="1"/><Notes>3</Notes></Beat>
+    <Beat id="4"><Dynamic>F</Dynamic><Rhythm ref="1"/><Notes>4</Notes></Beat>
+    <Beat id="5"><Dynamic>MP</Dynamic><Rhythm ref="2"/><Notes>5 6</Notes></Beat>
+    <Beat id="6"><Dynamic>MP</Dynamic><Rhythm ref="3"/></Beat>
+  </Beats>
+  <Notes>
+    <Note id="0">
+      <Accent>8</Accent>
+      <Properties>
+        <Property name="String"><String>0</String></Property>
+        <Property name="Fret"><Fret>5</Fret></Property>
+        <Property name="PalmMuted"><Enable/></Property>
+      </Properties>
+    </Note>
+    <Note id="1">
+      <Properties>
+        <Property name="String"><String>1</String></Property>
+        <Property name="Fret"><Fret>5</Fret></Property>
+        <Property name="HopoOrigin"><Enable/></Property>
+      </Properties>
+    </Note>
+    <Note id="2">
+      <Properties>
+        <Property name="String"><String>1</String></Property>
+        <Property name="Fret"><Fret>3</Fret></Property>
+      </Properties>
+    </Note>
+    <Note id="3">
+      <Properties>
+        <Property name="String"><String>2</String></Property>
+        <Property name="Fret"><Fret>7</Fret></Property>
+        <Property name="Bended"><Enable/></Property>
+        <Property name="BendDestinationValue"><Float>100</Float></Property>
+      </Properties>
+      <Vibrato>Slight</Vibrato>
+    </Note>
+    <Note id="4">
+      <Tie origin="true" destination="false"/>
+      <Properties>
+        <Property name="String"><String>3</String></Property>
+        <Property name="Fret"><Fret>5</Fret></Property>
+      </Properties>
+    </Note>
+    <Note id="5">
+      <Tie origin="false" destination="true"/>
+      <LetRing/>
+      <Properties>
+        <Property name="String"><String>3</String></Property>
+        <Property name="Fret"><Fret>5</Fret></Property>
+        <Property name="HarmonicType"><HType>Natural</HType></Property>
+      </Properties>
+    </Note>
+    <Note id="6">
+      <Properties>
+        <Property name="String"><String>5</String></Property>
+        <Property name="Fret"><Fret>0</Fret></Property>
+        <Property name="Slide"><Flags>2</Flags></Property>
+      </Properties>
+    </Note>
+  </Notes>
+  <Rhythms>
+    <Rhythm id="0"><NoteValue>Quarter</NoteValue><AugmentationDot count="1"/></Rhythm>
+    <Rhythm id="1"><NoteValue>Eighth</NoteValue><PrimaryTuplet num="3" den="2"/></Rhythm>
+    <Rhythm id="2"><NoteValue>Half</NoteValue></Rhythm>
+    <Rhythm id="3"><NoteValue>Quarter</NoteValue></Rhythm>
+  </Rhythms>
+</GPIF>
