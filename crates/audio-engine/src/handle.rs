@@ -120,6 +120,11 @@ impl EngineHandle {
         &self.telemetry
     }
 
+    /// Quadro onde a gravação atual realmente começou (após contagem/punch).
+    pub fn snapshot_record_start(&self) -> Option<u64> {
+        self.telemetry.record_start()
+    }
+
     pub fn snapshot(&self) -> TelemetrySnapshot {
         self.telemetry.snapshot(self.slots)
     }

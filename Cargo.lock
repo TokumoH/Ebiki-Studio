@@ -37,12 +37,16 @@ dependencies = [
 name = "app-core"
 version = "0.1.0"
 dependencies = [
+ "audio-engine",
  "ctx-mixing",
  "ctx-project",
  "ctx-recording",
+ "hound",
+ "infra-persistence",
  "proptest",
  "serde",
  "shared-kernel",
+ "tempfile",
  "thiserror 2.0.21",
  "uuid",
 ]

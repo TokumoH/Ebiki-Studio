@@ -15,6 +15,7 @@ pub mod core;
 pub mod graph;
 pub mod handle;
 pub mod metronome;
+pub mod null_device;
 pub mod offline;
 pub mod recorder;
 pub mod telemetry;

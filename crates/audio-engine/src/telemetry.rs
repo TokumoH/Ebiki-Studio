@@ -76,6 +76,11 @@ impl Telemetry {
         self.position.load(Ordering::Relaxed)
     }
 
+    pub fn record_start(&self) -> Option<u64> {
+        let rs = self.record_start.load(Ordering::Acquire);
+        (rs != u64::MAX).then_some(rs)
+    }
+
     pub fn state(&self) -> TransportState {
         TransportState::from_u8(self.state.load(Ordering::Acquire))
     }
