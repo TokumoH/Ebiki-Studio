@@ -186,3 +186,124 @@ export const MixReport = z.object({
   advice: z.array(Advice),
 });
 export const PresetInfo = z.object({ id: z.string(), label: z.string() });
+
+// ---- Harmonia e bases (Fases 4–5; spec fase-5 §11.5) ----
+// Enumerações do núcleo (modos, gêneros, padrões) ficam como `string`: valores novos não quebram a UI.
+
+const PitchClassNum = z.number().int().min(0).max(11);
+export const HarmonyKey = z.object({ tonic: PitchClassNum, mode: z.string() });
+export const BaseKey = z.object({ tonic: PitchClassNum, mode: z.enum(["major", "minor"]) });
+export const BaseMeter = z.object({ numerator: z.number().int(), denominator: z.number().int() });
+
+export const HarmonyKeysCatalog = z.object({
+  tonics: z.array(z.object({ value: PitchClassNum, sharp: z.string(), flat: z.string() })),
+  modes: z.array(z.object({ mode: z.string(), code: z.string(), namePt: z.string(), isMinor: z.boolean() })),
+  genres: z.array(z.object({ genre: z.string(), code: z.string(), namePt: z.string() })),
+});
+
+const ChordLabel = z.object({ symbol: z.string(), roman: z.string() });
+export const HarmonicField = z.object({
+  key: HarmonyKey,
+  label: z.string(),
+  preferFlats: z.boolean(),
+  degrees: z.array(z.object({ degree: z.number().int(), triad: ChordLabel, seventh: ChordLabel })),
+});
+
+export const ProgressionRef = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("builtin"), slug: z.string() }),
+  z.object({ kind: z.literal("user"), id: z.string() }),
+  z.object({ kind: z.literal("roman"), steps: z.string(), mode: z.string(), beatsPerBar: z.number().int().optional() }),
+  z.object({ kind: z.literal("cifra"), chords: z.string(), beatsPerBar: z.number().int().optional() }),
+]);
+
+export const ProgressionView = z.object({
+  ref: ProgressionRef,
+  name: z.string(),
+  origin: z.enum(["builtin", "user"]),
+  mode: z.string(),
+  genres: z.array(z.string()),
+  universal: z.boolean(),
+  beatsPerBar: z.number().int(),
+  stepsText: z.string(),
+  roman: z.array(z.string()),
+  beats: z.array(z.number().int()),
+});
+export const ProgressionSuggestion = z.object({ progression: ProgressionView, score: z.number(), cifra: z.array(z.string()) });
+export const ChordSuggestion = z.object({ symbol: z.string(), roman: z.string(), score: z.number(), reason: z.string(), reasonLabel: z.string() });
+
+export const CompositionNoteEvent = z.object({
+  startTick: z.number().int(),
+  durationTicks: z.number().int(),
+  channel: z.number().int(),
+  program: z.number().int(),
+  key: z.number().int(),
+  velocity: z.number().int(),
+});
+
+export const Realization = z.object({
+  name: z.string(),
+  key: HarmonyKey,
+  bpm: z.number(),
+  beatsPerBar: z.number().int(),
+  totalTicks: z.number().int(),
+  chords: z.array(
+    z.object({ symbol: z.string(), startTick: z.number().int(), durationTicks: z.number().int(), notes: z.array(z.number().int()), bass: z.number().int().nullable() }),
+  ),
+  events: z.array(CompositionNoteEvent),
+});
+
+export const InsertedClip = z.object({
+  trackId: Id,
+  clipId: Id,
+  sourceId: Id,
+  relPath: z.string(),
+  frames: z.number().int(),
+  view: SessionView,
+});
+
+export const LibraryHistory = z.object({ canUndo: z.boolean(), canRedo: z.boolean(), undoLabel: z.string().nullable(), redoLabel: z.string().nullable() });
+
+const PatternOption = z.object({ value: z.string(), code: z.string(), namePt: z.string(), meterNumerator: z.number().int().nullable() });
+export const BaseOptions = z.object({
+  styles: z.array(PatternOption),
+  drums: z.array(PatternOption),
+  basses: z.array(PatternOption),
+  instruments: z.array(PatternOption),
+});
+
+export const BaseKindTag = z.enum(["bundledCc0", "generated", "userAudio"]);
+export const LibraryBaseKind = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("generated"), progression: z.string(), bars: z.number().int(), style: z.string(), drums: z.string(), bass: z.string() }),
+  z.object({ kind: z.literal("userAudio"), path: z.string(), progression: z.string().nullable() }),
+  z.object({ kind: z.literal("bundledCc0"), path: z.string(), progression: z.string().nullable() }),
+]);
+export const LibraryBase = z.object({
+  id: Id,
+  name: z.string(),
+  kind: LibraryBaseKind,
+  bpm: z.number(),
+  key: BaseKey.nullable(),
+  meter: BaseMeter,
+  genre: z.string().nullable(),
+  instruments: z.array(z.string()),
+  tags: z.array(z.string()),
+});
+
+export const GeneratedBase = z.object({
+  bpm: z.number(),
+  meter: BaseMeter,
+  totalTicks: z.number().int(),
+  recipeProgression: z.string(),
+  drums: z.string(),
+  bass: z.string(),
+  events: z.array(CompositionNoteEvent),
+});
+
+export const MismatchReport = z.object({ bpmRatio: z.number(), semitoneShift: z.number().int().nullable(), modeDiffers: z.boolean(), needsDecision: z.boolean() });
+export const BaseDecision = z.enum(["keep", "adapt"]);
+export const InsertBaseOutcome = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("needsDecision"), report: MismatchReport }),
+  z.object({ status: z.literal("inserted"), report: MismatchReport, decision: BaseDecision, clip: InsertedClip }),
+]);
+
+export const SynthStatus = z.object({ engine: z.enum(["soundfont", "simple"]), soundfontPath: z.string().nullable(), bankName: z.string().nullable(), presetCount: z.number().int() });

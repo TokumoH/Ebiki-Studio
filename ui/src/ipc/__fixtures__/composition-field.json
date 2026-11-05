@@ -1,0 +1,87 @@
+{
+  "degrees": [
+    {
+      "degree": 1,
+      "seventh": {
+        "roman": "Imaj7",
+        "symbol": "Cmaj7"
+      },
+      "triad": {
+        "roman": "I",
+        "symbol": "C"
+      }
+    },
+    {
+      "degree": 2,
+      "seventh": {
+        "roman": "ii7",
+        "symbol": "Dm7"
+      },
+      "triad": {
+        "roman": "ii",
+        "symbol": "Dm"
+      }
+    },
+    {
+      "degree": 3,
+      "seventh": {
+        "roman": "iii7",
+        "symbol": "Em7"
+      },
+      "triad": {
+        "roman": "iii",
+        "symbol": "Em"
+      }
+    },
+    {
+      "degree": 4,
+      "seventh": {
+        "roman": "IVmaj7",
+        "symbol": "Fmaj7"
+      },
+      "triad": {
+        "roman": "IV",
+        "symbol": "F"
+      }
+    },
+    {
+      "degree": 5,
+      "seventh": {
+        "roman": "V7",
+        "symbol": "G7"
+      },
+      "triad": {
+        "roman": "V",
+        "symbol": "G"
+      }
+    },
+    {
+      "degree": 6,
+      "seventh": {
+        "roman": "vi7",
+        "symbol": "Am7"
+      },
+      "triad": {
+        "roman": "vi",
+        "symbol": "Am"
+      }
+    },
+    {
+      "degree": 7,
+      "seventh": {
+        "roman": "viiø7",
+        "symbol": "Bm7(b5)"
+      },
+      "triad": {
+        "roman": "vii°",
+        "symbol": "Bdim"
+      }
+    }
+  ],
+  "key": {
+    "mode": "ionian",
+    "tonic": 0
+  },
+  "label": "C maior (jônio)",
+  "preferFlats": false
+}

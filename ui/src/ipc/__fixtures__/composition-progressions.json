@@ -1,0 +1,132 @@
+[
+  {
+    "cifra": [
+      "C",
+      "Am",
+      "F",
+      "G"
+    ],
+    "progression": {
+      "beats": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "beatsPerBar": 4,
+      "genres": [
+        "pop",
+        "rnbSoul",
+        "ballad"
+      ],
+      "mode": "ionian",
+      "name": "Anos 50 / doo-wop (I–vi–IV–V)",
+      "origin": "builtin",
+      "ref": {
+        "kind": "builtin",
+        "slug": "doo-wop"
+      },
+      "roman": [
+        "I",
+        "vi",
+        "IV",
+        "V"
+      ],
+      "stepsText": "I:4 vi:4 IV:4 V:4",
+      "universal": true
+    },
+    "score": 0.949999988079071
+  },
+  {
+    "cifra": [
+      "C",
+      "G/B",
+      "Am",
+      "C/G",
+      "F",
+      "C/E",
+      "Dm",
+      "G"
+    ],
+    "progression": {
+      "beats": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "beatsPerBar": 4,
+      "genres": [
+        "pop",
+        "mpb",
+        "gospel",
+        "ballad"
+      ],
+      "mode": "ionian",
+      "name": "Balada com baixo descendente",
+      "origin": "builtin",
+      "ref": {
+        "kind": "builtin",
+        "slug": "ballad-descending-bass"
+      },
+      "roman": [
+        "I",
+        "V/7",
+        "vi",
+        "I/5",
+        "IV",
+        "I/3",
+        "ii",
+        "V"
+      ],
+      "stepsText": "I:4 V/7:4 vi:4 I/5:4 IV:4 I/3:4 ii:4 V:4",
+      "universal": false
+    },
+    "score": 0.949999988079071
+  },
+  {
+    "cifra": [
+      "Cmaj7",
+      "Am7",
+      "Fmaj7",
+      "G7sus4",
+      "G7"
+    ],
+    "progression": {
+      "beats": [
+        4,
+        4,
+        4,
+        2,
+        2
+      ],
+      "beatsPerBar": 4,
+      "genres": [
+        "pop",
+        "gospel",
+        "ballad"
+      ],
+      "mode": "ionian",
+      "name": "Balada com suspensão",
+      "origin": "builtin",
+      "ref": {
+        "kind": "builtin",
+        "slug": "ballad-suspension"
+      },
+      "roman": [
+        "Imaj7",
+        "vi7",
+        "IVmaj7",
+        "V7sus4",
+        "V7"
+      ],
+      "stepsText": "Imaj7:4 vi7:4 IVmaj7:4 V7sus4:2 V7:2",
+      "universal": false
+    },
+    "score": 0.949999988079071
+  }
+]

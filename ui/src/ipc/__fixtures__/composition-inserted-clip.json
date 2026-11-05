@@ -1,0 +1,121 @@
+{
+  "clipId": "00000000-0000-7000-8000-000000000000",
+  "frames": 240000,
+  "relPath": "audio/generated/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.wav",
+  "sourceId": "00000000-0000-7000-8000-000000000001",
+  "trackId": "00000000-0000-7000-8000-000000000002",
+  "view": {
+    "buses": [],
+    "contentEndFrame": 240000,
+    "history": {
+      "canRedo": false,
+      "canUndo": true,
+      "dirty": true,
+      "redoLabel": null,
+      "undoLabel": "Inserir progressão"
+    },
+    "lyrics": {
+      "id": "00000000-0000-7000-8000-000000000003",
+      "lines": []
+    },
+    "master": {
+      "inserts": [],
+      "mute": false,
+      "output": {
+        "kind": "master"
+      },
+      "pan": 0.0,
+      "sends": [],
+      "solo": false,
+      "volume": 0.0
+    },
+    "project": {
+      "bitDepth": 24,
+      "id": "00000000-0000-7000-8000-000000000004",
+      "name": "Composição",
+      "root": "/home/usuario/Musica/Composicao",
+      "sampleRate": 48000
+    },
+    "recording": {
+      "latencyCompensationFrames": 0,
+      "loopRange": null,
+      "metronome": {
+        "accentFirstBeat": true,
+        "countInBars": 1,
+        "enabled": false,
+        "subdivision": 1,
+        "volume": 0.6000000238418579
+      },
+      "punch": null
+    },
+    "scores": [],
+    "sources": [
+      {
+        "channels": 2,
+        "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "id": "00000000-0000-7000-8000-000000000001",
+        "lengthFrames": 240000,
+        "originalName": "Progressão – Progressão.wav",
+        "relPath": "audio/generated/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.wav"
+      }
+    ],
+    "tempo": {
+      "meters": [
+        {
+          "denominator": 4,
+          "numerator": 4,
+          "tick": 0
+        }
+      ],
+      "tempos": [
+        {
+          "bpm": 120.0,
+          "tick": 0
+        }
+      ]
+    },
+    "tracks": [
+      {
+        "audible": true,
+        "clips": [
+          {
+            "endTick": 9600,
+            "gain": 0.0,
+            "id": "00000000-0000-7000-8000-000000000000",
+            "lengthFrames": 240000,
+            "offsetFrames": 0,
+            "sourceId": "00000000-0000-7000-8000-000000000001",
+            "sourceName": "Progressão – Progressão.wav",
+            "start": 0,
+            "startFrame": 0
+          }
+        ],
+        "id": "00000000-0000-7000-8000-000000000002",
+        "meterSlot": 0,
+        "name": "Progressão – Progressão",
+        "recording": {
+          "activeTake": null,
+          "armed": false,
+          "input": null,
+          "monitor": "off",
+          "takes": []
+        },
+        "strip": {
+          "inserts": [],
+          "mute": false,
+          "output": {
+            "kind": "master"
+          },
+          "pan": 0.0,
+          "sends": [],
+          "solo": false,
+          "volume": 0.0
+        }
+      }
+    ],
+    "tuning": {
+      "a4Hz": 440.0,
+      "maps": []
+    }
+  }
+}

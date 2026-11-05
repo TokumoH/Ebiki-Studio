@@ -1,0 +1,286 @@
+{
+  "basses": [
+    {
+      "code": "none",
+      "meterNumerator": null,
+      "namePt": "Sem baixo",
+      "value": "none"
+    },
+    {
+      "code": "root_whole",
+      "meterNumerator": null,
+      "namePt": "Fundamental (nota longa)",
+      "value": "rootWhole"
+    },
+    {
+      "code": "root_fifth",
+      "meterNumerator": null,
+      "namePt": "Fundamental e quinta",
+      "value": "rootFifth"
+    },
+    {
+      "code": "root_eighths",
+      "meterNumerator": null,
+      "namePt": "Fundamental em colcheias",
+      "value": "rootEighths"
+    },
+    {
+      "code": "bossa_root_fifth",
+      "meterNumerator": 4,
+      "namePt": "Bossa/samba (fundamental–quinta)",
+      "value": "bossaRootFifth"
+    },
+    {
+      "code": "reggae_one_drop",
+      "meterNumerator": 4,
+      "namePt": "Reggae",
+      "value": "reggaeOneDrop"
+    },
+    {
+      "code": "funk_syncopated",
+      "meterNumerator": 4,
+      "namePt": "Funk sincopado",
+      "value": "funkSyncopated"
+    },
+    {
+      "code": "waltz_root_fifth",
+      "meterNumerator": 3,
+      "namePt": "Valsa (fundamental/quinta por compasso)",
+      "value": "waltzRootFifth"
+    }
+  ],
+  "drums": [
+    {
+      "code": "none",
+      "meterNumerator": null,
+      "namePt": "Sem bateria",
+      "value": "none"
+    },
+    {
+      "code": "pop_rock",
+      "meterNumerator": 4,
+      "namePt": "Pop/rock",
+      "value": "popRock"
+    },
+    {
+      "code": "ballad",
+      "meterNumerator": 4,
+      "namePt": "Balada",
+      "value": "ballad"
+    },
+    {
+      "code": "bossa",
+      "meterNumerator": 4,
+      "namePt": "Bossa nova",
+      "value": "bossa"
+    },
+    {
+      "code": "samba",
+      "meterNumerator": 4,
+      "namePt": "Samba",
+      "value": "samba"
+    },
+    {
+      "code": "reggae_one_drop",
+      "meterNumerator": 4,
+      "namePt": "Reggae (one drop)",
+      "value": "reggae"
+    },
+    {
+      "code": "funk",
+      "meterNumerator": 4,
+      "namePt": "Funk",
+      "value": "funk"
+    },
+    {
+      "code": "waltz",
+      "meterNumerator": 3,
+      "namePt": "Valsa",
+      "value": "waltz"
+    },
+    {
+      "code": "guarania",
+      "meterNumerator": 3,
+      "namePt": "Guarânia",
+      "value": "guarania"
+    }
+  ],
+  "instruments": [
+    {
+      "code": "drums",
+      "meterNumerator": null,
+      "namePt": "Bateria",
+      "value": "drums"
+    },
+    {
+      "code": "percussion",
+      "meterNumerator": null,
+      "namePt": "Percussão",
+      "value": "percussion"
+    },
+    {
+      "code": "bass",
+      "meterNumerator": null,
+      "namePt": "Baixo",
+      "value": "bass"
+    },
+    {
+      "code": "acoustic_guitar",
+      "meterNumerator": null,
+      "namePt": "Violão de aço",
+      "value": "acousticGuitar"
+    },
+    {
+      "code": "nylon_guitar",
+      "meterNumerator": null,
+      "namePt": "Violão de nylon",
+      "value": "nylonGuitar"
+    },
+    {
+      "code": "electric_guitar",
+      "meterNumerator": null,
+      "namePt": "Guitarra",
+      "value": "electricGuitar"
+    },
+    {
+      "code": "cavaquinho",
+      "meterNumerator": null,
+      "namePt": "Cavaquinho",
+      "value": "cavaquinho"
+    },
+    {
+      "code": "viola_caipira",
+      "meterNumerator": null,
+      "namePt": "Viola caipira",
+      "value": "violaCaipira"
+    },
+    {
+      "code": "piano",
+      "meterNumerator": null,
+      "namePt": "Piano",
+      "value": "piano"
+    },
+    {
+      "code": "keys",
+      "meterNumerator": null,
+      "namePt": "Teclado / piano elétrico",
+      "value": "keys"
+    },
+    {
+      "code": "organ",
+      "meterNumerator": null,
+      "namePt": "Órgão",
+      "value": "organ"
+    },
+    {
+      "code": "synth",
+      "meterNumerator": null,
+      "namePt": "Sintetizador",
+      "value": "synth"
+    },
+    {
+      "code": "strings",
+      "meterNumerator": null,
+      "namePt": "Cordas",
+      "value": "strings"
+    },
+    {
+      "code": "brass",
+      "meterNumerator": null,
+      "namePt": "Metais",
+      "value": "brass"
+    },
+    {
+      "code": "woodwinds",
+      "meterNumerator": null,
+      "namePt": "Madeiras",
+      "value": "woodwinds"
+    },
+    {
+      "code": "accordion",
+      "meterNumerator": null,
+      "namePt": "Sanfona",
+      "value": "accordion"
+    },
+    {
+      "code": "pandeiro",
+      "meterNumerator": null,
+      "namePt": "Pandeiro",
+      "value": "pandeiro"
+    },
+    {
+      "code": "zabumba",
+      "meterNumerator": null,
+      "namePt": "Zabumba",
+      "value": "zabumba"
+    },
+    {
+      "code": "triangle",
+      "meterNumerator": null,
+      "namePt": "Triângulo",
+      "value": "triangle"
+    },
+    {
+      "code": "other",
+      "meterNumerator": null,
+      "namePt": "Outro",
+      "value": "other"
+    }
+  ],
+  "styles": [
+    {
+      "code": "pop_strum",
+      "meterNumerator": 4,
+      "namePt": "Pop – batida de violão",
+      "value": "popStrum"
+    },
+    {
+      "code": "ballad_arpeggio",
+      "meterNumerator": 4,
+      "namePt": "Balada – arpejo",
+      "value": "balladArpeggio"
+    },
+    {
+      "code": "bossa_comping",
+      "meterNumerator": 4,
+      "namePt": "Bossa nova – levada",
+      "value": "bossaComping"
+    },
+    {
+      "code": "samba_comping",
+      "meterNumerator": 4,
+      "namePt": "Samba – partido alto",
+      "value": "sambaComping"
+    },
+    {
+      "code": "rock_eighths",
+      "meterNumerator": 4,
+      "namePt": "Rock – colcheias",
+      "value": "rockEighths"
+    },
+    {
+      "code": "reggae_skank",
+      "meterNumerator": 4,
+      "namePt": "Reggae – skank",
+      "value": "reggaeSkank"
+    },
+    {
+      "code": "funk_stabs",
+      "meterNumerator": 4,
+      "namePt": "Funk – ataques",
+      "value": "funkStabs"
+    },
+    {
+      "code": "waltz",
+      "meterNumerator": 3,
+      "namePt": "Valsa (3/4)",
+      "value": "waltz"
+    },
+    {
+      "code": "guarania",
+      "meterNumerator": 3,
+      "namePt": "Guarânia / sertanejo (3/4)",
+      "value": "guarania"
+    }
+  ]
+}

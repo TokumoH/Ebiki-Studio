@@ -1,0 +1,253 @@
+{
+  "bass": "rootFifth",
+  "bpm": 90.0,
+  "drums": "popRock",
+  "events": [
+    {
+      "channel": 0,
+      "durationTicks": 960,
+      "key": 57,
+      "program": 25,
+      "startTick": 0,
+      "velocity": 100
+    },
+    {
+      "channel": 0,
+      "durationTicks": 960,
+      "key": 60,
+      "program": 25,
+      "startTick": 0,
+      "velocity": 100
+    },
+    {
+      "channel": 0,
+      "durationTicks": 960,
+      "key": 64,
+      "program": 25,
+      "startTick": 0,
+      "velocity": 100
+    },
+    {
+      "channel": 1,
+      "durationTicks": 1920,
+      "key": 45,
+      "program": 33,
+      "startTick": 0,
+      "velocity": 95
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 36,
+      "program": 0,
+      "startTick": 0,
+      "velocity": 110
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 0,
+      "velocity": 75
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 480,
+      "velocity": 75
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 57,
+      "program": 25,
+      "startTick": 960,
+      "velocity": 85
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 60,
+      "program": 25,
+      "startTick": 960,
+      "velocity": 85
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 64,
+      "program": 25,
+      "startTick": 960,
+      "velocity": 85
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 38,
+      "program": 0,
+      "startTick": 960,
+      "velocity": 110
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 960,
+      "velocity": 75
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 60,
+      "program": 25,
+      "startTick": 1440,
+      "velocity": 70
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 64,
+      "program": 25,
+      "startTick": 1440,
+      "velocity": 70
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 1440,
+      "velocity": 75
+    },
+    {
+      "channel": 1,
+      "durationTicks": 1920,
+      "key": 52,
+      "program": 33,
+      "startTick": 1920,
+      "velocity": 95
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 36,
+      "program": 0,
+      "startTick": 1920,
+      "velocity": 105
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 1920,
+      "velocity": 75
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 60,
+      "program": 25,
+      "startTick": 2400,
+      "velocity": 70
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 64,
+      "program": 25,
+      "startTick": 2400,
+      "velocity": 70
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 36,
+      "program": 0,
+      "startTick": 2400,
+      "velocity": 80
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 2400,
+      "velocity": 75
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 57,
+      "program": 25,
+      "startTick": 2880,
+      "velocity": 85
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 60,
+      "program": 25,
+      "startTick": 2880,
+      "velocity": 85
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 64,
+      "program": 25,
+      "startTick": 2880,
+      "velocity": 85
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 38,
+      "program": 0,
+      "startTick": 2880,
+      "velocity": 110
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 2880,
+      "velocity": 75
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 60,
+      "program": 25,
+      "startTick": 3360,
+      "velocity": 70
+    },
+    {
+      "channel": 0,
+      "durationTicks": 480,
+      "key": 64,
+      "program": 25,
+      "startTick": 3360,
+      "velocity": 70
+    },
+    {
+      "channel": 9,
+      "durationTicks": 240,
+      "key": 42,
+      "program": 0,
+      "startTick": 3360,
+      "velocity": 75
+    }
+  ],
+  "meter": {
+    "denominator": 4,
+    "numerator": 4
+  },
+  "recipeProgression": "i:4 VI:4",
+  "totalTicks": 3840
+}

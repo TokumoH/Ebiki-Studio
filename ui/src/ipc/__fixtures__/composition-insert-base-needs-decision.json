@@ -1,0 +1,9 @@
+{
+  "report": {
+    "bpmRatio": 1.3333333333333333,
+    "modeDiffers": true,
+    "needsDecision": true,
+    "semitoneShift": 0
+  },
+  "status": "needsDecision"
+}
