@@ -121,8 +121,10 @@ impl Peaks {
         }
         let buckets = buckets as usize;
         let mut floats = payload
-            .chunks_exact(4)
-            .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]));
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|c| f32::from_le_bytes(*c));
         let mut out = Vec::with_capacity(usize::from(channels));
         for _ in 0..channels {
             let min: Vec<f32> = floats.by_ref().take(buckets).collect();
