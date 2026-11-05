@@ -108,6 +108,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctx-harmony"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "serde_json",
+ "shared-kernel",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "ctx-library"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "serde_json",
+ "shared-kernel",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "ctx-mixing"
 version = "0.1.0"
 dependencies = [

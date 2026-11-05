@@ -1,0 +1,16 @@
+[package]
+name = "ctx-harmony"
+description = "Bounded context Harmony: escalas, modos, campos harmônicos, acordes, cifra/graus romanos, progressões, sugestões e realização de voicings."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
