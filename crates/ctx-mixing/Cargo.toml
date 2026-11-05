@@ -1,0 +1,16 @@
+[package]
+name = "ctx-mixing"
+description = "Bounded context Mixing: canais, buses, sends, efeitos, presets e auxílio de mixagem por regras."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true

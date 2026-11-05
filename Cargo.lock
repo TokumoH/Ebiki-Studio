@@ -108,6 +108,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctx-mixing"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "serde_json",
+ "shared-kernel",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
+name = "ctx-project"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "shared-kernel",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"

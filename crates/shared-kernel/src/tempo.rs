@@ -82,13 +82,23 @@ impl TempoMap {
         check_bpm(bpm)?;
         check_meter(numerator, denominator)?;
         Ok(Self {
-            tempos: vec![TempoEvent { tick: Tick::ZERO, bpm }],
-            meters: vec![MeterEvent { tick: Tick::ZERO, numerator, denominator }],
+            tempos: vec![TempoEvent {
+                tick: Tick::ZERO,
+                bpm,
+            }],
+            meters: vec![MeterEvent {
+                tick: Tick::ZERO,
+                numerator,
+                denominator,
+            }],
         })
     }
 
     /// Reconstrói a partir de eventos persistidos, validando todas as invariantes.
-    pub fn from_events(mut tempos: Vec<TempoEvent>, mut meters: Vec<MeterEvent>) -> Result<Self, TempoError> {
+    pub fn from_events(
+        mut tempos: Vec<TempoEvent>,
+        mut meters: Vec<MeterEvent>,
+    ) -> Result<Self, TempoError> {
         tempos.sort_by_key(|e| e.tick);
         meters.sort_by_key(|e| e.tick);
         let map = Self { tempos, meters };
@@ -137,12 +147,21 @@ impl TempoMap {
 
     /// BPM vigente em `tick`.
     pub fn bpm_at(&self, tick: Tick) -> f64 {
-        self.tempos.iter().rev().find(|e| e.tick <= tick).map_or(self.tempos[0].bpm, |e| e.bpm)
+        self.tempos
+            .iter()
+            .rev()
+            .find(|e| e.tick <= tick)
+            .map_or(self.tempos[0].bpm, |e| e.bpm)
     }
 
     /// Fórmula de compasso vigente em `tick`.
     pub fn meter_at(&self, tick: Tick) -> MeterEvent {
-        *self.meters.iter().rev().find(|e| e.tick <= tick).unwrap_or(&self.meters[0])
+        *self
+            .meters
+            .iter()
+            .rev()
+            .find(|e| e.tick <= tick)
+            .unwrap_or(&self.meters[0])
     }
 
     /// Insere ou substitui um evento de tempo. Retorna o evento anterior no mesmo tick, se houver.
@@ -163,17 +182,29 @@ impl TempoMap {
         if tick == Tick::ZERO {
             return Err(TempoError::CannotRemoveInitial);
         }
-        let i = self.tempos.binary_search_by_key(&tick, |e| e.tick).map_err(|_| TempoError::NotFound(tick.0))?;
+        let i = self
+            .tempos
+            .binary_search_by_key(&tick, |e| e.tick)
+            .map_err(|_| TempoError::NotFound(tick.0))?;
         Ok(self.tempos.remove(i))
     }
 
     /// Insere ou substitui uma mudança de compasso (precisa cair numa barra de compasso
     /// e não pode desalinhar mudanças posteriores).
-    pub fn set_meter(&mut self, tick: Tick, numerator: u8, denominator: u8) -> Result<Option<MeterEvent>, TempoError> {
+    pub fn set_meter(
+        &mut self,
+        tick: Tick,
+        numerator: u8,
+        denominator: u8,
+    ) -> Result<Option<MeterEvent>, TempoError> {
         check_tick(tick)?;
         check_meter(numerator, denominator)?;
         let mut candidate = self.meters.clone();
-        let ev = MeterEvent { tick, numerator, denominator };
+        let ev = MeterEvent {
+            tick,
+            numerator,
+            denominator,
+        };
         let previous = match candidate.binary_search_by_key(&tick, |e| e.tick) {
             Ok(i) => Some(std::mem::replace(&mut candidate[i], ev)),
             Err(i) => {
@@ -181,7 +212,10 @@ impl TempoMap {
                 None
             }
         };
-        let trial = Self { tempos: self.tempos.clone(), meters: candidate };
+        let trial = Self {
+            tempos: self.tempos.clone(),
+            meters: candidate,
+        };
         trial.validate()?;
         self.meters = trial.meters;
         Ok(previous)
@@ -191,10 +225,16 @@ impl TempoMap {
         if tick == Tick::ZERO {
             return Err(TempoError::CannotRemoveInitial);
         }
-        let i = self.meters.binary_search_by_key(&tick, |e| e.tick).map_err(|_| TempoError::NotFound(tick.0))?;
+        let i = self
+            .meters
+            .binary_search_by_key(&tick, |e| e.tick)
+            .map_err(|_| TempoError::NotFound(tick.0))?;
         let mut candidate = self.meters.clone();
         let removed = candidate.remove(i);
-        let trial = Self { tempos: self.tempos.clone(), meters: candidate };
+        let trial = Self {
+            tempos: self.tempos.clone(),
+            meters: candidate,
+        };
         trial.validate()?;
         self.meters = trial.meters;
         Ok(removed)
@@ -346,7 +386,10 @@ mod tests {
     fn set_tempo_replaces_and_remove_protects_initial() {
         let mut m = TempoMap::default();
         assert_eq!(m.set_tempo(Tick::ZERO, 90.0).unwrap().unwrap().bpm, 120.0);
-        assert_eq!(m.remove_tempo(Tick::ZERO), Err(TempoError::CannotRemoveInitial));
+        assert_eq!(
+            m.remove_tempo(Tick::ZERO),
+            Err(TempoError::CannotRemoveInitial)
+        );
         assert_eq!(m.remove_tempo(Tick(5)), Err(TempoError::NotFound(5)));
         assert!(m.set_tempo(Tick(10), 5.0).is_err());
         assert!(m.set_tempo(Tick(-1), 100.0).is_err());
@@ -357,9 +400,30 @@ mod tests {
     fn bar_beat_with_meter_change() {
         let mut m = TempoMap::default(); // 4/4: compasso = 3840 ticks
         m.set_meter(Tick(3840 * 2), 3, 4).unwrap(); // a partir do compasso 3, 3/4 (2880 ticks)
-        assert_eq!(m.bar_beat(Tick::ZERO), BarBeat { bar: 1, beat: 1, tick_in_beat: 0 });
-        assert_eq!(m.bar_beat(Tick(3840 + 960 + 10)), BarBeat { bar: 2, beat: 2, tick_in_beat: 10 });
-        assert_eq!(m.bar_beat(Tick(7680 + 2880)), BarBeat { bar: 4, beat: 1, tick_in_beat: 0 });
+        assert_eq!(
+            m.bar_beat(Tick::ZERO),
+            BarBeat {
+                bar: 1,
+                beat: 1,
+                tick_in_beat: 0
+            }
+        );
+        assert_eq!(
+            m.bar_beat(Tick(3840 + 960 + 10)),
+            BarBeat {
+                bar: 2,
+                beat: 2,
+                tick_in_beat: 10
+            }
+        );
+        assert_eq!(
+            m.bar_beat(Tick(7680 + 2880)),
+            BarBeat {
+                bar: 4,
+                beat: 1,
+                tick_in_beat: 0
+            }
+        );
         assert_eq!(m.bar_start(4), Tick(7680 + 2880));
         assert_eq!(m.bar_start(2), Tick(3840));
         assert_eq!(m.bar_start(1), Tick::ZERO);
@@ -369,16 +433,29 @@ mod tests {
     fn eighth_note_denominator() {
         let m = TempoMap::new(120.0, 6, 8).unwrap();
         assert_eq!(m.meter_at(Tick::ZERO).bar_ticks(), 2880);
-        assert_eq!(m.bar_beat(Tick(480 * 7)), BarBeat { bar: 2, beat: 2, tick_in_beat: 0 });
+        assert_eq!(
+            m.bar_beat(Tick(480 * 7)),
+            BarBeat {
+                bar: 2,
+                beat: 2,
+                tick_in_beat: 0
+            }
+        );
     }
 
     #[test]
     fn meter_must_land_on_bar_line_and_keep_later_changes_aligned() {
         let mut m = TempoMap::default();
-        assert_eq!(m.set_meter(Tick(100), 3, 4), Err(TempoError::MeterNotOnBarLine(100)));
+        assert_eq!(
+            m.set_meter(Tick(100), 3, 4),
+            Err(TempoError::MeterNotOnBarLine(100))
+        );
         m.set_meter(Tick(3840 * 2), 3, 4).unwrap();
         // mudar o compasso inicial para 3/4 desalinha a mudança no tick 7680 (7680 % 2880 != 0)
-        assert_eq!(m.set_meter(Tick::ZERO, 3, 4), Err(TempoError::MeterNotOnBarLine(7680)));
+        assert_eq!(
+            m.set_meter(Tick::ZERO, 3, 4),
+            Err(TempoError::MeterNotOnBarLine(7680))
+        );
         assert_eq!(m.meters()[0].numerator, 4, "estado não muda em erro");
         assert!(m.set_meter(Tick(0), 5, 3).is_err());
         assert_eq!(m.remove_meter(Tick(3840 * 2)).unwrap().numerator, 3);
@@ -387,12 +464,31 @@ mod tests {
     #[test]
     fn from_events_validates() {
         assert_eq!(
-            TempoMap::from_events(vec![TempoEvent { tick: Tick(10), bpm: 120.0 }], vec![]),
+            TempoMap::from_events(
+                vec![TempoEvent {
+                    tick: Tick(10),
+                    bpm: 120.0
+                }],
+                vec![]
+            ),
             Err(TempoError::MissingInitialEvent)
         );
         let ok = TempoMap::from_events(
-            vec![TempoEvent { tick: Tick(960), bpm: 90.0 }, TempoEvent { tick: Tick::ZERO, bpm: 120.0 }],
-            vec![MeterEvent { tick: Tick::ZERO, numerator: 4, denominator: 4 }],
+            vec![
+                TempoEvent {
+                    tick: Tick(960),
+                    bpm: 90.0,
+                },
+                TempoEvent {
+                    tick: Tick::ZERO,
+                    bpm: 120.0,
+                },
+            ],
+            vec![MeterEvent {
+                tick: Tick::ZERO,
+                numerator: 4,
+                denominator: 4,
+            }],
         )
         .unwrap();
         assert_eq!(ok.tempos()[0].tick, Tick::ZERO);

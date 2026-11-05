@@ -15,7 +15,10 @@ pub struct CommandError {
 
 impl CommandError {
     pub fn new(code: impl Into<String>, message: impl Into<String>) -> Self {
-        Self { code: code.into(), message: message.into() }
+        Self {
+            code: code.into(),
+            message: message.into(),
+        }
     }
 }
 
@@ -38,7 +41,10 @@ pub struct Composite<T> {
 
 impl<T> Composite<T> {
     pub fn new(label: impl Into<String>, steps: Vec<Box<dyn Command<T>>>) -> Self {
-        Self { label: label.into(), steps }
+        Self {
+            label: label.into(),
+            steps,
+        }
     }
 }
 
@@ -84,7 +90,12 @@ pub struct History<T> {
 
 impl<T> Default for History<T> {
     fn default() -> Self {
-        Self { undo: Vec::new(), redo: Vec::new(), next_revision: 1, saved_revision: 0 }
+        Self {
+            undo: Vec::new(),
+            redo: Vec::new(),
+            next_revision: 1,
+            saved_revision: 0,
+        }
     }
 }
 
@@ -111,13 +122,20 @@ impl<T> History<T> {
         let revision = self.next_revision;
         self.next_revision += 1;
         let label = command.label().to_owned();
-        self.undo.push(Entry { revision, gesture, label, commands: vec![command] });
+        self.undo.push(Entry {
+            revision,
+            gesture,
+            label,
+            commands: vec![command],
+        });
         Ok(())
     }
 
     /// Desfaz o último item. Retorna o rótulo desfeito.
     pub fn undo(&mut self, target: &mut T) -> Result<Option<String>, CommandError> {
-        let Some(mut entry) = self.undo.pop() else { return Ok(None) };
+        let Some(mut entry) = self.undo.pop() else {
+            return Ok(None);
+        };
         for c in entry.commands.iter_mut().rev() {
             c.revert(target)?;
         }
@@ -128,7 +146,9 @@ impl<T> History<T> {
 
     /// Refaz o último item desfeito.
     pub fn redo(&mut self, target: &mut T) -> Result<Option<String>, CommandError> {
-        let Some(mut entry) = self.redo.pop() else { return Ok(None) };
+        let Some(mut entry) = self.redo.pop() else {
+            return Ok(None);
+        };
         for c in entry.commands.iter_mut() {
             c.apply(target)?;
         }
@@ -265,7 +285,10 @@ mod tests {
     #[test]
     fn composite_is_atomic() {
         let mut v = 90;
-        let mut c = Composite::new("dois", vec![Box::new(Add(5)) as Box<dyn Command<i32>>, Box::new(Add(10))]);
+        let mut c = Composite::new(
+            "dois",
+            vec![Box::new(Add(5)) as Box<dyn Command<i32>>, Box::new(Add(10))],
+        );
         assert!(c.apply(&mut v).is_err());
         assert_eq!(v, 90, "passo 1 revertido quando o passo 2 falha");
     }
@@ -282,6 +305,9 @@ mod tests {
         h.undo(&mut v).unwrap();
         assert!(h.is_dirty());
         h.redo(&mut v).unwrap();
-        assert!(!h.is_dirty(), "refazer até o ponto salvo volta a ficar limpo");
+        assert!(
+            !h.is_dirty(),
+            "refazer até o ponto salvo volta a ficar limpo"
+        );
     }
 }

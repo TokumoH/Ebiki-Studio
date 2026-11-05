@@ -1,0 +1,15 @@
+[package]
+name = "ctx-project"
+description = "Bounded context Project: projeto, faixas, clipes, fontes de áudio e mapa de tempo."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true

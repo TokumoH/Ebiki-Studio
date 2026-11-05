@@ -6,7 +6,9 @@ use serde::{Deserialize, Serialize};
 pub const PPQ: i64 = 960;
 
 /// Posição musical em pulsos (1 semínima = [`PPQ`] ticks). Nunca negativa em posições válidas.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default, Serialize, Deserialize,
+)]
 #[serde(transparent)]
 pub struct Tick(pub i64);
 
@@ -121,7 +123,10 @@ pub struct AudioFormat {
 
 impl Default for AudioFormat {
     fn default() -> Self {
-        Self { sample_rate: SampleRate::HZ_48000, bit_depth: BitDepth::BITS_24 }
+        Self {
+            sample_rate: SampleRate::HZ_48000,
+            bit_depth: BitDepth::BITS_24,
+        }
     }
 }
 
@@ -141,7 +146,10 @@ mod tests {
         assert!(SampleRate::new(22_050).is_err());
         assert!(BitDepth::new(8).is_err());
         assert!(serde_json::from_str::<SampleRate>("12345").is_err());
-        assert_eq!(serde_json::from_str::<SampleRate>("96000").unwrap().hz(), 96_000);
+        assert_eq!(
+            serde_json::from_str::<SampleRate>("96000").unwrap().hz(),
+            96_000
+        );
     }
 
     #[test]

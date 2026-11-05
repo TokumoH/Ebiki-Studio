@@ -7,8 +7,12 @@ use serde::{Deserialize, Serialize};
 #[serde(try_from = "u8", into = "u8")]
 pub struct PitchClass(u8);
 
-const SHARP_NAMES: [&str; 12] = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const FLAT_NAMES: [&str; 12] = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+const SHARP_NAMES: [&str; 12] = [
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+];
+const FLAT_NAMES: [&str; 12] = [
+    "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B",
+];
 
 impl PitchClass {
     pub fn new(v: u8) -> Option<Self> {
@@ -30,7 +34,11 @@ impl PitchClass {
     }
 
     pub fn name(self, prefer_flats: bool) -> &'static str {
-        if prefer_flats { FLAT_NAMES[self.0 as usize] } else { SHARP_NAMES[self.0 as usize] }
+        if prefer_flats {
+            FLAT_NAMES[self.0 as usize]
+        } else {
+            SHARP_NAMES[self.0 as usize]
+        }
     }
 
     /// Lê "C", "C#", "Db", "Bb", "E#"… (case-insensitive na letra).
