@@ -1,0 +1,9 @@
+[package]
+name = "synth"
+description = "Pure Fabrication: síntese General MIDI offline (sintetizador simples embutido; SoundFont opcional)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true

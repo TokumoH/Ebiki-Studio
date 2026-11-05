@@ -2,6 +2,8 @@
 
 pub mod dsp_factory;
 pub mod media;
+pub mod synth;
 
 pub use dsp_factory::DspProcessorFactory;
 pub use media::CodecsMedia;
+pub use synth::SynthRenderer;

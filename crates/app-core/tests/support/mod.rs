@@ -120,6 +120,7 @@ pub fn studio() -> Studio {
         media: Arc::new(WavMedia),
         factory: Arc::new(HalfGainFactory),
         clock: Arc::new(FakeClock(AtomicI64::new(1_000))),
+        synth: Arc::new(SilentSynth),
     })
 }
 
@@ -136,4 +137,28 @@ pub fn dc_wav(dir: &Path, name: &str, value: f32, frames: usize) -> PathBuf {
     let p = dir.join(name);
     write_wav(&p, vec![vec![value; frames], vec![value; frames]]);
     p
+}
+
+/// Sintetizador de teste: um quadro de silêncio por tick de duração total (determinístico).
+pub struct SilentSynth;
+impl MidiRenderer for SilentSynth {
+    fn render(
+        &self,
+        events: &[MidiNoteEvent],
+        tempo: &shared_kernel::TempoMap,
+        sr: u32,
+        tail: f64,
+    ) -> Result<SourceBuffer, PortError> {
+        let end = events
+            .iter()
+            .map(|e| e.start_tick + e.duration_ticks)
+            .max()
+            .unwrap_or(0);
+        let n = (tempo.tick_to_seconds(shared_kernel::Tick(end)) + tail)
+            .mul_add(sr as f64, 0.0)
+            .ceil() as usize;
+        Ok(SourceBuffer {
+            channels: vec![vec![0.0; n], vec![0.0; n]],
+        })
+    }
 }

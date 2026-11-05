@@ -84,7 +84,11 @@ fn pitch_corrector_does_not_allocate() {
 fn strict<R>(f: impl FnOnce() -> R) -> R {
     reset_violation_count();
     let r = assert_no_alloc(f);
-    assert_eq!(violation_count(), 0, "alocação detectada em código de tempo real");
+    assert_eq!(
+        violation_count(),
+        0,
+        "alocação detectada em código de tempo real"
+    );
     r
 }
 

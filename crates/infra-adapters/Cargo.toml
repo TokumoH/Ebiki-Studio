@@ -11,6 +11,7 @@ ctx-mixing.workspace = true
 app-core.workspace = true
 audio-engine.workspace = true
 dsp = { path = "../dsp" }
+synth = { path = "../synth" }
 infra-codecs = { path = "../infra-codecs" }
 
 [dev-dependencies]

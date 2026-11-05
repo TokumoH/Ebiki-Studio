@@ -126,6 +126,31 @@ pub trait ProcessorFactory: Send + Sync {
     fn create(&self, effect: &Effect, sample_rate: u32) -> Box<dyn AudioProcessor>;
 }
 
+/// Nota MIDI temporizada em ticks (resultado de harmonia, bases geradas ou partitura).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MidiNoteEvent {
+    pub start_tick: i64,
+    pub duration_ticks: i64,
+    /// 0–15 (9 = percussão General MIDI).
+    pub channel: u8,
+    /// Programa General MIDI 0–127.
+    pub program: u8,
+    pub key: u8,
+    pub velocity: u8,
+}
+
+/// Sintetizador (SoundFont/General MIDI): transforma notas em áudio na taxa do projeto.
+pub trait MidiRenderer: Send + Sync {
+    fn render(
+        &self,
+        events: &[MidiNoteEvent],
+        tempo: &shared_kernel::TempoMap,
+        sample_rate: u32,
+        tail_seconds: f64,
+    ) -> Result<SourceBuffer, PortError>;
+}
+
 /// Relógio (para carimbos de tempo testáveis).
 pub trait Clock: Send + Sync {
     fn now_unix(&self) -> i64;

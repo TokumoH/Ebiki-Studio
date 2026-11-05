@@ -2064,6 +2064,7 @@ dependencies = [
  "infra-codecs",
  "infra-persistence",
  "shared-kernel",
+ "synth",
  "tempfile",
 ]
 
@@ -4270,6 +4271,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 3.0.9",
+]
+
+[[package]]
+name = "synth"
+version = "0.1.0"
+dependencies = [
+ "shared-kernel",
 ]
 
 [[package]]

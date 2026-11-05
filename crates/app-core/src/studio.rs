@@ -74,6 +74,7 @@ pub struct StudioDeps {
     pub media: Arc<dyn MediaPort>,
     pub factory: Arc<dyn ProcessorFactory>,
     pub clock: Arc<dyn Clock>,
+    pub synth: Arc<dyn MidiRenderer>,
 }
 
 struct OpenProject {

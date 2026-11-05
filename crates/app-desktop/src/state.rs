@@ -21,6 +21,7 @@ impl AppState {
             media: Arc::new(CodecsMedia),
             factory: Arc::new(DspProcessorFactory),
             clock: Arc::new(SystemClock),
+            synth: Arc::new(infra_adapters::SynthRenderer),
         };
         Self {
             studio: Mutex::new(Studio::new(deps)),
