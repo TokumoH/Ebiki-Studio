@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [branchTrabalho, main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  rust:
+    name: Rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Dependências do sistema (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libasound2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev
+      - name: Placeholder do frontend (o app Tauri exige ui/dist)
+        shell: bash
+        run: mkdir -p ui/dist && echo '<!doctype html><title>AppMusica</title>' > ui/dist/index.html
+      - name: Formatação
+        if: runner.os == 'Linux'
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Testes (unitários, integração, simulação, não-alocação)
+        run: cargo test --workspace
+      - name: Testes de desempenho DSP (release)
+        if: runner.os == 'Linux'
+        run: cargo test --release -p dsp --test performance
+      - name: Contrato IPC atualizado
+        if: runner.os == 'Linux'
+        run: |
+          cargo test -p app-core --test contract_fixtures
+          git diff --exit-code -- ui/src/ipc/__fixtures__
+
+  ui:
+    name: UI (tipos, unitários, E2E)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+      - run: npm ci
+      - run: npx tsc -b --noEmit
+      - run: npx vitest run
+      - run: npx vite build
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --trace off
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: ui/test-results
