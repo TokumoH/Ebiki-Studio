@@ -294,9 +294,8 @@ impl TempoMap {
         let t = tick.0.max(0);
         let mut bar_base = 0i64;
         for (i, m) in self.meters.iter().enumerate() {
-            let seg_end = self.meters.get(i + 1).map(|n| n.tick.0);
-            if seg_end.is_some_and(|e| t >= e) {
-                bar_base += (seg_end.unwrap() - m.tick.0) / m.bar_ticks();
+            if let Some(end) = self.meters.get(i + 1).map(|n| n.tick.0).filter(|e| t >= *e) {
+                bar_base += (end - m.tick.0) / m.bar_ticks();
                 continue;
             }
             let rel = t - m.tick.0;

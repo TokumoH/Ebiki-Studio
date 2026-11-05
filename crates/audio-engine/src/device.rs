@@ -295,7 +295,14 @@ fn open_streams(
                     in_buf[avail..want].fill(0.0);
                     n_in = want;
                 }
-                core.process(data, out_ch, &in_buf[..n_in], in_ch);
+                // um pânico aqui encerraria o stream: em caso de falha, silêncio + registro
+                let ok = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    core.process(data, out_ch, &in_buf[..n_in], in_ch);
+                }));
+                if ok.is_err() {
+                    data.fill(0.0);
+                    tel_out.add_xrun();
+                }
                 let budget = frames as f64 / sr;
                 if started.elapsed().as_secs_f64() > budget * 0.9 {
                     tel_out.add_xrun();

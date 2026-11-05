@@ -666,7 +666,7 @@ impl Studio {
                 .session
                 .recording
                 .armed_tracks()
-                .map(|(id, t)| (id, t.input.unwrap()))
+                .filter_map(|(id, t)| t.input.map(|i| (id, i)))
                 .collect();
             (
                 op.root.clone(),
