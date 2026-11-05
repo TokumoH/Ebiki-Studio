@@ -833,6 +833,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctx-sync"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "serde_json",
+ "shared-kernel",
+ "thiserror 2.0.21",
+ "uuid",
+]
+
+[[package]]
+name = "ctx-tuning"
+version = "0.1.0"
+dependencies = [
+ "proptest",
+ "serde",
+ "serde_json",
+ "shared-kernel",
+ "thiserror 2.0.21",
+ "uuid",
+]
+
+[[package]]
 name = "darling"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1058,6 +1082,15 @@ dependencies = [
 
 [[package]]
 name = "dsp"
+version = "0.1.0"
+dependencies = [
+ "assert_no_alloc",
+ "proptest",
+ "shared-kernel",
+]
+
+[[package]]
+name = "dsp-pitch"
 version = "0.1.0"
 dependencies = [
  "assert_no_alloc",

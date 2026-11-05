@@ -1,0 +1,16 @@
+[package]
+name = "ctx-sync"
+description = "Bounded context Sync: letra sincronizada por palavra/sílaba (LRC/SRT), sessão de sincronização por toque e mapa de warp para time-stretch."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
