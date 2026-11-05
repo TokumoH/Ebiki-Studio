@@ -271,13 +271,32 @@ impl Studio {
     pub fn score_import(&mut self, path: &Path) -> AppResult<ScoreImportResult> {
         self.op()?;
         let bytes = read_limited(path, MAX_SCORE_FILE_BYTES)?;
-        let imported = infra_notation_io::import_any(&bytes).map_err(io_notation)?;
+        let stem = path
+            .file_stem()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        self.score_import_bytes(&bytes, &stem)
+    }
+
+    /// Importa bytes já lidos pela UI (ex.: GP3–GP6 convertidos para GP7 pelo alphaTab —
+    /// ADR-0020). `name` é o título usado quando o arquivo não traz um.
+    pub fn score_import_bytes(&mut self, bytes: &[u8], name: &str) -> AppResult<ScoreImportResult> {
+        self.op()?;
+        if bytes.len() as u64 > MAX_SCORE_FILE_BYTES {
+            return Err(AppError::new(
+                "app.file_too_large",
+                "Arquivo de partitura grande demais (máximo de 32 MiB).",
+            ));
+        }
+        let imported = infra_notation_io::import_any(bytes).map_err(io_notation)?;
         let mut score = imported.score;
         if score.title.trim().is_empty() {
-            score.title = path
-                .file_stem()
-                .map(|s| s.to_string_lossy().chars().take(120).collect())
-                .unwrap_or_else(|| "Partitura importada".to_owned());
+            let clean: String = name.chars().filter(|c| !c.is_control()).take(120).collect();
+            score.title = if clean.trim().is_empty() {
+                "Partitura importada".to_owned()
+            } else {
+                clean.trim().to_owned()
+            };
         }
         let (id, view) = self.add_score(score, "Importar partitura")?;
         Ok(ScoreImportResult {
@@ -285,6 +304,12 @@ impl Studio {
             warnings: imported.warnings,
             view,
         })
+    }
+
+    /// MusicXML (texto) da partitura, para o renderizador da UI (alphaTab) e a impressão em PDF.
+    pub fn score_musicxml(&self, id: ScoreId) -> AppResult<String> {
+        let s = self.op()?.session.scores.get(id).map_err(cmd_err)?;
+        Ok(infra_notation_io::musicxml::export_musicxml(s))
     }
 
     /// Exporta para `path` (escrita atômica).

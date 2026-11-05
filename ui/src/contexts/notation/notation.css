@@ -1,0 +1,42 @@
+.notation { display: grid; grid-template-columns: 200px minmax(0, 1fr); height: 100%; min-height: 0; }
+.notation-side { border-right: 1px solid var(--line); padding: var(--space-2); display: flex; flex-direction: column; gap: var(--space-2); overflow-y: auto; min-width: 0; background: var(--bg-raised); }
+.notation-side .col { display: flex; flex-direction: column; gap: var(--space-1); }
+.notation-side .hint, .notation-main .hint { color: var(--fg-muted); font-size: var(--text-xs); margin: 0; }
+.score-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.score-list button { width: 100%; text-align: left; background: none; border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--fg); padding: var(--space-1) var(--space-2); cursor: pointer; display: flex; flex-direction: column; min-width: 0; }
+.score-list button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.score-list button small { color: var(--fg-muted); font-size: var(--text-xs); }
+.score-list button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.notation-main { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-2); overflow-y: auto; overflow-x: hidden; min-width: 0; }
+.notation-toolbar { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; min-width: 0; }
+.tool-group { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; padding-right: var(--space-2); border-right: 1px solid var(--line); min-width: 0; }
+.tool-group:last-child { border-right: 0; }
+.btn.dur { min-width: 26px; font-size: 15px; }
+.btn.dur[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.sel-sm { height: 22px; font-size: var(--text-xs); max-width: 150px; }
+.mini { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); color: var(--fg-muted); }
+.input.num { width: 52px; height: 22px; }
+.notation-status { font-size: var(--text-xs); color: var(--fg-muted); background: var(--bg-sunken); border-radius: var(--radius-sm); padding: 4px var(--space-2); overflow-wrap: anywhere; }
+.notation-editor { border: 1px solid var(--line); border-radius: var(--radius); outline: none; display: flex; flex-direction: column; min-width: 0; }
+.notation-editor:focus-visible, .notation-editor:focus { border-color: var(--accent); box-shadow: var(--focus); }
+.event-strip { list-style: none; margin: 0; padding: var(--space-1); display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--line); }
+.event-strip button { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--fg); font-family: var(--font-mono); font-size: var(--text-xs); padding: 1px 6px; cursor: pointer; }
+.event-strip button[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.score-paper { position: relative; background: #fff; color: #111; min-height: 120px; overflow-x: auto; overflow-y: hidden; border-radius: 0 0 var(--radius) var(--radius); }
+.score-at { position: relative; }
+.score-cursor { position: absolute; background: rgba(229, 154, 60, 0.28); border: 1px solid #e59a3c; border-radius: 2px; pointer-events: none; }
+.score-error { color: #a12; margin: var(--space-2); font-size: var(--text-sm); }
+.score-report { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-2); font-size: var(--text-sm); }
+.score-report ul { margin: var(--space-1) 0 0; padding-left: var(--space-4); }
+.score-report button { background: none; border: 0; color: var(--fg); cursor: pointer; padding: 0; text-align: left; }
+.score-report button:hover { color: var(--accent); }
+.instruments { border: 1px solid var(--line); border-radius: var(--radius-sm); display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.instruments legend { font-size: var(--text-xs); color: var(--fg-muted); text-transform: uppercase; }
+
+/* Impressão / PDF: só a partitura (window.print; "Salvar como PDF" no diálogo do sistema) */
+@media print {
+  html.printing-score body * { visibility: hidden !important; }
+  html.printing-score .score-paper, html.printing-score .score-paper * { visibility: visible !important; }
+  html.printing-score .score-paper { position: fixed; left: 0; top: 0; width: 100%; overflow: visible; }
+  html.printing-score .score-cursor { display: none; }
+}

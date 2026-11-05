@@ -2,6 +2,7 @@
 // Simula as regras visíveis (histórico, mixer, transporte, medidores); não processa áudio.
 import type { Transport } from "./transport";
 import type { ChannelStrip, SessionView, StripEdit, StripTarget, Track, TransportView, MetersView } from "./types";
+import { emptyMusicView, musicHandlers } from "./mockMusic";
 
 const PPQ = 960;
 const SR_DEFAULT = 48_000;
@@ -136,6 +137,7 @@ export function createMockTransport(): Transport {
       },
       history: { canUndo: false, canRedo: false, undoLabel: null, redoLabel: null, dirty: false },
       contentEndFrame: 0,
+      ...emptyMusicView(uuid),
     };
   }
 
@@ -375,6 +377,10 @@ export function createMockTransport(): Transport {
     export_stems: (a) => s().tracks.map((t, i) => `${a.dir}/${String(i + 1).padStart(2, "0")} - ${t.name}.wav`),
   };
 
+  // Fases 6–8 (partituras, letra, afinação): ver mockMusic.ts
+  const music = musicHandlers({ s, mutate, view, fail, sr, uuid });
+  Object.assign(handlers, music.handlers);
+
   function labelOf(e: StripEdit): string {
     const labels: Record<string, string> = { volume: "Volume", pan: "Pan", mute: "Mute", solo: "Solo", addEffect: "Adicionar efeito", removeEffect: "Remover efeito", moveEffect: "Reordenar efeito", setEffect: "Ajustar efeito", bypass: "Bypass de efeito", output: "Saída do canal", addSend: "Adicionar envio", removeSend: "Remover envio", sendLevel: "Nível do envio" };
     return labels[e.op] ?? e.op;
@@ -389,6 +395,8 @@ export function createMockTransport(): Transport {
       return h(args) as T;
     },
     async invokeBinary(cmd, args = {}) {
+      const mb = music.binary(cmd, args);
+      if (mb) return mb;
       if (cmd !== "waveform_peaks") throw { code: "ui.unknown_command", message: cmd };
       const src = s().sources.find((x) => x.id === args.sourceId) ?? fail("app.source_unavailable", "Áudio indisponível.");
       const fpp = Number(args.framesPerPeak) || 256;

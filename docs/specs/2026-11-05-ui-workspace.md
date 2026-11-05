@@ -119,3 +119,71 @@ flowchart TB
 2. Contrato IPC validado contra fixtures geradas pelo Rust (Vitest).
 3. Nenhum contexto importa outro contexto (teste de arquitetura).
 4. Fluxo E2E simulado: criar projeto → importar → mixar → desfazer → salvar.
+
+## 7. Mockups — Partitura, Letra, Afinação
+
+Painéis da área inferior (contextos `notation`, `sync`, `tuning`); cada um rola por dentro e não
+estoura em 1280×720. Comandos IPC: seção 10 das specs das Fases 7 e 6–8.
+
+### 7.1 Partitura (`contexts/notation/ScorePanel`)
+
+```
+┌ Partituras ───────┬───────────────────────────────────────────────────────────────────────┐
+│ ▸ Estudo      2p  │ [𝅝][𝅗𝅥][♩][♪][𝅘𝅥𝅯] [·] [𝄽 pausa] │ [>][.][−][^] │ dyn [mf▾] │ [⁀ lig.] │ corda [ ] traste [ ] │
+│   Riff (GP)   1p  │ Tom [Sol ▾ maior] Compasso [4/4] [+ compasso] [Transpor…] [Completar pausas] │
+│                   │ Parte [Voz ▾]  Voz [1▾]   ▶ Ouvir ■   ⤓ Para faixa   ✓ Validar        │
+│ [+ Nova]          │ ─────────────────────────────────────────────────────────────────────── │
+│ [Importar…]       │ Comp. 1 · voz 1 · evento 2/4 — Sol4 semínima (staccato, mf)            │
+│ [Exportar ▾]      │ ┌───────────────────── alphaTab (pauta + tablatura) ──────────────────┐ │
+│ [Imprimir/PDF]    │ │ 𝄞 ♯ 4/4 │ ♩ ♩ ▮♩▮ 𝄽 │ 𝅝      │ …                                   │ │
+│ [Excluir]         │ │ T  ─0───2────────   │                                                │ │
+│                   │ └──────────────────────────────────────────────────────────────────────┘ │
+│                   │ Validação: comp. 1 voz 1 faltam 3/4 · Fá4 fora da escala (comp. 2)      │
+└───────────────────┴───────────────────────────────────────────────────────────────────────┘
+Teclado (foco na partitura): A–G nota · 0 pausa · 1–7 duração (5 = semínima, estilo MuseScore)
+· . ponto · ←/→ evento · ↑/↓ semitom (Ctrl = oitava) · + ligadura · Delete remove.
+```
+
+### 7.2 Letra (`contexts/sync/LyricsPanel`)
+
+```
+┌ Texto ─────────────────────┬ Sílabas (clique seleciona; granularidade [sílaba|palavra|linha]) ─┐
+│ ┌────────────────────────┐ │ 1  [Can- 1.1][to 1.2] [a- 1.3][qui 1.4]                            │
+│ │Canto aqui              │ │ 2  [ou- —][tra —] [li- —][nha —]                                   │
+│ │outra linha             │ │ ───────────────────────────────────────────────────────────────── │
+│ └────────────────────────┘ │ Seleção: "qui"  Início [ 3.000 ] tempo  Fim [ 4.000 ]  [← cursor]  │
+│ [Aplicar texto]            │ [Definir] [Limpar] Deslocar daqui ao fim [ +0.5 ] tempos [Aplicar] │
+│                            │ ┌ Sincronizar por toque ─────────────────────────────────────────┐ │
+│ Exportar [LRC sílaba ▾]    │ │ [Iniciar] Espaço = próxima unidade · ⌫ desfaz · Enter conclui  │ │
+│ [Exportar…] [Importar…]    │ │ 3/8 toques ▮▮▮▯▯▯▯▯  próxima: "a-"                              │ │
+└────────────────────────────┴─┴────────────────────────────────────────────────────────────────┴─┘
+```
+
+### 7.3 Afinação (`contexts/tuning/TuningPanel`)
+
+```
+┌ [Afinador] [Editor de afinação] ───────────────────────────────────────────────────────────┐
+│ Afinador                                │ Editor (clipe selecionado: voz.wav)                │
+│ Entrada [1 ▾]  Lá4 [440] Hz  [Ligar]    │ [Analisar] [Corrigir tudo] [Aplicar] [Limpar]      │
+│        ╭──────────────╮                 │ [Time-stretch…]  Escala [ ] Tom [Dó▾] [Maior▾]     │
+│       ╱   -50  0  +50  ╲                │ retune [50] ms  humanizar [0.0]                    │
+│           ╲  |          A4              │ ┌ piano-roll ──────────────────────────────────┐   │
+│        +12 cents · 443,1 Hz             │ │C5 ─────────────────────────────────────────── │   │
+│        (verde quando |cents| < 5)       │ │B4      ▭▭▭(detectada)  ▬▬▬(alvo, arrastar ↕)  │   │
+│                                         │ │A4 ▬▬▬▬            ▬▬▬▬▬                       │   │
+│                                         │ └──────────────────────────────────────────────┘   │
+│                                         │ Nota 2: Lá4 +46 c → Lá4 · achatar [====  ] 0.5     │
+└─────────────────────────────────────────┴────────────────────────────────────────────────────┘
+Arrastar ↕ = semitons (Shift = cents finos). ↑/↓ no teclado com a nota focada. Aplicar gera fonte
+nova (um desfazer). Time-stretch: BPM de origem → andamento do projeto (diálogo).
+```
+
+### 7.4 Correção de afinação no mixer (insert `pitchCorrector`)
+
+```
+┌ Correção de afinação ─────────────── [Bypass] [Remover] ┐
+│ [x] Ativo   Tônica [Sol ▾]   Escala [Maior] [Menor] [Cromática] │
+│ [C][C#][D][D#][E][F][F#][G][G#][A][A#][B]  (12 classes)  │
+│ Retune ──●──── 20 ms   Humanizar ●────── 0.00   Lá4 ──●── 440 Hz │
+└──────────────────────────────────────────────────────────┘
+```

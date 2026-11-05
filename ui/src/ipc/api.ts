@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as S from "./schema";
 import { transport } from "./transport";
 import type { ExportSettings, StripEdit, StripTarget, InputAssignment, MonitorMode, Metronome } from "./types";
+import type { Granularity, LyricUnit, LyricsFileFormat, NoteEdit, ScaleCorrection, ScoreEdit, ScoreExportFormat, ScoreTemplate, SyllableRef, VoiceEdit, VoiceLoc } from "./types";
 
 export class ApiFailure extends Error {
   constructor(
@@ -106,3 +107,61 @@ export const api = {
 };
 
 export type Api = typeof api;
+
+// ------------------------------------------------------------------------------------------------
+// Música (Fases 6–8): partituras, letra, afinação, afinador e time-stretch (commands_music.rs).
+
+async function binary(cmd: string, args?: Record<string, unknown>): Promise<ArrayBuffer> {
+  try {
+    return await transport().invokeBinary(cmd, args);
+  } catch (e) {
+    throw toFailure(e);
+  }
+}
+
+const gest = (g?: number) => g ?? null;
+
+export const musicApi = {
+  // partituras
+  scoreList: () => call(S.ScoreSummary.array(), "score_list"),
+  scoreCreate: (req: ScoreTemplate) => call(S.ScoreCreated, "score_create", { req }),
+  scoreCreateFromChords: (req: { title: string; meterNumerator: number; meterDenominator: number; keyFifths?: number; keyMode?: "major" | "minor"; slots: { startTick: number; durationTicks: number; notes: number[] }[] }) =>
+    call(S.ScoreCreated, "score_create_from_chords", { req }),
+  scoreGet: (scoreId: string) => call(S.Score, "score_get", { scoreId }),
+  scoreMusicXml: (scoreId: string) => call(z.string(), "score_musicxml", { scoreId }),
+  scoreDelete: (scoreId: string) => call(Session, "score_delete", { scoreId }),
+  scoreEditVoice: (scoreId: string, loc: VoiceLoc, edit: VoiceEdit, gesture?: number) => call(Session, "score_edit_voice", { req: { scoreId, loc, edit, gesture: gest(gesture) } }),
+  scoreEdit: (scoreId: string, edit: ScoreEdit) => call(Session, "score_edit", { req: { scoreId, edit } }),
+  scoreImport: (path: string) => call(S.ScoreImportResult, "score_import", { path }),
+  /** Bytes lidos na UI (GP3–GP6 já convertidos para GP7 pelo alphaTab — ADR-0020). */
+  scoreImportBytes: (name: string, bytes: Uint8Array) => call(S.ScoreImportResult, "score_import_bytes", { req: { name, bytes: Array.from(bytes) } }),
+  scoreExport: (scoreId: string, path: string, format: ScoreExportFormat) => call(Void, "score_export", { req: { scoreId, path, format } }),
+  /** WAV float 32 em memória (para `AudioContext.decodeAudioData`). */
+  scoreAudition: (scoreId: string) => binary("score_audition", { scoreId }),
+  scoreRenderToTrack: (scoreId: string, trackId: string | null, atTick = 0) => call(Session, "score_render_to_track", { req: { scoreId, trackId, atTick } }),
+  scoreValidate: (scoreId: string, scale: number[] | null) => call(S.ScoreReport, "score_validate", { req: { scoreId, scale } }),
+  // letra
+  lyricsSetText: (text: string) => call(Session, "lyrics_set_text", { text }),
+  lyricsSetSpan: (unit: LyricUnit, start: number, end: number, gesture?: number) => call(Session, "lyrics_set_span", { req: { unit, start, end, gesture: gest(gesture) } }),
+  lyricsClearSpan: (unit: LyricUnit) => call(Session, "lyrics_clear_span", { unit }),
+  lyricsShift: (from: SyllableRef, to: SyllableRef, delta: number, gesture?: number) => call(Session, "lyrics_shift", { req: { from, to, delta, gesture: gest(gesture) } }),
+  lyricsApplyTapSync: (granularity: Granularity, from: number, taps: number[], end: number) => call(Session, "lyrics_apply_tap_sync", { req: { granularity, from, taps, end } }),
+  lyricsExport: (path: string, format: LyricsFileFormat) => call(Void, "lyrics_export", { req: { path, format } }),
+  lyricsImport: (path: string) => call(Session, "lyrics_import", { path }),
+  // afinação
+  tuningAnalyze: (sourceId: string) => call(Session, "tuning_analyze", { sourceId }),
+  tuningGet: (sourceId: string) => call(S.PitchCorrectionMap, "tuning_get", { sourceId }),
+  tuningEditNote: (sourceId: string, noteId: string, edit: NoteEdit, gesture?: number) => call(Session, "tuning_edit_note", { req: { sourceId, noteId, edit, gesture: gest(gesture) } }),
+  tuningSetScale: (sourceId: string, scale: ScaleCorrection) => call(Session, "tuning_set_scale", { req: { sourceId, scale } }),
+  tuningSetReference: (a4Hz: number) => call(Session, "tuning_set_reference", { a4Hz }),
+  tuningApply: (sourceId: string, clipId: string) => call(Session, "tuning_apply", { req: { sourceId, clipId } }),
+  tuningClear: (sourceId: string) => call(Session, "tuning_clear", { sourceId }),
+  // afinador
+  tunerStart: (inputChannel: number) => call(Void, "tuner_start", { inputChannel }),
+  tunerRead: () => call(S.TunerReading.nullable(), "tuner_read"),
+  tunerStop: () => call(Void, "tuner_stop"),
+  // time-stretch
+  clipTimeStretch: (clipId: string, sourceBpm: number, targetBpm: number | null) => call(Session, "clip_time_stretch", { req: { clipId, sourceBpm, targetBpm } }),
+};
+
+export type MusicApi = typeof musicApi;

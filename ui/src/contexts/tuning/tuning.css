@@ -1,0 +1,39 @@
+.tuning { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-3); height: 100%; overflow: auto; }
+.tuning h3 { margin: 0; font-size: var(--text-md); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.tuning .row { display: flex; gap: var(--space-2); align-items: end; flex-wrap: wrap; min-width: 0; }
+.tuning .hint { color: var(--fg-muted); font-size: var(--text-xs); margin: 0; }
+.tuning .input.num { width: 72px; }
+.tuning .sel-sm { height: 22px; font-size: var(--text-xs); }
+.tuning .mini { display: inline-flex; align-items: center; gap: 4px; font-size: var(--text-xs); color: var(--fg-muted); }
+.tuning .mini .input.num { width: 60px; height: 22px; }
+.tuner, .pitch-editor { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.tuner { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-2) var(--space-3); }
+.tuner-dial { display: grid; justify-items: center; gap: 2px; }
+.tuner-dial svg { width: 100%; max-width: 170px; height: auto; }
+.dial-arc { fill: none; stroke: var(--line-strong); stroke-width: 6; stroke-linecap: round; }
+.dial-tick { stroke: var(--fg-faint); stroke-width: 2; }
+.dial-tick--zero { stroke: var(--ok); stroke-width: 3; }
+.dial-needle { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; }
+.dial-hub { fill: var(--fg); }
+.tuner-dial--ok .dial-needle { stroke: var(--ok); }
+.tuner-note { display: flex; align-items: baseline; gap: var(--space-2); }
+.tuner-note strong { font-size: 26px; line-height: 1; font-family: var(--font-mono); }
+.tuner-note sub { font-size: 14px; }
+.tuner-note span { color: var(--fg-muted); }
+.tuner-dial--ok .tuner-note strong { color: var(--ok); }
+.tuner-readout { font-size: var(--text-xs); color: var(--fg-muted); }
+.scale-row { align-items: center; }
+.roll { display: grid; grid-template-columns: 44px minmax(0, 1fr); border: 1px solid var(--line); border-radius: var(--radius-sm); max-height: 220px; overflow-y: auto; overflow-x: hidden; min-width: 0; }
+.roll-keys { border-right: 1px solid var(--line); background: var(--bg-raised); }
+.roll-key { font-size: 9px; color: var(--fg-faint); line-height: 14px; padding-left: 3px; overflow: hidden; white-space: nowrap; }
+.roll-key--c { color: var(--fg-muted); }
+.roll-scroll { overflow-x: auto; overflow-y: hidden; min-width: 0; }
+.roll-area { position: relative; }
+.roll-grid { position: absolute; left: 0; top: 0; }
+.roll-detected { position: absolute; background: color-mix(in srgb, var(--fg-faint) 45%, transparent); border-radius: 2px; pointer-events: none; }
+.roll-note { position: absolute; background: var(--clip-bg); border: 1px solid var(--clip-fg); border-radius: 3px; cursor: ns-resize; touch-action: none; outline: none; }
+.roll-note[data-edited] { background: var(--accent); border-color: var(--accent); }
+.roll-note[aria-selected="true"], .roll-note:focus-visible { box-shadow: 0 0 0 2px var(--fg); }
+.note-detail { align-items: center; min-height: 28px; font-size: var(--text-sm); }
+.checkbox { display: flex; gap: var(--space-2); align-items: center; font-size: var(--text-sm); }
+@media (max-width: 900px) { .tuning { grid-template-columns: minmax(0, 1fr); } }

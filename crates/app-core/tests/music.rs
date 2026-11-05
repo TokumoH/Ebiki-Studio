@@ -622,3 +622,40 @@ fn new_aggregates_survive_save_and_reopen() {
     assert_eq!(v.lyrics.text(), "olá mundo");
     assert!((v.tuning.a4_hz - 442.0).abs() < 1e-9);
 }
+
+// ------------------------------------------------------- UI (alphaTab / bytes)
+
+#[test]
+fn score_musicxml_feeds_the_renderer_and_bytes_import_roundtrips() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    new_project(&mut st, dir.path());
+    let id = score_with_notes(&mut st);
+    let original = st.score_get(id).unwrap();
+    let xml = st.score_musicxml(id).unwrap();
+    assert!(xml.contains("<score-partwise"), "MusicXML partwise");
+    assert!(xml.contains("Estudo"), "título no documento");
+    // bytes vindos da UI (sem caminho): mesmo importador, reprodução idêntica
+    let r = st.score_import_bytes(xml.as_bytes(), "ignorado").unwrap();
+    assert_eq!(r.view.scores.len(), 2);
+    let back = st.score_get(r.score_id.parse().unwrap()).unwrap();
+    assert_eq!(back.title, "Estudo");
+    assert_eq!(
+        render(&back, &PlaybackOptions::default()),
+        render(&original, &PlaybackOptions::default())
+    );
+    // MIDI (sem metadados de título garantidos): título nunca fica vazio
+    let midi = infra_notation_io::midi::export_midi(
+        &original,
+        &infra_notation_io::midi::MidiExportOptions::default(),
+    )
+    .unwrap();
+    let r = st.score_import_bytes(&midi, "Riff").unwrap();
+    assert!(!r.view.scores.last().unwrap().title.trim().is_empty());
+    assert_eq!(r.view.scores.len(), 3);
+    assert_eq!(
+        st.score_import_bytes(b"lixo", "x").unwrap_err().code,
+        "notation_io.unsupported"
+    );
+    assert!(st.score_musicxml(ScoreId::new()).is_err());
+}
