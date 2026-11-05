@@ -1,4 +1,4 @@
-# AppMusica — Arquitetura Geral
+# Ebiki Studio — Arquitetura Geral
 
 - **Data:** 2026-11-05
 - **Status:** Aprovada (seções 1 a 4)
@@ -12,9 +12,9 @@
 ```mermaid
 flowchart LR
     user([Músico / Usuário])
-    app[AppMusica<br/>Estúdio desktop]
+    app[Ebiki Studio<br/>Estúdio desktop]
     dev[(Interface / placa de áudio<br/>ASIO · WASAPI · CoreAudio · JACK)]
-    fs[(Sistema de arquivos<br/>projetos .amproj, áudios, soundfonts)]
+    fs[(Sistema de arquivos<br/>projetos .ebiki, áudios, soundfonts)]
     user -- grava, mixa, edita, compõe --> app
     app -- entrada / saída de áudio --> dev
     app -- lê / grava projetos e arquivos --> fs
@@ -97,7 +97,7 @@ flowchart TB
 ## 4. Organização do Repositório
 
 ```
-AppMusica/
+Ebiki Studio/
 ├── crates/                     # Cargo workspace
 │   ├── shared-kernel/
 │   ├── ctx-project/            # domain + application de cada contexto
@@ -225,7 +225,7 @@ stateDiagram-v2
 ### 6.2 Pasta do Projeto
 
 ```
-MinhaMusica.amproj/
+MinhaMusica.ebiki/
 ├── project.db                  # SQLite WAL
 ├── audio/imported/<sha256>.<ext>
 ├── audio/recorded/<uuid>.wav

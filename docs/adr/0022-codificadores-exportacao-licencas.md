@@ -30,7 +30,7 @@ MP3 e Vorbis ficam atrás das *features* `mp3` e `vorbis` (ligadas por padrão),
 
 ### Obrigações de licença
 - **LGPL (LAME):** o LAME é ligado estaticamente. A LGPL permite isso desde que o usuário possa
-  religar a aplicação com uma versão modificada da biblioteca. Como o AppMusica é MIT com código-fonte
+  religar a aplicação com uma versão modificada da biblioteca. Como o Ebiki Studio é MIT com código-fonte
   público e o LAME é compilado do fonte pelo `cargo`, a obrigação é cumprida publicando o código e as
   instruções de build; o instalador deve incluir o texto da LGPL e o aviso de uso do LAME
   (tela "Sobre"/arquivo `THIRD-PARTY-NOTICES`). Patentes do MP3 expiraram (2017).

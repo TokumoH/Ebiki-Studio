@@ -1,4 +1,4 @@
-<title>AppMusica Arquitetura</title>
+<title>Ebiki Studio Arquitetura</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -60,7 +60,7 @@ html{scroll-behavior:smooth}
 </style>
 
 <header class="top">
-  <div class="eyebrow">AppMusica · documento de arquitetura · 2026-11-05</div>
+  <div class="eyebrow">Ebiki Studio · documento de arquitetura · 2026-11-05</div>
   <h1>Estúdio musical desktop em Rust, Tauri e React</h1>
   <p class="lead">Gravação, mixagem, edição, harmonia, notação e afinação num só app para Windows, macOS e Linux. Organizado em DDD com contextos independentes, serviços técnicos isolados (Pure Fabrication) e componentes reutilizáveis.</p>
   <div class="meta">
@@ -91,9 +91,9 @@ html{scroll-behavior:smooth}
   <p>O app conversa com duas coisas fora dele: a interface de áudio, pelas APIs nativas de baixa latência de cada sistema, e o disco, onde cada projeto é uma pasta portátil.</p>
   <div class="rack"><pre class="mermaid">flowchart LR
     user([Músico / Usuário])
-    app[AppMusica&lt;br/&gt;Estúdio desktop]
+    app[Ebiki Studio&lt;br/&gt;Estúdio desktop]
     dev[(Interface / placa de áudio&lt;br/&gt;ASIO · WASAPI · CoreAudio · JACK)]
-    fs[(Sistema de arquivos&lt;br/&gt;projetos .amproj, áudios, soundfonts)]
+    fs[(Sistema de arquivos&lt;br/&gt;projetos .ebiki, áudios, soundfonts)]
     user -- grava, mixa, edita, compõe --&gt; app
     app -- entrada / saída de áudio --&gt; dev
     app -- lê / grava projetos e arquivos --&gt; fs

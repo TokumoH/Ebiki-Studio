@@ -1,4 +1,4 @@
-# AppMusica — Manual de Uso
+# Ebiki Studio — Manual de Uso
 
 Estúdio musical para computador (Windows, macOS e Linux): gravação, mixagem, edição, harmonia,
 bases, partitura, letra sincronizada e afinação.
@@ -35,7 +35,7 @@ npm test
 ## 2. Primeiros passos
 
 1. **Tela inicial** → *Novo projeto*: escolha nome, pasta, taxa de amostragem (padrão 48 kHz) e
-   resolução (padrão 24 bits). O projeto é uma pasta `Nome.amproj` com tudo dentro (portátil).
+   resolução (padrão 24 bits). O projeto é uma pasta `Nome.ebiki` com tudo dentro (portátil).
 2. **Configurações de áudio** (⚙ na barra superior): escolha saída, entrada e buffer.
    - Buffers de 64–128 amostras dão a menor latência (gravação); 512+ para mixagens pesadas.
    - Sem dispositivo disponível, o app continua funcionando em modo silencioso (barra de status avisa).

@@ -7,7 +7,7 @@
 Projetos devem ser portáteis (pasta com tudo); conhecimento musical e preferências são globais.
 
 ## Decisão
-`project.db` dentro da pasta `.amproj` (WAL, áudios copiados com nome por hash) e `library.db` na pasta de dados do usuário. `rusqlite` + migrações `refinery`. Repository por agregado. Autosave com `VACUUM INTO` para backups rotativos.
+`project.db` dentro da pasta `.ebiki` (WAL, áudios copiados com nome por hash) e `library.db` na pasta de dados do usuário. `rusqlite` + migrações `refinery`. Repository por agregado. Autosave com `VACUUM INTO` para backups rotativos.
 
 ## Consequências
 - Projeto portátil e recuperável.

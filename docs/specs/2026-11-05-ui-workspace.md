@@ -46,7 +46,7 @@ flowchart TB
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│  ◉ AppMusica                                                    ☾ / ☀    │
+│  ◉ Ebiki Studio                                                    ☾ / ☀    │
 ├───────────────────────────────┬──────────────────────────────────────────┤
 │  Novo projeto                 │  Recentes                                │
 │  Nome  [Minha música      ]   │  ▸ Demo voz e violão   ~/Música/…  ontem │

@@ -1,4 +1,4 @@
-# AppMusica
+# Ebiki Studio
 
 Estúdio musical pessoal para computador (Windows, macOS, Linux): gravação com retorno de baixa
 latência, mixagem com efeitos e auxílio por regras, edição não destrutiva, bases instrumentais,

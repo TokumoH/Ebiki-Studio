@@ -1,4 +1,4 @@
-# AppMusica — Levantamento de Requisitos
+# Ebiki Studio — Levantamento de Requisitos
 
 - **Data:** 2026-11-05
 - **Status:** Aprovado pelo usuário (questionário de 12 rodadas)

@@ -1,4 +1,4 @@
-# CLAUDE.md — Diretrizes CORE do Projeto AppMusica
+# CLAUDE.md — Diretrizes CORE do Projeto Ebiki Studio
 
 > Estas instruções são o **núcleo (CORE)** de toda interação com o assistente neste projeto.
 > Devem ser respeitadas em todas as sessões, mesmo após compactação de contexto.
