@@ -75,6 +75,20 @@ export function Workspace() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // arrastar arquivos de áudio do sistema para a janela importa na faixa selecionada (ou em faixas novas)
+  useEffect(() => {
+    let off: (() => void) | undefined;
+    void transport()
+      .listen<{ paths?: string[] }>("tauri://drag-drop", (p) => {
+        const files = (p.paths ?? []).filter((f) => AUDIO_EXT.includes(f.split(".").pop()?.toLowerCase() ?? ""));
+        if (!files.length) return;
+        const tick = useLive.getState().transport?.tick ?? 0;
+        void run(() => api.audioImport(files, null, Math.max(0, tick)), { busy: true, success: `${files.length} arquivo(s) importado(s).` });
+      })
+      .then((f) => (off = f));
+    return () => off?.();
+  }, []);
+
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       if (useSession.getState().session?.history.dirty) e.preventDefault();

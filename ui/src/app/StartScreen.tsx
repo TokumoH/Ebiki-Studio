@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { api } from "../ipc/api";
 import { transport } from "../ipc/transport";
 import type { RecentProject } from "../ipc/types";
-import { run } from "../core/session";
+import { errorMessage, run } from "../core/session";
+import { notify } from "../core/toasts";
 import { useTheme } from "../core/theme";
 import { Button, Field, Segmented, Dialog } from "../shared/components";
 
@@ -18,7 +19,10 @@ export function StartScreen() {
   const nameError = name.trim().length === 0 ? "Informe um nome." : [...name.trim()].length > 64 ? "No máximo 64 caracteres." : null;
 
   useEffect(() => {
-    void api.projectRecent().then(setRecent).catch(() => setRecent([]));
+    void api.projectRecent().then(setRecent).catch((e) => {
+      setRecent([]);
+      notify.error(`Não foi possível carregar os projetos recentes: ${errorMessage(e)}`);
+    });
   }, []);
 
   const open = async (path: string) => {
