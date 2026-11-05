@@ -1,0 +1,24 @@
+[package]
+name = "audio-engine"
+description = "Pure Fabrication: engine de áudio em tempo real (grafo compilado, transporte, metrônomo, gravação, render offline)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = []
+device = ["dep:cpal"]
+# Windows: driver ASIO (requer o SDK ASIO; ver docs do cpal)
+asio = ["device", "cpal/asio"]
+
+[dependencies]
+shared-kernel.workspace = true
+thiserror.workspace = true
+rtrb = "0.4"
+hound = "3.5"
+cpal = { version = "0.18", optional = true }
+
+[dev-dependencies]
+assert_no_alloc = "1.1"
+proptest.workspace = true
+tempfile = "3"

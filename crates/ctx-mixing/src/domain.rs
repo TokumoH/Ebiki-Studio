@@ -321,10 +321,7 @@ impl Mixer {
 
     /// Remove um bus. Faixas roteadas para ele voltam ao master e envios para ele são removidos.
     /// Retorna o bus, o índice e o estado anterior dos canais afetados (para desfazer).
-    pub fn remove_bus(
-        &mut self,
-        id: BusId,
-    ) -> Result<RemovedBus, MixingError> {
+    pub fn remove_bus(&mut self, id: BusId) -> Result<RemovedBus, MixingError> {
         let i = self
             .buses
             .iter()
