@@ -1,7 +1,7 @@
 # ADR-0009: IPC tipado com tauri-specta e channels binários
 
 - **Data:** 2026-11-05
-- **Status:** Aceita
+- **Status:** Substituída em parte pela ADR-0013 (tauri-specta → fixtures + zod)
 
 ## Contexto
 UI e núcleo em linguagens diferentes; medidores e posição exigem alta frequência.

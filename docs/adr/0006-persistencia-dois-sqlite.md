@@ -1,7 +1,7 @@
 # ADR-0006: Persistência: SQLite por projeto + SQLite de biblioteca
 
 - **Data:** 2026-11-05
-- **Status:** Aceita
+- **Status:** Aceita (migrações: ver ADR-0013)
 
 ## Contexto
 Projetos devem ser portáteis (pasta com tudo); conhecimento musical e preferências são globais.
