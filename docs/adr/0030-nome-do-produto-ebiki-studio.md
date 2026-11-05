@@ -18,3 +18,11 @@ O projeto nasceu com o nome provisório "AppMusica". O usuário escolheu o nome 
 ## Consequências
 - Troca feita antes da primeira release, sem impacto para usuários.
 - Preferências antigas no navegador interno (`appmusica.*`) são ignoradas e recriadas.
+
+## Adendo: identidade de cor
+- **Tema escuro (padrão): "Odoriko"**: noite índigo-violeta (`#14121d`), texto `#eee7f2`, destaque rosa
+  de lanterna `#f4a3b6`, clipes azul-elétrico (`#2f3466`/`#b9c4ff`).
+- **Tema claro: "Agridoce — manhã"**: papel quente (`#f3efe9`), tinta azul (`#1d2430`), destaque damasco
+  `#ab4e25`.
+- Elemento de marca: gradiente do horizonte (`--horizon`, azul do rio → lilás → rosa → damasco).
+- Contrastes WCAG ≥ 4,5:1 para todo texto; prancha em `docs/diagramas/paletas-ebiki.html`.

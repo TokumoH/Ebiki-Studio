@@ -1,33 +1,33 @@
 /* Design tokens — tema escuro (padrão de estúdio) e claro. Cores só via tokens. */
 :root {
-  /* Paleta "Agridoce" (Ebiki Studio): base fria azul-petróleo, destaque quente damasco, texto papel.
-     Ver docs/diagramas/paletas-ebiki.html (contrastes WCAG verificados). */
-  --bg: #111821;
-  --bg-raised: #141c27;
-  --bg-sunken: #0c1219;
-  --panel: #182230;
-  --panel-2: #1f2b3b;
-  --line: #283646;
-  --line-strong: #34465a;
-  --fg: #ece7e1;
-  --fg-muted: #9eabbb;
-  --fg-faint: #6c7a8b;
-  --accent: #f39c6b;
-  --accent-fg: #24130a;
-  --accent-soft: #3d2a22;
-  --accent-2: #8cc4e0;
+  /* Ebiki Studio — tema escuro "Odoriko" (noite índigo-violeta, destaque rosa de lanterna).
+     O tema claro é "Agridoce — manhã". Ver docs/diagramas/paletas-ebiki.html (contrastes WCAG). */
+  --bg: #14121d;
+  --bg-raised: #18162a;
+  --bg-sunken: #0f0d17;
+  --panel: #1d1a2b;
+  --panel-2: #262239;
+  --line: #302b48;
+  --line-strong: #40395c;
+  --fg: #eee7f2;
+  --fg-muted: #a7a1bb;
+  --fg-faint: #8a83a2;
+  --accent: #f4a3b6;
+  --accent-fg: #2b0f18;
+  --accent-soft: #3e2431;
+  --accent-2: #b9c4ff;
   --rec: #ff5a5f;
-  --solo: #f2c94c;
-  --mute: #7aa2f7;
+  --solo: #f2cf5b;
+  --mute: #7c9dff;
   --ok: #5fd4a0;
   --warn: #f0b45a;
   --crit: #ff6b6b;
   --meter-low: #5fd4a0;
   --meter-mid: #e9cf62;
   --meter-high: #ff6b6b;
-  --clip-bg: #24485c;
-  --clip-fg: #a8dcef;
-  --clip-sel: #f39c6b;
+  --clip-bg: #2f3466;
+  --clip-fg: #b9c4ff;
+  --clip-sel: #f4a3b6;
   --horizon: linear-gradient(90deg, #2b4f7a 0%, #6a6f9e 38%, #e6889a 70%, #f3a46b 100%);
   --font-ui: "Inter Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -43,7 +43,7 @@
   --text-md: 13px;
   --text-lg: 16px;
   --text-xl: 22px;
-  --shadow: 0 8px 24px rgba(4, 8, 14, 0.55);
+  --shadow: 0 8px 24px rgba(6, 4, 14, 0.6);
   --focus: 0 0 0 2px var(--accent);
   color-scheme: dark;
 }
