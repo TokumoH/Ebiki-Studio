@@ -7,6 +7,8 @@
 mod effects;
 pub mod library;
 mod project_repo;
+// Fase 4/5: harmonia + bases no library.db.
+pub mod harmony_repo;
 
 pub use project_repo::SqliteSessionRepository;
 

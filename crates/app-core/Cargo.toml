@@ -15,6 +15,10 @@ dsp = { path = "../dsp" }
 serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
+ctx-harmony = { path = "../ctx-harmony" }
+ctx-library = { path = "../ctx-library" }
+dsp-pitch = { path = "../dsp-pitch" }
+serde_json.workspace = true
 
 [dev-dependencies]
 hound = "3.5"

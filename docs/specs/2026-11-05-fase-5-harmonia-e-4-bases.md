@@ -319,3 +319,141 @@ Mapeamento `RomanChord` → `progression_step`:
 - O texto de progressão de uma base não é validado dentro de `ctx-library` (a aplicação valida com Harmony).
 - Os padrões rítmicos têm 1 compasso (bossa real tem ciclo de 2) e não há humanização/variação.
 - O gerador não toca transições (*fills*) nem finais; a dinâmica é fixa por padrão.
+
+## 11. Integração (volta 2) — persistência, síntese, casos de uso e IPC
+
+- **Status:** Implementada (backend; sem UI) · **ADRs:** [0025](../adr/0025-soundfont-rustysynth-e-audicao-wav-em-memoria.md), [0026](../adr/0026-biblioteca-de-composicao-persistencia-e-decisao-de-bases.md)
+- **Código:** `infra-persistence/src/harmony_repo.rs` (migração 2 do `library.db` + repositórios),
+  `synth/src/soundfont.rs` (`SoundFontSynth`), `infra-adapters/src/synth.rs`
+  (`ConfigurableSynthRenderer`), `app-core/src/composition/` (`Composer` + `impl Studio`),
+  `app-desktop/src/commands_composition.rs` (IPC), `assets/bases/manifest.json` (manifesto CC0, vazio).
+
+### 11.1 Decisões principais
+
+| Tema | Decisão |
+|---|---|
+| Esquema | `LIBRARY_SCHEMA_V1` = **migração 2** do `library.db` (a 1 tem recentes/preferências). `LibraryDb::open` semeia vocabulário (upsert por código) e progressões embutidas quando `harmony_catalog_version` < `CATALOG_VERSION` (apaga/regrava **só** as embutidas). |
+| Bases CC0 | Manifesto `assets/bases/manifest.json` embutido no binário (`version`, `bases[]`, licença obrigatória `CC0-1.0`); áudio em `<recursos>/assets/bases/<file>`. Hoje vazio. |
+| Bases iniciais | 8 receitas geradas (pop, balada, bossa, samba, rock, reggae, funk, valsa) com ids estáveis, semeadas uma vez (`starter_bases_version`); depois pertencem ao usuário. |
+| Bases de áudio do usuário | **Copiadas** para `<dados do app>/bases/<id>.<ext>` (WAV/FLAC/MP3/OGG/AIFF). |
+| Receita | Progressão em graus no modo maior/menor da base, com verificação de ida e volta exata. |
+| Desfazer | Biblioteca tem histórico próprio (`library_undo`/`library_redo`); o projeto continua com `history_undo`. |
+| Síntese | `ConfigurableSynthRenderer`: SoundFont (`rustysynth`) se `setting['synth.soundfont']` aponta para `.sf2` válido; senão `SimpleSynth`. |
+| Audição | WAV PCM 16 bits estéreo **em memória**, taxa do projeto (48 kHz sem projeto), cauda 1 s, máx. 120 s. |
+| Arrastar | Renderiza no mapa de tempo do projeto a partir do tick → `audio/generated/<id>.wav` → fonte + (faixa + canal) + clipe num **único** `Composite`; conteúdo idêntico reutiliza a fonte. |
+| Divergência | Com `needsDecision` e sem `decision` → `{status:"needsDecision"}` sem alterar nada. `adapt`: áudio = WSOLA (`bpmBase/bpmProjeto`, 0,25–4×) + pitch shift; gerada = re-síntese no BPM/tom do projeto. |
+
+### 11.2 Riscos
+
+| ID | Risco | Mitigação | Teste que comprova |
+|---|---|---|---|
+| R13 | Semeadura apaga/duplica dados do usuário em atualização | Versões em `seed_meta`; só embutidas são regravadas; vocabulário por upsert | `harmony_repo::reseed_on_version_bump_keeps_user_progressions`, `open_seeds_vocabulary_and_catalog_and_is_idempotent`, `starter_bases_seed_once_and_never_overwrite_user_choice` |
+| R14 | SQL injection por nomes/tags | Só consultas parametrizadas | `user_progressions_roundtrip_in_order_with_injection_text`, `bases_roundtrip_and_bundled_are_kept_apart`, `composition::composer_persists_in_real_library_db` |
+| R15 | Perda de informação banco ↔ domínio | Ida e volta do catálogo inteiro pelo banco | `open_seeds_vocabulary_and_catalog_and_is_idempotent` (`builtin_progressions() == builtin_catalog()`), `library_store_roundtrip` |
+| R16 | SoundFont ausente/corrompido derruba o app | Erro tipado + `catch_unwind`; fallback `SimpleSynth` | `soundfont::missing_or_invalid_files_are_typed_errors`, `falls_back_to_simple_synth_and_keeps_state_on_bad_file` |
+| R17 | Áudio de audição/inserção fora de tempo | Mesmas conversões tick→quadro do `TempoMap`; mapa rebaseado no destino | `realization_timing_is_exact`, `audition_wav_header_is_valid_and_duration_correct`, `insert_progression_follows_project_tempo_changes`, `loads_generated_sf2_and_renders_note_in_time` |
+| R18 | Inserção deixa lixo ao desfazer | Fonte + faixa + clipe num único `Composite`; dedupe por hash | `insert_progression_is_one_undoable_step` |
+| R19 | Base inserida sem perguntar (viola RF-4.5) | API devolve `needsDecision` sem efeitos | `audio_base_mismatch_requires_decision_and_adapt_stretches` |
+| R20 | Ajuste com duração errada | Razão = `bpmBase/bpmProjeto`; limite 0,25–4 | `adapt_changes_length_by_bpm_ratio`, `generated_base_save_audition_and_adapt_by_bpm_ratio` (±1%) |
+| R21 | Falha de gravação deixa memória ≠ disco | `Composer::execute` desfaz se `save` falhar | `user_progressions_crud_with_undo_and_suggestions` |
+| R22 | Manifesto malicioso (path traversal, licença) | `AudioPath` + licença `CC0-1.0` obrigatória | `manifest_parses_and_rejects_non_cc0` |
+| R23 | Contrato IPC divergente da UI | Exemplos JSON desta seção desserializados em teste | `commands_composition::ipc_contract_examples_deserialize`, `outcome_serializes_with_status_tag` |
+
+### 11.3 Sequência — arrastar progressão para a timeline
+
+```mermaid
+sequenceDiagram
+    participant UI
+    participant IPC as harmony_insert_progression
+    participant C as Composer
+    participant SP as SuggestionProvider
+    participant ST as Studio
+    participant SY as MidiRenderer
+    participant M as MediaPort
+    UI->>IPC: {realize, atTick, trackId?}
+    IPC->>ST: insert_progression(composer, req, track, at)
+    ST->>C: realize(req, BPM do projeto em at)
+    C->>SP: realize(TimedChord[], VoicingOptions)
+    SP-->>C: RealizedChord[] → MidiNoteEvent[]
+    ST->>ST: tempo_from(at) (mapa rebaseado)
+    ST->>SY: render(events, tempo, sr, cauda 1 s)
+    ST->>M: encode(audio/generated/<id>.wav) + hash_file
+    ST->>ST: Composite[AddSource, CreateTrack, AddStrip, AddClip] → History
+    ST-->>UI: InsertedClip {trackId, clipId, sourceId, relPath, frames, view}
+    UI->>ST: history_undo → remove clipe, faixa e fonte de uma vez
+```
+
+### 11.4 Sequência — inserir base com divergência
+
+```mermaid
+sequenceDiagram
+    participant UI
+    participant ST as Studio
+    participant C as Composer
+    participant L as ctx_library::mismatch
+    participant D as dsp_pitch
+    UI->>ST: bases_insert {baseId, atTick, projectKey, decision: null}
+    ST->>C: base(id)
+    ST->>L: mismatch(bpmBase, tomBase, bpmProjeto(at), projectKey)
+    L-->>ST: report {needsDecision: true}
+    ST-->>UI: {status:"needsDecision", report} (nada muda)
+    UI->>UI: pergunta "Ajustar (×ratio, ±n semitons)?" / "Manter"
+    UI->>ST: bases_insert {..., decision:"adapt"}
+    alt base de áudio
+        ST->>D: time_stretch(bpmBase/bpmProjeto) + pitch_shift_offline(n)
+        ST->>ST: audio/generated/<id>.wav + Composite
+    else base gerada
+        ST->>C: generated_base_events(transpõe n) → render no tempo do projeto
+    end
+    ST-->>UI: {status:"inserted", report, decision, clip}
+```
+
+### 11.5 Contrato IPC (argumentos e campos em camelCase)
+
+Tipos comuns: `Key = {tonic: 0..11, mode: "ionian"|"dorian"|…|"aeolian"|"harmonicMinor"|…}`;
+`BaseKey = {tonic, mode: "major"|"minor"}`; `Meter = {numerator, denominator}`;
+`ProgressionRef = {kind:"builtin", slug} | {kind:"user", id} | {kind:"roman", steps, mode, beatsPerBar?=4} | {kind:"cifra", chords, beatsPerBar?=4}`;
+`VoicingRequest = {low?=52, high?=76, voiceLeading?=true, bass?=true, program?=0, bassProgram?=33, velocity?=90}`;
+`RealizeRequest = {progression, key, bpm?: number|null, bars?: number|null, voicing?}`;
+`MidiNoteEvent = {startTick, durationTicks, channel, program, key, velocity}`;
+`LibraryHistoryView = {canUndo, canRedo, undoLabel, redoLabel}`; erros = `{code, message}` (PT-BR).
+
+| Comando | Argumentos | Retorno |
+|---|---|---|
+| `harmony_keys` | — | `{tonics:[{value, sharp, flat}], modes:[{mode, code, namePt, isMinor}], genres:[{genre, code, namePt}]}` |
+| `harmony_field` | `key: Key` | `{key, label, preferFlats, degrees:[{degree, triad:{symbol, roman}, seventh:{symbol, roman}}]}` |
+| `harmony_progressions` | `req: {key, genre?: Genre, limit?=20}` | `[{progression: ProgressionView, score, cifra: string[]}]`; `ProgressionView = {ref, name, origin:"builtin"\|"user", mode, genres, universal, beatsPerBar, stepsText, roman[], beats[]}` |
+| `harmony_user_progressions` | — | `ProgressionView[]` |
+| `harmony_suggest_next` | `req: {key, history: string[] (cifras), limit?=8}` | `[{symbol, roman, score, reason, reasonLabel}]` |
+| `harmony_realize` | `req: RealizeRequest` (bpm nulo = BPM do projeto ou 120) | `{name, key, bpm, beatsPerBar, totalTicks, chords:[{symbol, startTick, durationTicks, notes[], bass}], events: MidiNoteEvent[]}` |
+| `harmony_audition` | `req: RealizeRequest` | `ArrayBuffer` (WAV PCM16 estéreo) |
+| `harmony_insert_progression` | `req: {realize: RealizeRequest, atTick, trackId?}` | `InsertedClip = {trackId, clipId, sourceId, relPath, frames, view: SessionView}` (desfazer: `history_undo`) |
+| `harmony_user_progression_add` | `input: {name, mode, genres?: Genre[], beatsPerBar?=4, steps}` | `ProgressionView` |
+| `harmony_user_progression_edit` | `id, input` | `ProgressionView` |
+| `harmony_user_progression_remove` | `id` | `LibraryHistoryView` |
+| `library_history` / `library_undo` / `library_redo` | — | `LibraryHistoryView` |
+| `bases_options` | — | `{styles, drums, basses, instruments}` (cada item `{value, code, namePt, meterNumerator}`) |
+| `bases_search` | `query: {text?, bpmMin?, bpmMax?, key?: BaseKey, genre?, instrument?, tags?: string[], kind?: "bundledCc0"\|"generated"\|"userAudio"}` | `Base[]` = `{id, name, kind:{kind:"generated", progression, bars, style, drums, bass}\|{kind:"userAudio"\|"bundledCc0", path, progression}, bpm, key, meter, genre, instruments, tags}` |
+| `bases_add_user` | `path` (absoluto), `meta: {name, bpm, key?, meter?, genre?, instruments?, tags?, progression?}` | `Base` |
+| `bases_generate` | `req: {progression, key, bpm, bars, style, drums?, bass?}` | `{bpm, meter, totalTicks, recipeProgression, drums, bass, events}` |
+| `bases_generated_audition` | `req` (igual a `bases_generate`) | `ArrayBuffer` WAV |
+| `bases_save_generated` | `req: {name, generation, genre?, tags?}` | `Base` |
+| `bases_remove` | `id` | `LibraryHistoryView` |
+| `bases_audition` | `id` | `ArrayBuffer` WAV |
+| `bases_mismatch` | `req: {baseId, atTick, projectKey?}` | `MismatchReport = {bpmRatio, semitoneShift, modeDiffers, needsDecision}` |
+| `bases_insert` | `req: {baseId, atTick, trackId?, projectKey?, decision?: "keep"\|"adapt"}` | `{status:"needsDecision", report}` \| `{status:"inserted", report, decision, clip: InsertedClip}` |
+| `synth_status` | — | `{engine:"soundfont"\|"simple", soundfontPath, bankName, presetCount}` |
+| `synth_set_soundfont` | `path: string \| null` (null = simples) | `SynthStatus` (persistido em `synth.soundfont`) |
+
+Exemplo (`harmony_insert_progression`):
+`{"req":{"realize":{"progression":{"kind":"builtin","slug":"pop-axis"},"key":{"tonic":0,"mode":"ionian"}},"atTick":3840}}`.
+
+### 11.6 Limitações conhecidas (volta 2)
+
+- O clipe inserido é áudio renderizado (não MIDI editável); a engine ainda não tem faixas de instrumento.
+- O projeto não guarda tom: a UI informa `projectKey` (sem ele só o BPM é comparado).
+- Arquivos copiados de bases removidas e WAVs de inserções desfeitas ficam em disco (limpeza futura).
+- Renderização síncrona dentro do comando (os pesados são `async` na IPC, sem cancelamento/progresso).
+- Bases CC0: mecanismo pronto e manifesto vazio; para empacotar áudios, incluir `assets/bases/*` em
+  `bundle.resources` do `tauri.conf.json`.
+- Falha de gravação após `undo`/`redo` reverte a operação, mas o item permanece no histórico.

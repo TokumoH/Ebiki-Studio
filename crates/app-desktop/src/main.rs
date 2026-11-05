@@ -3,6 +3,7 @@
 
 mod audio;
 mod commands;
+mod commands_composition;
 mod state;
 
 use audio_engine::device::DeviceRequest;
@@ -101,6 +102,33 @@ fn main() {
             commands::export_formats,
             commands::export_mix,
             commands::export_stems,
+            // Fase 4/5 — composição (harmonia + bases) e sintetizador
+            commands_composition::harmony_keys,
+            commands_composition::harmony_field,
+            commands_composition::harmony_progressions,
+            commands_composition::harmony_user_progressions,
+            commands_composition::harmony_suggest_next,
+            commands_composition::harmony_realize,
+            commands_composition::harmony_audition,
+            commands_composition::harmony_insert_progression,
+            commands_composition::harmony_user_progression_add,
+            commands_composition::harmony_user_progression_edit,
+            commands_composition::harmony_user_progression_remove,
+            commands_composition::library_history,
+            commands_composition::library_undo,
+            commands_composition::library_redo,
+            commands_composition::bases_options,
+            commands_composition::bases_search,
+            commands_composition::bases_add_user,
+            commands_composition::bases_generate,
+            commands_composition::bases_generated_audition,
+            commands_composition::bases_save_generated,
+            commands_composition::bases_remove,
+            commands_composition::bases_audition,
+            commands_composition::bases_mismatch,
+            commands_composition::bases_insert,
+            commands_composition::synth_status,
+            commands_composition::synth_set_soundfont,
         ])
         .run(tauri::generate_context!())
         .expect("falha ao iniciar o AppMusica");

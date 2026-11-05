@@ -13,3 +13,6 @@ pub mod view;
 pub use session::*;
 pub use studio::*;
 pub use view::*;
+
+// Fase 4/5 — composição (harmonia + bases); módulo próprio para merge trivial.
+pub mod composition;
