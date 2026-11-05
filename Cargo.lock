@@ -109,6 +109,7 @@ dependencies = [
  "ctx-project",
  "ctx-recording",
  "infra-adapters",
+ "infra-codecs",
  "infra-persistence",
  "serde",
  "serde_json",

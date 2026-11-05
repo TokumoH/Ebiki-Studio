@@ -3,6 +3,8 @@
 
 mod audio;
 mod commands;
+#[cfg(test)]
+mod ipc_tests;
 mod state;
 
 use audio_engine::device::DeviceRequest;
@@ -14,7 +16,7 @@ const TELEMETRY_INTERVAL: Duration = Duration::from_millis(33);
 const AUTOSAVE_INTERVAL: Duration = Duration::from_secs(120);
 
 fn main() {
-    tauri::Builder::default()
+    with_commands(tauri::Builder::default())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
@@ -48,62 +50,66 @@ fn main() {
             spawn_autosave(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
-            commands::audio_devices,
-            commands::audio_status,
-            commands::audio_configure,
-            commands::project_create,
-            commands::project_open,
-            commands::project_view,
-            commands::project_save,
-            commands::project_close,
-            commands::project_recent,
-            commands::project_forget_recent,
-            commands::project_recovery_check,
-            commands::project_recover,
-            commands::project_discard_recovery,
-            commands::project_rename,
-            commands::history_undo,
-            commands::history_redo,
-            commands::history_end_gesture,
-            commands::track_create,
-            commands::track_delete,
-            commands::track_rename,
-            commands::track_move,
-            commands::audio_import,
-            commands::clip_move,
-            commands::clip_delete,
-            commands::clip_set_gain,
-            commands::tempo_set,
-            commands::tempo_remove,
-            commands::meter_set,
-            commands::meter_remove,
-            commands::mixer_edit,
-            commands::bus_create,
-            commands::bus_delete,
-            commands::bus_rename,
-            commands::mixer_presets,
-            commands::mixer_apply_preset,
-            commands::mix_analyze,
-            commands::recording_track,
-            commands::recording_metronome,
-            commands::recording_punch,
-            commands::recording_loop,
-            commands::recording_latency,
-            commands::take_select,
-            commands::transport_play,
-            commands::transport_pause,
-            commands::transport_stop,
-            commands::transport_seek,
-            commands::transport_record,
-            commands::transport_state,
-            commands::waveform_peaks,
-            commands::export_formats,
-            commands::export_mix,
-            commands::export_stems,
-        ])
         .run(tauri::generate_context!())
         .expect("falha ao iniciar o AppMusica");
+}
+
+/// Registra todos os comandos IPC (usado pelo app e pelos testes de IPC).
+pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<R> {
+    b.invoke_handler(tauri::generate_handler![
+        commands::audio_devices,
+        commands::audio_status,
+        commands::audio_configure,
+        commands::project_create,
+        commands::project_open,
+        commands::project_view,
+        commands::project_save,
+        commands::project_close,
+        commands::project_recent,
+        commands::project_forget_recent,
+        commands::project_recovery_check,
+        commands::project_recover,
+        commands::project_discard_recovery,
+        commands::project_rename,
+        commands::history_undo,
+        commands::history_redo,
+        commands::history_end_gesture,
+        commands::track_create,
+        commands::track_delete,
+        commands::track_rename,
+        commands::track_move,
+        commands::audio_import,
+        commands::clip_move,
+        commands::clip_delete,
+        commands::clip_set_gain,
+        commands::tempo_set,
+        commands::tempo_remove,
+        commands::meter_set,
+        commands::meter_remove,
+        commands::mixer_edit,
+        commands::bus_create,
+        commands::bus_delete,
+        commands::bus_rename,
+        commands::mixer_presets,
+        commands::mixer_apply_preset,
+        commands::mix_analyze,
+        commands::recording_track,
+        commands::recording_metronome,
+        commands::recording_punch,
+        commands::recording_loop,
+        commands::recording_latency,
+        commands::take_select,
+        commands::transport_play,
+        commands::transport_pause,
+        commands::transport_stop,
+        commands::transport_seek,
+        commands::transport_record,
+        commands::transport_state,
+        commands::waveform_peaks,
+        commands::export_formats,
+        commands::export_mix,
+        commands::export_stems,
+    ])
 }
 
 /// Publica posição e medidores (~30 Hz) enquanto houver projeto aberto.
