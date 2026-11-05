@@ -1,0 +1,7 @@
+/target
+node_modules/
+ui/dist/
+ui/test-results/
+ui/playwright-report/
+*.amproj/
+.DS_Store

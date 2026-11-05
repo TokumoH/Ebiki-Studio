@@ -1,0 +1,15 @@
+[package]
+name = "shared-kernel"
+description = "Tipos compartilhados entre os bounded contexts: IDs, tempo musical, ganho, teoria básica e o contrato de comandos desfazíveis."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
