@@ -50,7 +50,20 @@ Outras arquiteturas **só podem ser adotadas após discussão e decisão explíc
   - preservar **leitura eficiente** (índices, projeções/views, desnormalização controlada apenas quando justificada e discutida).
 - **SEMPRE ser adaptável ao contexto do projeto.**
 
-## 5. Fluxo de Trabalho
+## 5. Decisões do Projeto
+
+Requisitos completos: [`docs/requisitos/2026-11-05-levantamento-requisitos.md`](docs/requisitos/2026-11-05-levantamento-requisitos.md)
+
+- **Produto:** estúdio musical desktop multiplataforma (Windows/macOS/Linux), uso pessoal, sem IA (arquitetura preparada para IA, plugins VST3/CLAP e automação).
+- **Stack:** Tauri + Rust (domínio, aplicação, engine de áudio) + React/TypeScript (UI) + SQLite.
+- **Branch de trabalho:** `branchTrabalho`. Commits livres nela; **push somente com autorização**.
+- **Idioma:** UI em PT-BR; código em inglês.
+- **Testes:** TDD completo. **CI:** GitHub Actions nos 3 sistemas.
+- **Documentação por fase:** especificação, diagramas (casos de uso, estados, componentes, classes, sequência, serviços, processos), arquitetura, DER, ADRs, manual.
+- **Áudio:** latência alvo < 10 ms (aceitável ≤ 15 ms) via APIs nativas; 48 kHz/24-bit padrão configurável; 32+ faixas.
+- **Fora do escopo:** Spotify, drivers próprios, controlador MIDI, auto-update.
+
+## 6. Fluxo de Trabalho
 
 1. Entender a demanda e fazer perguntas quando necessário.
 2. Propor solução (com diagramas/tabelas/mockups quando útil).
