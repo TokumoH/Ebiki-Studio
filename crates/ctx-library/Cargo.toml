@@ -1,0 +1,16 @@
+[package]
+name = "ctx-library"
+description = "Bounded context Library: catálogo de bases instrumentais (CC0, geradas e do usuário), busca, gerador de bases MIDI e política de BPM/tom."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+serde_json.workspace = true
