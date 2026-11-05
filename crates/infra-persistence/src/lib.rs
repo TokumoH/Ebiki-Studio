@@ -6,6 +6,7 @@
 
 mod effects;
 pub mod library;
+pub mod music_tables;
 mod project_repo;
 
 pub use project_repo::SqliteSessionRepository;
@@ -14,7 +15,10 @@ use rusqlite::Connection;
 use std::path::Path;
 
 /// Migrações do `project.db`, em ordem. O índice + 1 é a versão.
-const PROJECT_MIGRATIONS: &[&str] = &[include_str!("../migrations/project_v1.sql")];
+const PROJECT_MIGRATIONS: &[&str] = &[
+    include_str!("../migrations/project_v1.sql"),
+    include_str!("../migrations/project_v2.sql"),
+];
 
 pub const PROJECT_SCHEMA_VERSION: u32 = PROJECT_MIGRATIONS.len() as u32;
 

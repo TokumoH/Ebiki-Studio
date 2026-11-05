@@ -237,3 +237,192 @@ Códigos de erro: `tuning.*` e `sync.*` (mensagens PT-BR), convertidos em `Comma
 - WSOLA usa parâmetros fixos em amostras (2048/512), adequados a 44,1–96 kHz; não há modo "transiente" dedicado.
 - Hifenização por regras (ver ADR-0017); LRC não representa pausas internas; precisão LRC 10 ms, SRT 1 ms.
 - Sessão de toque não sobrescreve automaticamente tempos já existentes depois do trecho (falha atômica com `sync.overlap`).
+
+## 10. Integração (volta 2)
+
+- **Data:** 2026-11-05 · **Status:** Implementada (backend; UI fora desta volta)
+- **ADRs:** [0028](../adr/0028-afinador-por-derivacao-lock-free-da-entrada.md) (afinador),
+  [0029](../adr/0029-processamento-de-altura-e-tempo-gera-fonte-derivada.md) (fontes derivadas e insert
+  de correção), [0027](../adr/0027-partitura-documento-versionado-com-cabecalho-normalizado.md) (migração v2)
+- **Código:** `app_core::{lyrics_service, tuning_service, music_support}`, `ctx_tuning::book`
+  (`TuningBook`, `PutCorrectionMap`, `OnCorrectionMap`, `OnTuner`), `ctx_mixing::PitchCorrectorParams`,
+  `infra_adapters::dsp_factory::PitchCorrectorProcessor`, `audio_engine::input_tap`,
+  `infra_persistence::music_tables`, `app-desktop/src/commands_music.rs`
+
+> Correção da seção 9: a engine **ainda não** aplica PDC; o insert de correção reporta
+> `latency_samples()`, mas a compensação fica para uma volta futura da engine (ADR-0029).
+
+### 10.1 Objetivos
+
+| Requisito | Entrega da volta 2 |
+|---|---|
+| RF-6.1/6.2 | `Session.lyrics: LyricTrack`; casos de uso texto → sílabas, tempo por unidade, limpar, deslocar, *tap-sync* (validado pela máquina de estados do domínio), LRC/SRT de/para arquivo — tudo desfazível |
+| RF-6.3/6.4 | `clip_time_stretch`: trecho do clipe esticado por WSOLA para o andamento do projeto (fonte derivada, um desfazer) |
+| RF-8.1 | Afinador da entrada: derivação lock-free na engine + `TunerProcessor` na thread de controle |
+| RF-8.2 | Efeito `PitchCorrector` no mixer (insert de tempo real; latência reportada) |
+| RF-8.3/8.4 | `Session.tuning: TuningBook` (mapa por fonte + Lá4); analisar, editar nota, escala, limpar, **aplicar** (render offline → fonte nova → troca do clipe, um desfazer) |
+| Persistência | `project.db` v2 normalizado (letra e afinação) |
+
+### 10.2 Riscos (volta 2)
+
+| ID | Risco | Mitigação | Teste que comprova |
+|---|---|---|---|
+| J1 | Aplicar correção destrói o original / desfazer incompleto | Render para fonte **nova**; troca de clipe num `Composite`; mapa chaveado pela fonte original | `music::tuning_analyze_apply_corrects_pitch_and_undo_restores_original_clip` |
+| J2 | Correção não atinge a altura pedida | Notas do mapa → `NoteCorrection` (edição manual > escala × (1 − humanize)); PSOLA alinhado | idem (452 Hz → 440 ± 2 Hz medido com o YIN), `music::scale_correction_applies_without_manual_edits` |
+| J3 | Time-stretch muda a duração errada ou a altura | Razão `source/target` (`stretch_ratio_for_tempo`), limites 0,25–4, WSOLA | `music::time_stretch_to_project_tempo_has_expected_length_and_keeps_pitch` (±1 %, ±1,5 Hz) |
+| J4 | Insert de correção aloca na thread de áudio | Buffers `MAX_BLOCK` pré-alocados; blocos maiores divididos; `set_settings` sem alocação | `infra-adapters/tests/no_alloc.rs::pitch_corrector_insert_does_not_allocate` |
+| J5 | Insert não corrige no caminho real da engine | Teste pelo render offline da sessão completa (mesmo núcleo do tempo real) | `music::pitch_corrector_insert_pulls_452_hz_to_440_in_the_full_engine`, `dsp_factory::tests::pitch_corrector_insert_pulls_sharp_a_to_440` |
+| J6 | Parâmetros inteiros do efeito (máscara) corrompem na persistência | `effect_param` devolve inteiros exatos como inteiro JSON | `music_tables::tests::pitch_corrector_effect_roundtrips_with_integer_params` |
+| J7 | Afinador trava/aloca o callback | Derivação SPSC (`rtrb`) sem alocação, descarte quando cheia; análise fora do tempo real | `audio-engine/tests/no_alloc.rs::process_does_not_allocate` (tap ligado, drenado e removido), `input_tap::tests::copies_one_channel_and_drops_when_full` |
+| J8 | Leitura do afinador errada/defasada | Só as últimas ~250 ms analisadas; Lá4 do projeto; troca de engine desliga o afinador | `music::tuner_reads_the_armed_input_through_the_engine_tap` (446 Hz → A4 +23 cents ±2) |
+| J9 | LRC/SRT com andamento variável sai fora do tempo | Conversão pelo `TempoMap` do projeto no momento da exportação | `music::lyrics_lrc_export_follows_tempo_changes_and_reimports` |
+| J10 | *Tap-sync* inválido grava estado parcial | Sessão do domínio reexecutada no backend; gravação atômica (`ApplyTapSync`) | `music::tap_sync_applies_atomically_and_undoes` |
+| J11 | Projeto v1 não abre na versão nova | Migração v2 aditiva; agregados novos vazios | `music_tables::tests::v1_database_is_migrated_to_v2_and_loads_with_empty_music_aggregates` |
+| J12 | Perda de dados ao salvar letra/afinação | Tabelas normalizadas, regravação transacional, validação na carga | `music_roundtrip::lyrics_tuning_and_scores_roundtrip`, `music::new_aggregates_survive_save_and_reopen` |
+| J13 | Mapa de afinação órfão (fonte removida) quebra a FK ao salvar | Mapas de fontes inexistentes não são persistidos (inalcançáveis) | `music_roundtrip::removed_source_drops_its_unreachable_correction_map_on_save` |
+
+### 10.3 Sequência — aplicar correção de afinação
+
+```mermaid
+sequenceDiagram
+    participant UI
+    participant C as commands_music
+    participant S as Studio (tuning_service)
+    participant T as ctx-tuning (TuningBook)
+    participant D as dsp-pitch
+    participant M as MediaPort
+    participant H as History
+    UI->>C: tuning_analyze {sourceId}
+    C->>S: tuning_analyze(source)
+    S->>D: analyze_notes(mistura mono da fonte, sr)
+    D-->>S: notas detectadas
+    S->>H: execute(PutCorrectionMap | ReplaceDetectedNotes)
+    UI->>C: tuning_edit_note / tuning_set_scale
+    C->>S: SetNoteEdit / SetScaleCorrection (desfazíveis)
+    UI->>C: tuning_apply {sourceId, clipId}
+    C->>S: tuning_apply(source, clip)
+    S->>T: mapa → NoteCorrection[] (edição > escala·(1−humanize))
+    loop cada canal da fonte original
+        S->>D: render_note_corrections(canal, sr, notas, correções)
+    end
+    S->>M: encode(audio/rendered/<uuid>.wav) + hash_file
+    S->>H: execute(Composite[AddSource, DeleteClip(antigo), AddClip(fonte nova)])
+    H-->>S: um item "Aplicar correção de afinação"
+    S-->>UI: SessionView (clipe aponta para a fonte corrigida)
+```
+
+### 10.4 Contrato IPC (JSON camelCase)
+
+Erros: `{code, message}` (`sync.*`, `tuning.*`, `app.*`, `api.invalid_argument`). `SessionView` ganhou
+`lyrics: LyricTrack` (`{id, lines: [{words: [{syllables: [{text, span: {start, end} | null}]}]}]}`) e
+`tuning: {a4Hz, maps: [{mapId, sourceId, noteCount, editCount, scale}]}`.
+Tipos: `LyricUnit` = `{kind: "syllable", line, word, syllable}` \| `{kind: "word", line, word}` \|
+`{kind: "line", line}`; `SyllableRef` = `{line, word, syllable}`; `Granularity` = `"syllable"\|"word"\|"line"`;
+`NoteEdit` = `{target: 0–127 | null, centsOffset (±1200), flatten (0–1), formantSemitones (±12)}`;
+`ScaleCorrection` = `{enabled, key (0–11), allowed: number[] (crescente, contém key), retuneSpeedMs (0–1000), humanize (0–1)}`.
+
+| Comando | Argumentos | Retorno |
+|---|---|---|
+| `lyrics_set_text` | `text` (vazio limpa) | `SessionView` |
+| `lyrics_set_span` | `req: {unit: LyricUnit, start, end, gesture?}` (ticks) | `SessionView` |
+| `lyrics_clear_span` | `unit: LyricUnit` | `SessionView` |
+| `lyrics_shift` | `req: {from: SyllableRef, to: SyllableRef, delta, gesture?}` | `SessionView` |
+| `lyrics_apply_tap_sync` | `req: {granularity, from?: number, taps: number[] (ticks crescentes), end}` | `SessionView` |
+| `lyrics_export` | `req: {path, format: {format: "lrc", granularity} \| {format: "srt"}}` | `null` |
+| `lyrics_import` | `path` (`.lrc`/`.srt`, ≤ 2 MiB) | `SessionView` |
+| `tuning_analyze` | `sourceId` | `SessionView` |
+| `tuning_get` | `sourceId` | `{id, source, notes: [{id, startFrame, endFrame, midi}], edits: {noteId: NoteEdit}, scale}` |
+| `tuning_edit_note` | `req: {sourceId, noteId, edit: NoteEdit, gesture?}` (edição neutra remove) | `SessionView` |
+| `tuning_set_scale` | `req: {sourceId, scale: ScaleCorrection}` | `SessionView` |
+| `tuning_set_reference` | `a4Hz` (415–466) | `SessionView` |
+| `tuning_apply` | `req: {sourceId, clipId}` | `SessionView` |
+| `tuning_clear` | `sourceId` | `SessionView` |
+| `tuner_start` | `inputChannel` (0 = 1º canal do dispositivo) | `null` |
+| `tuner_read` | — (chamar ~20 Hz) | `{note, name, octave, cents, frequencyHz, confidence} \| null` (erro `app.tuner_off` se desligado) |
+| `tuner_stop` | — | `null` |
+| `clip_time_stretch` | `req: {clipId, sourceBpm, targetBpm?}` | `SessionView` |
+| (mixer) `mixer_edit` com `addEffect` | `effect: {type: "pitchCorrector", params: {enabled, keyRoot, scaleMask, retuneMs, humanize, a4Hz}}` | `SessionView` |
+
+### 10.5 Persistência (DER v2 — letra e afinação)
+
+```mermaid
+erDiagram
+    lyric_line ||--o{ lyric_word : contem
+    lyric_word ||--o{ lyric_syllable : contem
+    audio_source ||--o| pitch_correction_map : "1 mapa por fonte"
+    pitch_correction_map ||--o{ correction_scale_pitch : "escala (conjunto)"
+    pitch_correction_map ||--o{ detected_note : notas
+    detected_note ||--o| note_edit : edicao
+    lyric_track {
+        INTEGER singleton PK
+        TEXT id
+    }
+    lyric_line {
+        INTEGER position PK
+    }
+    lyric_word {
+        INTEGER line PK
+        INTEGER position PK
+    }
+    lyric_syllable {
+        INTEGER line PK
+        INTEGER word PK
+        INTEGER position PK
+        TEXT text
+        INTEGER start_tick
+        INTEGER end_tick
+    }
+    tuner_settings {
+        INTEGER singleton PK
+        REAL a4_hz
+    }
+    pitch_correction_map {
+        TEXT id PK
+        TEXT source_id UK
+        INTEGER scale_enabled
+        INTEGER scale_key
+        REAL retune_speed_ms
+        REAL humanize
+    }
+    correction_scale_pitch {
+        TEXT map_id PK
+        INTEGER pitch_class PK
+    }
+    detected_note {
+        TEXT id PK
+        TEXT map_id FK
+        INTEGER start_frame
+        INTEGER end_frame
+        REAL midi
+    }
+    note_edit {
+        TEXT note_id PK
+        INTEGER target_midi
+        REAL cents_offset
+        REAL flatten
+        REAL formant_semitones
+    }
+```
+
+Leitura eficiente: índice parcial `lyric_syllable_by_start` (sílabas com tempo),
+`detected_note_by_map_start`, projeção `v_lyric_words` (texto e intervalo da palavra derivados — não
+armazenados). Texto de palavra/linha nunca é gravado (derivado das sílabas, ADR-0017).
+
+### 10.6 Critérios de aceite (volta 2)
+
+- [x] Letra: texto, tempos, deslocamento, *tap-sync* e importação desfazíveis; LRC/SRT com mudança de andamento corretos.
+- [x] Afinação: analisar → editar/escala → aplicar corrige 452 Hz para 440 Hz (±2 Hz) e desfazer devolve o clipe original.
+- [x] Time-stretch 100 → 120 BPM: duração ±1 %, altura preservada, desfazível.
+- [x] Insert `PitchCorrector` corrige 452 → 440 Hz pela engine completa (render offline); sem alocação.
+- [x] Afinador lê A4 +23 cents de uma entrada de 446 Hz pela derivação da engine; derivação sem alocação.
+- [x] Persistência v2 (identidade + migração v1 → v2); fmt, clippy `-D warnings` e testes do workspace verdes.
+
+### 10.7 Limitações (volta 2)
+
+- A engine não tem PDC: o insert de correção atrasa a faixa em ≈ 58 ms (ver ADR-0029).
+- O insert processa a soma mono (material monofônico) e devolve o mesmo sinal nos dois canais.
+- `tuning_apply` processa cada canal com a mesma lista de notas (detecção do PSOLA por canal); para
+  material estéreo muito diferente entre canais, prefira aplicar em fonte mono.
+- Time-stretch pelo BPM de origem informado pelo usuário; *warp markers* (`WarpMap`) ainda não são
+  persistidos nem usados pelo caso de uso (próxima volta).
+- Fontes derivadas não referenciadas após desfazer permanecem em `audio/rendered/` (limpeza futura).

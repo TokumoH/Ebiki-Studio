@@ -77,6 +77,17 @@ pub fn save_slots(
     Ok(())
 }
 
+/// Número lido do banco: inteiros exatos voltam como inteiro JSON (campos `u8`/`u16`, ex.: máscara
+/// de escala do corretor), os demais como ponto flutuante (campos `f32` aceitam os dois).
+fn num_value(value: f64) -> Value {
+    const MAX_EXACT: f64 = 9_007_199_254_740_992.0; // 2^53
+    if value.is_finite() && value.fract() == 0.0 && value.abs() <= MAX_EXACT {
+        serde_json::json!(value as i64)
+    } else {
+        serde_json::json!(value)
+    }
+}
+
 pub fn load_slots(conn: &Connection, owner: Owner) -> Result<Vec<EffectSlot>, PersistenceError> {
     let (sql, key): (&str, Option<&str>) = match owner {
         Owner::Track(t) => ("SELECT id, effect_type, bypass FROM effect_slot WHERE track_id = ?1 ORDER BY position", Some(t)),
@@ -103,7 +114,7 @@ pub fn load_slots(conn: &Connection, owner: Owner) -> Result<Vec<EffectSlot>, Pe
             let v = if kind == "bool" {
                 Value::Bool(value != 0.0)
             } else {
-                serde_json::json!(value)
+                num_value(value)
             };
             params_obj.insert(name, v);
         }

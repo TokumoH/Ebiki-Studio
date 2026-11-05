@@ -5,6 +5,8 @@ use crate::session::Session;
 use ctx_mixing::{Bus, ChannelStrip, StripTarget};
 use ctx_project::AudioSource;
 use ctx_recording::{MetronomeConfig, TrackRecording};
+use ctx_sync::LyricTrack;
+use ctx_tuning::ScaleCorrection;
 use serde::Serialize;
 use shared_kernel::{BarBeat, Db, TempoMap, Tick};
 
@@ -84,6 +86,71 @@ pub struct SessionView {
     pub recording: RecordingView,
     pub history: HistoryView,
     pub content_end_frame: u64,
+    /// Letra sincronizada completa (linhas → palavras → sílabas com tempos em ticks).
+    pub lyrics: LyricTrack,
+    /// Resumo das partituras (a partitura completa vem de `score_get`).
+    pub scores: Vec<ScoreSummary>,
+    /// Resumo da afinação (o mapa completo vem de `tuning_get`).
+    pub tuning: TuningView,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ScoreSummary {
+    pub id: String,
+    pub title: String,
+    pub composer: String,
+    pub parts: Vec<String>,
+    pub measures: usize,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct CorrectionMapSummary {
+    pub map_id: String,
+    pub source_id: String,
+    pub note_count: usize,
+    pub edit_count: usize,
+    pub scale: ScaleCorrection,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TuningView {
+    pub a4_hz: f64,
+    pub maps: Vec<CorrectionMapSummary>,
+}
+
+fn scores_view(s: &Session) -> Vec<ScoreSummary> {
+    s.scores
+        .entries()
+        .iter()
+        .map(|e| ScoreSummary {
+            id: e.id.to_string(),
+            title: e.score.title.clone(),
+            composer: e.score.composer.clone(),
+            parts: e.score.parts.iter().map(|p| p.name.clone()).collect(),
+            measures: e.score.measure_count(),
+        })
+        .collect()
+}
+
+fn tuning_view(s: &Session) -> TuningView {
+    TuningView {
+        a4_hz: s.tuning.tuner.a4_hz(),
+        maps: s
+            .tuning
+            .maps()
+            .values()
+            .map(|m| CorrectionMapSummary {
+                map_id: m.id.to_string(),
+                source_id: m.source.to_string(),
+                note_count: m.notes().len(),
+                edit_count: m.edits().len(),
+                scale: m.scale().clone(),
+            })
+            .collect(),
+    }
 }
 
 pub fn session_view(
@@ -174,6 +241,9 @@ pub fn session_view(
         },
         history,
         content_end_frame: p.content_end_frame(),
+        lyrics: s.lyrics.clone(),
+        scores: scores_view(s),
+        tuning: tuning_view(s),
     }
 }
 

@@ -85,10 +85,16 @@ version = "0.1.0"
 dependencies = [
  "audio-engine",
  "ctx-mixing",
+ "ctx-notation",
  "ctx-project",
  "ctx-recording",
+ "ctx-sync",
+ "ctx-tuning",
  "dsp",
+ "dsp-pitch",
  "hound",
+ "infra-adapters",
+ "infra-notation-io",
  "infra-persistence",
  "proptest",
  "serde",
@@ -105,8 +111,11 @@ dependencies = [
  "app-core",
  "audio-engine",
  "ctx-mixing",
+ "ctx-notation",
  "ctx-project",
  "ctx-recording",
+ "ctx-sync",
+ "ctx-tuning",
  "infra-adapters",
  "infra-persistence",
  "serde",
@@ -853,6 +862,7 @@ dependencies = [
  "serde_json",
  "shared-kernel",
  "thiserror 2.0.21",
+ "uuid",
 ]
 
 [[package]]
@@ -2057,10 +2067,12 @@ name = "infra-adapters"
 version = "0.1.0"
 dependencies = [
  "app-core",
+ "assert_no_alloc",
  "audio-engine",
  "ctx-mixing",
  "ctx-project",
  "dsp",
+ "dsp-pitch",
  "infra-codecs",
  "infra-persistence",
  "shared-kernel",
@@ -2105,8 +2117,11 @@ version = "0.1.0"
 dependencies = [
  "app-core",
  "ctx-mixing",
+ "ctx-notation",
  "ctx-project",
  "ctx-recording",
+ "ctx-sync",
+ "ctx-tuning",
  "proptest",
  "rusqlite",
  "serde",

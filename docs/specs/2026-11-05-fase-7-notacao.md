@@ -259,3 +259,120 @@ flowchart LR
 - GPIF: bends com múltiplos pontos viram um único valor; slides sem distinção de tipo; letras, acordes,
   automação de volume e efeitos de batida (whammy, tapping, rasgueado) não importados.
 - `SetKey` não regrafa as notas existentes (mantém as alturas escritas).
+
+## 10. Integração (volta 2)
+
+- **Data:** 2026-11-05 · **Status:** Implementada (backend; UI fora desta volta)
+- **ADRs:** [0027](../adr/0027-partitura-documento-versionado-com-cabecalho-normalizado.md) (persistência
+  da partitura), [0029](../adr/0029-processamento-de-altura-e-tempo-gera-fonte-derivada.md) (render para faixa)
+- **Código:** `ctx_notation::book` (`ScoreBook`, `ScoreId`, `AddScore`, `RemoveScore`, `OnScore`),
+  `app_core::notation_service`, `infra_persistence::music_tables`, `app-desktop/src/commands_music.rs`
+
+### 10.1 Objetivos
+
+1. Partituras como agregado da sessão: `Session.scores: ScoreBook` (lista ordenada com `ScoreId`
+   estável); toda edição passa pelo `History` do `Studio` (`on_score(id, EditVoice|EditScore)`).
+2. Casos de uso: criar em branco (modelo de instrumentos), criar de acordes realizados
+   (`chords_to_score`), editar voz/estrutura, remover, importar (MusicXML/MXL/MIDI/GP7), exportar
+   (MusicXML/MXL/MIDI), validar (compassos + fora da escala), ouvir (WAV em memória) e **renderizar
+   para faixa** (fonte + faixa + clipe num único desfazer).
+3. Persistência no `project.db` v2 (cabeçalho normalizado + corpo versionado — ADR-0027).
+4. PDF: gerado na UI pelo alphaTab a partir de `score_get` (nenhum comando de backend).
+
+### 10.2 Riscos (volta 2)
+
+| ID | Risco | Mitigação | Teste que comprova |
+|---|---|---|---|
+| I1 | Desfazer de edição de partitura afeta outra partitura ou fica inconsistente | `OnScore` localiza por `ScoreId` (não por índice); comandos de `ctx-notation` já são atômicos | `book::tests::add_remove_and_edit_by_id_roundtrip_through_history`, `music::score_edits_undo_and_redo_through_the_studio_history` |
+| I2 | Perda na ida e volta pelo app (exportar → importar) | Reaproveita os mapeamentos testados do `infra-notation-io`; reprodução comparada evento a evento | `music::import_export_musicxml_roundtrip_via_studio` (MusicXML, MXL e MIDI) |
+| I3 | Arquivo do usuário enorme/malicioso trava o app | Tamanho checado **antes** de ler (32 MiB); limites do `infra-notation-io` (zip bomb, XML profundo) | `music::import_export_musicxml_roundtrip_via_studio` (formato desconhecido → `notation_io.unsupported`), fuzz do `infra-notation-io` |
+| I4 | Render para faixa deixa estado parcial (fonte sem clipe, faixa sem canal) | Um único `Composite` (fonte, faixa, canal, clipe); áudio gravado antes de executar | `music::score_audition_and_render_to_track_is_one_undo` |
+| I5 | Partitura persistida diverge do cabeçalho / documento corrompido | Cabeçalho só nas colunas (sem redundância); `doc_version`; `check_invariants` na carga | `music_roundtrip::score_header_lives_in_columns_not_in_the_document`, `corrupted_score_document_is_rejected`, `lyrics_tuning_and_scores_roundtrip` |
+| I6 | Render muito longo esgota memória | Limite de 30 min de áudio por partitura; partitura sem notas → erro | `music::score_audition_and_render_to_track_is_one_undo` (`app.empty_score`) |
+| I7 | Edições inválidas vindas da UI (JSON) | `VoiceEdit`/`ScoreEdit` desserializados com tag `kind`; validação do domínio antes de aplicar | `commands_music::tests::requests_deserialize_from_camel_case_json`, `book::tests::edits_serialize_with_kind_tag` |
+
+### 10.3 Sequência — renderizar partitura para faixa
+
+```mermaid
+sequenceDiagram
+    participant UI
+    participant C as commands_music
+    participant S as Studio (notation_service)
+    participant N as ctx-notation
+    participant Y as MidiRenderer (synth GM)
+    participant M as MediaPort
+    participant H as History
+    UI->>C: score_render_to_track {scoreId, trackId?, atTick}
+    C->>S: score_render_to_track(id, track, at)
+    S->>N: playback::render(score) → PlaybackEvent[]
+    S->>S: → MidiNoteEvent[] (limite 30 min)
+    S->>Y: render(eventos, score.tempo_map(), sr, cauda 1,5 s)
+    Y-->>S: SourceBuffer (estéreo)
+    S->>M: encode(audio/rendered/<uuid>.wav, float 32)
+    S->>M: hash_file → fonte nova (ou reaproveitada)
+    S->>H: execute(Composite[AddSource, CreateTrack?, AddStrip?, AddClip])
+    H-->>S: ok (um item "Renderizar partitura")
+    S-->>UI: SessionView (faixa/clipe novos)
+```
+
+### 10.4 Contrato IPC (JSON camelCase)
+
+Erros: `{code, message}` (`notation.*`, `notation_io.*`, `app.*`, `api.invalid_argument`).
+`SessionView` ganhou `scores: ScoreSummary[]` (`{id, title, composer, parts: string[], measures}`).
+
+| Comando | Argumentos | Retorno |
+|---|---|---|
+| `score_list` | — | `ScoreSummary[]` |
+| `score_create` | `req: {title, composer?, bpm, meterNumerator, meterDenominator, keyFifths?, keyMode?: "major"\|"minor", measures (1–1000), instruments: [{kind: "piano"\|"lead"\|"guitar"\|"bass"\|"drums", name?}]}` | `{scoreId, view: SessionView}` |
+| `score_create_from_chords` | `req: {title, meterNumerator, meterDenominator, keyFifths?, keyMode?, slots: [{startTick, durationTicks, notes: number[]}]}` (BPM = do projeto) | `{scoreId, view}` |
+| `score_get` | `scoreId` | `Score` completo (modelo da seção 3, camelCase) |
+| `score_delete` | `scoreId` | `SessionView` |
+| `score_edit_voice` | `req: {scoreId, loc: {part, measure, voice}, edit: VoiceEdit, gesture?}` — `VoiceEdit` = `{kind: "insert"\|"delete"\|"replace"\|"setDuration"\|"setPitch"\|"addNote"\|"removeNote"\|"addArticulation"\|"removeArticulation"\|"setDynamic"\|"setTie"\|"setTab"\|"addTechnique"\|"removeTechnique"\|"setLyric"\|"setGrace"\|"fillRests", ...campos da seção 4 em camelCase}` | `SessionView` |
+| `score_edit` | `req: {scoreId, edit: ScoreEdit}` — `{kind: "addMeasure"\|"removeMeasure"\|"setKey"\|"setMeter"\|"setRepeat"\|"addPart"\|"removePart"\|"addSpanner"\|"removeSpanner"\|"transpose"\|"setHeader"\|"setTempo", ...}`; `transpose.scope` = `{scope: "score"}` \| `{scope: "part", target: n}` \| `{scope: "events", target: [ids]}` | `SessionView` |
+| `score_import` | `path` (absoluto; `.musicxml/.xml/.mxl/.mid/.gp/.gpif`, detecção pelo conteúdo) | `{scoreId, warnings: string[], view}` |
+| `score_export` | `req: {scoreId, path, format: "musicXml"\|"mxl"\|"midi"}` | `null` |
+| `score_audition` | `scoreId` | bytes crus de WAV float 32 (`ArrayBuffer`) |
+| `score_render_to_track` | `req: {scoreId, trackId?, atTick?}` | `SessionView` |
+| `score_validate` | `req: {scoreId, scale?: number[] (classes 0–11)}` | `{measureIssues: [{loc, issue: {kind: "underfilled", missing} \| {kind: "overfilled", excess}}], outOfScale: [{event: {voice, index}, noteIndex, pitch}]}` |
+
+### 10.5 Persistência (DER v2 — partituras)
+
+```mermaid
+erDiagram
+    score ||--o{ score_part : "partes (ordem)"
+    score {
+        TEXT id PK
+        INTEGER position UK
+        TEXT title
+        TEXT composer
+        INTEGER doc_version
+        TEXT body "JSON sem cabeçalho (ADR-0027)"
+    }
+    score_part {
+        TEXT score_id FK
+        INTEGER position
+        TEXT name
+        INTEGER program
+        INTEGER percussion
+    }
+```
+
+Projeção `v_score_summary` (título, compositor, nº e nomes das partes) para listagens sem
+desserializar o corpo.
+
+### 10.6 Critérios de aceite (volta 2)
+
+- [x] Criar/editar/remover partituras com desfazer/refazer exato pelo `Studio`.
+- [x] Importar MusicXML/MXL/MIDI e exportar MusicXML/MXL/MIDI pelo app com reprodução idêntica.
+- [x] Acordes → partitura; validação de compassos e notas fora da escala (armadura ou escala dada).
+- [x] Audição (WAV em memória) e render para faixa num único desfazer.
+- [x] Persistência v2 com identidade salvar → carregar; migração v1 → v2.
+- [x] `cargo fmt`, `cargo clippy --workspace --all-targets -D warnings`, `cargo test --workspace` verdes.
+
+### 10.7 Limitações (volta 2)
+
+- O áudio renderizado segue o andamento **da partitura** (não o do projeto); com mapas diferentes o
+  clipe não acompanha a grade do projeto.
+- `score_audition` renderiza a partitura inteira (sem trecho/loop); arquivos de render que deixam de
+  ser usados após desfazer ficam em `audio/rendered/` até uma limpeza futura (ADR-0029).
+- Importação GP3–GP6 continua dependendo da conversão na UI (ADR-0020).

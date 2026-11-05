@@ -11,10 +11,12 @@ ctx-mixing.workspace = true
 app-core.workspace = true
 audio-engine.workspace = true
 dsp = { path = "../dsp" }
+dsp-pitch = { path = "../dsp-pitch" }
 synth = { path = "../synth" }
 infra-codecs = { path = "../infra-codecs" }
 
 [dev-dependencies]
+assert_no_alloc = { version = "1.1", default-features = false, features = ["warn_debug", "warn_release"] }
 tempfile = "3"
 infra-persistence.workspace = true
 ctx-project.workspace = true

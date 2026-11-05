@@ -10,6 +10,9 @@ shared-kernel.workspace = true
 ctx-project.workspace = true
 ctx-mixing.workspace = true
 ctx-recording.workspace = true
+ctx-sync = { path = "../ctx-sync" }
+ctx-tuning = { path = "../ctx-tuning" }
+ctx-notation = { path = "../ctx-notation" }
 app-core.workspace = true
 serde.workspace = true
 serde_json.workspace = true

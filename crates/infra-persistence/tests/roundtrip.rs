@@ -131,6 +131,9 @@ fn rich_session() -> Session {
         project: p,
         mixer: m,
         recording: r,
+        lyrics: app_core::empty_lyrics(),
+        scores: Default::default(),
+        tuning: Default::default(),
     }
 }
 

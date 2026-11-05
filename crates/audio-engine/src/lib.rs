@@ -14,6 +14,7 @@
 pub mod core;
 pub mod graph;
 pub mod handle;
+pub mod input_tap;
 pub mod metronome;
 pub mod null_device;
 pub mod offline;

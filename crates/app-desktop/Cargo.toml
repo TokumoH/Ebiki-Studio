@@ -18,6 +18,9 @@ shared-kernel.workspace = true
 ctx-project.workspace = true
 ctx-mixing.workspace = true
 ctx-recording.workspace = true
+ctx-notation = { path = "../ctx-notation" }
+ctx-sync = { path = "../ctx-sync" }
+ctx-tuning = { path = "../ctx-tuning" }
 app-core.workspace = true
 audio-engine = { workspace = true, features = ["device"] }
 infra-persistence.workspace = true
