@@ -19,7 +19,10 @@ impl Archive {
     }
 
     pub fn names(&self) -> Vec<String> {
-        self.zip.file_names().map(str::to_owned).collect()
+        self.zip
+            .file_names()
+            .filter_map(|n| n.ok().map(|n| n.into_owned()))
+            .collect()
     }
 
     /// Lê uma entrada, limitando o tamanho descompactado (independente do cabeçalho declarado).

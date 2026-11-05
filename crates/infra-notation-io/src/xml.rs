@@ -48,8 +48,34 @@ impl Element {
     }
 }
 
-fn local(name: &[u8]) -> String {
-    String::from_utf8_lossy(name).into_owned()
+fn local<T: AsRef<[u8]> + ?Sized>(name: &T) -> String {
+    String::from_utf8_lossy(name.as_ref()).into_owned()
+}
+
+/// Resolve `&nome;`/`&#n;` (desde quick-xml 0.38 as referências chegam como eventos próprios).
+/// Somente as cinco entidades predefinidas do XML são aceitas: nada externo é expandido.
+fn resolve_ref(r: &quick_xml::events::BytesRef<'_>) -> Result<String, IoError> {
+    if r.is_char_ref() {
+        return r
+            .resolve_char_ref()
+            .map_err(IoError::malformed)?
+            .map(String::from)
+            .ok_or_else(|| IoError::malformed("referência de caractere inválida"));
+    }
+    let name = r.clone().into_inner();
+    Ok(match name.as_ref() {
+        "amp" => "&",
+        "lt" => "<",
+        "gt" => ">",
+        "quot" => "\"",
+        "apos" => "'",
+        other => {
+            return Err(IoError::malformed(format!(
+                "entidade desconhecida: {other}"
+            )))
+        }
+    }
+    .to_owned())
 }
 
 /// Lê um documento XML inteiro. Erros de sintaxe, entidades desconhecidas ou excesso de
@@ -57,7 +83,9 @@ fn local(name: &[u8]) -> String {
 pub fn parse(bytes: &[u8]) -> Result<Element, IoError> {
     crate::error::check_size(bytes)?;
     let mut reader = Reader::from_reader(bytes);
-    reader.config_mut().trim_text(true);
+    // sem aparar: com referências separadas, aparar removeria espaços ao redor de `&amp;`;
+    // o texto é aparado no uso (`child_text`).
+    reader.config_mut().trim_text(false);
     let mut stack: Vec<Element> = vec![Element::default()];
     let mut nodes = 0usize;
     let open = |e: &quick_xml::events::BytesStart<'_>| -> Result<Element, IoError> {
@@ -109,11 +137,15 @@ pub fn parse(bytes: &[u8]) -> Result<Element, IoError> {
                     .push(el);
             }
             Event::Text(t) => {
-                let s = t.unescape().map_err(IoError::malformed)?;
+                let s = t.into_inner();
+                stack.last_mut().expect("raiz").text.push_str(&s);
+            }
+            Event::GeneralRef(r) => {
+                let s = resolve_ref(&r)?;
                 stack.last_mut().expect("raiz").text.push_str(&s);
             }
             Event::CData(c) => {
-                let s = String::from_utf8_lossy(&c.into_inner()).into_owned();
+                let s = c.into_inner();
                 stack.last_mut().expect("raiz").text.push_str(&s);
             }
             Event::Eof => break,
@@ -222,6 +254,22 @@ impl XmlWriter {
 
     pub fn finish(self) -> String {
         self.out
+    }
+}
+
+#[cfg(test)]
+mod entity_tests {
+    use super::*;
+
+    #[test]
+    fn predefined_and_char_entities_keep_spaces() {
+        let e = parse(b"<a><t>Rock &amp; Roll &#233; &lt;3</t></a>").unwrap();
+        assert_eq!(e.child_text("t"), Some("Rock & Roll \u{e9} <3"));
+    }
+
+    #[test]
+    fn unknown_entities_are_rejected_not_expanded() {
+        assert!(parse(b"<!DOCTYPE a [<!ENTITY x \"boom\">]><a>&x;</a>").is_err());
     }
 }
 
