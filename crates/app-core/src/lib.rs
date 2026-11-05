@@ -13,3 +13,9 @@ pub mod view;
 pub use session::*;
 pub use studio::*;
 pub use view::*;
+
+// Fases 6–8 (letra, notação, afinação/time-stretch): casos de uso em módulos próprios.
+pub mod lyrics_service;
+pub mod music_support;
+pub mod notation_service;
+pub mod tuning_service;

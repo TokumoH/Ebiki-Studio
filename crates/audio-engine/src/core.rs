@@ -1,6 +1,7 @@
 //! Núcleo de tempo real. Regras: sem alocação, sem bloqueio, sem liberar memória, sem pânico.
 
 use crate::graph::*;
+use crate::input_tap::InputTapRt;
 use crate::metronome::Click;
 use crate::recorder::RecorderRt;
 use crate::telemetry::Telemetry;
@@ -25,12 +26,16 @@ pub enum Message {
     },
     AttachRecorder(Box<RecorderRt>),
     DetachRecorder,
+    /// Liga a derivação de entrada (afinador). Substitui a anterior.
+    AttachInputTap(Box<InputTapRt>),
+    DetachInputTap,
 }
 
 /// Objetos devolvidos para liberação fora do tempo real.
 pub enum Garbage {
     Graph(Box<RenderGraph>),
     Recorder(Box<RecorderRt>),
+    InputTap(Box<InputTapRt>),
 }
 
 pub struct EngineCore {
@@ -48,6 +53,7 @@ pub struct EngineCore {
     record_start: u64,
     recorder: Option<Box<RecorderRt>>,
     recording_started: bool,
+    input_tap: Option<Box<InputTapRt>>,
     master_l: Vec<f32>,
     master_r: Vec<f32>,
     click_l: Vec<f32>,
@@ -79,6 +85,7 @@ impl EngineCore {
             record_start: 0,
             recorder: None,
             recording_started: false,
+            input_tap: None,
             master_l: vec![0.0; MAX_BLOCK],
             master_r: vec![0.0; MAX_BLOCK],
             click_l: vec![0.0; MAX_BLOCK],
@@ -197,6 +204,16 @@ impl EngineCore {
                         self.discard(Garbage::Recorder(old));
                     }
                 }
+                Message::AttachInputTap(t) => {
+                    if let Some(old) = self.input_tap.replace(t) {
+                        self.discard(Garbage::InputTap(old));
+                    }
+                }
+                Message::DetachInputTap => {
+                    if let Some(old) = self.input_tap.take() {
+                        self.discard(Garbage::InputTap(old));
+                    }
+                }
             }
         }
     }
@@ -236,6 +253,11 @@ impl EngineCore {
         if let Some(p) = self.pending_garbage.take() {
             if let Err(rtrb::PushError::Full(p)) = self.garbage.push(p) {
                 self.pending_garbage = Some(p);
+            }
+        }
+        if let Some(tap) = self.input_tap.as_mut() {
+            if in_channels > 0 {
+                tap.capture(input, in_channels, input.len() / in_channels);
             }
         }
         if out_channels == 0 {

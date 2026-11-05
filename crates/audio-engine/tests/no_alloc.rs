@@ -44,6 +44,8 @@ fn process_does_not_allocate() {
     });
     h.swap_graph(g).unwrap();
     h.play().unwrap();
+    // derivação de entrada do afinador ligada (fila menor que o total: exercita o descarte)
+    let mut tap = h.attach_input_tap(1, 48_000).unwrap();
     let mut out = vec![0.0f32; 2048 * 2];
     let input = vec![0.1f32; 2048 * 2];
     // a primeira chamada troca o grafo: o grafo antigo vai para a fila de lixo, sem liberar
@@ -54,6 +56,24 @@ fn process_does_not_allocate() {
         }
     });
     assert_eq!(violation_count(), 0, "o núcleo alocou memória no callback");
+    let mut tapped = Vec::new();
+    assert_eq!(
+        tap.drain(&mut tapped),
+        48_000,
+        "derivação cheia, excedente descartado"
+    );
+    assert!(tapped.iter().all(|x| (*x - 0.1).abs() < 1e-9));
+    // troca/desliga a derivação também sem alocar no núcleo
+    h.detach_input_tap().unwrap();
+    reset_violation_count();
+    assert_no_alloc(|| {
+        core.process(&mut out, 2, &input, 2);
+    });
+    assert_eq!(
+        violation_count(),
+        0,
+        "desligar a derivação não libera memória no núcleo"
+    );
     h.collect_garbage();
 }
 

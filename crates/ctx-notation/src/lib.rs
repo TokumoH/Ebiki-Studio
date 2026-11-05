@@ -13,6 +13,7 @@
 
 pub mod analysis;
 pub mod arrange;
+pub mod book;
 pub mod commands;
 pub mod duration;
 pub mod error;
@@ -23,6 +24,7 @@ pub mod playback;
 pub mod tab;
 pub mod transpose;
 
+pub use book::{ScoreBook, ScoreEntry, ScoreId};
 pub use duration::{Duration, NoteValue, Tuplet};
 pub use error::NotationError;
 pub use frac::Frac;

@@ -88,6 +88,7 @@ impl ProcessorFactory for DspProcessorFactory {
             Effect::Saturation(_) => 7,
             Effect::Chorus(_) => 8,
             Effect::DeEsser(_) => 9,
+            Effect::PitchCorrector(_) => 10,
         }
     }
 
@@ -127,6 +128,14 @@ impl ProcessorFactory for DspProcessorFactory {
             Effect::Saturation(p) => vec![p.drive_db, p.tone, p.mix],
             Effect::Chorus(p) => vec![p.rate_hz, p.depth_ms, p.mix],
             Effect::DeEsser(p) => vec![p.freq_hz, p.threshold_db, p.reduction_db],
+            Effect::PitchCorrector(p) => vec![
+                b(p.enabled),
+                p.key_root as f32,
+                p.scale_mask as f32,
+                p.retune_ms,
+                p.humanize,
+                p.a4_hz,
+            ],
         }
     }
 
@@ -239,7 +248,81 @@ impl ProcessorFactory for DspProcessorFactory {
                 },
                 &params,
             ),
+            Effect::PitchCorrector(_) => {
+                let mut p = PitchCorrectorProcessor::new(sr);
+                p.set_params(&params);
+                p.reset();
+                Box::new(p)
+            }
         }
+    }
+}
+
+/// Insert de correção de afinação: soma mono → [`dsp_pitch::PitchCorrector`] → mesmo sinal nos dois
+/// canais (material monofônico: voz/instrumento solo). Sem alocação em `set_params`/`process`/`reset`
+/// (buffers de `MAX_BLOCK` pré-alocados). Latência constante do PSOLA reportada à engine.
+pub struct PitchCorrectorProcessor {
+    corrector: dsp_pitch::PitchCorrector,
+    mono: Vec<f32>,
+    out: Vec<f32>,
+}
+
+impl PitchCorrectorProcessor {
+    pub fn new(sample_rate: u32) -> Self {
+        let mut corrector = dsp_pitch::PitchCorrector::new(
+            dsp_pitch::CorrectorSettings::default(),
+            sample_rate as f32,
+        );
+        corrector.prepare(sample_rate as f32, MAX_BLOCK);
+        Self {
+            corrector,
+            mono: vec![0.0; MAX_BLOCK],
+            out: vec![0.0; MAX_BLOCK],
+        }
+    }
+}
+
+impl AudioProcessor for PitchCorrectorProcessor {
+    fn set_params(&mut self, p: &[f32]) {
+        let mask = g(p, 2, 4095.0);
+        let bits = if mask.is_finite() {
+            mask.clamp(0.0, 4095.0) as u16
+        } else {
+            0x0FFF
+        };
+        let current = self.corrector.settings();
+        self.corrector.set_settings(dsp_pitch::CorrectorSettings {
+            enabled: g(p, 0, 1.0) > 0.5,
+            scale: dsp_pitch::ScaleMask::from_bits(if bits == 0 { 0x0FFF } else { bits }),
+            retune_ms: g(p, 3, 20.0),
+            humanize: g(p, 4, 0.0),
+            a4_hz: g(p, 5, 440.0),
+            ..current
+        });
+    }
+
+    fn process(&mut self, left: &mut [f32], right: &mut [f32]) {
+        let n = left.len().min(right.len());
+        let mut done = 0;
+        while done < n {
+            let len = (n - done).min(self.mono.len());
+            for i in 0..len {
+                self.mono[i] = 0.5 * (left[done + i] + right[done + i]);
+            }
+            self.corrector
+                .process(&self.mono[..len], &mut self.out[..len]);
+            left[done..done + len].copy_from_slice(&self.out[..len]);
+            right[done..done + len].copy_from_slice(&self.out[..len]);
+            done += len;
+        }
+    }
+
+    fn reset(&mut self) {
+        self.corrector.reset();
+    }
+
+    fn latency_samples(&self) -> usize {
+        self.corrector.latency_samples()
     }
 }
 
@@ -304,6 +387,36 @@ mod tests {
             9,
             "todos os 9 tipos aparecem nos presets com tags distintas"
         );
+    }
+
+    #[test]
+    fn pitch_corrector_insert_pulls_sharp_a_to_440() {
+        let f = DspProcessorFactory;
+        let e = Effect::PitchCorrector(PitchCorrectorParams {
+            retune_ms: 0.0,
+            ..PitchCorrectorParams::major(0)
+        });
+        assert_eq!(f.type_tag(&e), 10);
+        let mut p = f.create(&e, 48_000);
+        assert!(p.latency_samples() > 0, "latência do PSOLA reportada");
+        let mut l = sine(452.0, 0.5, 96_000);
+        let mut r = l.clone();
+        for (cl, cr) in l.chunks_mut(256).zip(r.chunks_mut(256)) {
+            p.process(cl, cr);
+        }
+        let tail = &l[48_000..];
+        let hz = dsp_pitch::analysis::pitch_track(tail, 48_000.0, 480)
+            .iter()
+            .filter(|f| f.voiced)
+            .map(|f| f.frequency_hz)
+            .sum::<f32>()
+            / dsp_pitch::analysis::pitch_track(tail, 48_000.0, 480)
+                .iter()
+                .filter(|f| f.voiced)
+                .count()
+                .max(1) as f32;
+        assert!((hz - 440.0).abs() < 3.0, "452 Hz corrigido para {hz:.2} Hz");
+        assert_eq!(l, r, "mesmo sinal nos dois canais");
     }
 
     #[test]

@@ -6,6 +6,8 @@ mod commands;
 #[cfg(test)]
 mod ipc_tests;
 mod state;
+// Fases 6–8 (partituras, letra, afinação)
+mod commands_music;
 
 use audio_engine::device::DeviceRequest;
 use state::{lock, AppState};
@@ -109,6 +111,36 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
         commands::export_formats,
         commands::export_mix,
         commands::export_stems,
+        commands_music::score_list,
+        commands_music::score_create,
+        commands_music::score_create_from_chords,
+        commands_music::score_get,
+        commands_music::score_delete,
+        commands_music::score_edit_voice,
+        commands_music::score_edit,
+        commands_music::score_import,
+        commands_music::score_export,
+        commands_music::score_audition,
+        commands_music::score_render_to_track,
+        commands_music::score_validate,
+        commands_music::lyrics_set_text,
+        commands_music::lyrics_set_span,
+        commands_music::lyrics_clear_span,
+        commands_music::lyrics_shift,
+        commands_music::lyrics_apply_tap_sync,
+        commands_music::lyrics_export,
+        commands_music::lyrics_import,
+        commands_music::tuning_analyze,
+        commands_music::tuning_get,
+        commands_music::tuning_edit_note,
+        commands_music::tuning_set_scale,
+        commands_music::tuning_set_reference,
+        commands_music::tuning_apply,
+        commands_music::tuning_clear,
+        commands_music::tuner_start,
+        commands_music::tuner_read,
+        commands_music::tuner_stop,
+        commands_music::clip_time_stretch,
     ])
 }
 

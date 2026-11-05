@@ -12,6 +12,11 @@ ctx-mixing.workspace = true
 ctx-recording.workspace = true
 audio-engine.workspace = true
 dsp = { path = "../dsp" }
+dsp-pitch = { path = "../dsp-pitch" }
+ctx-sync = { path = "../ctx-sync" }
+ctx-tuning = { path = "../ctx-tuning" }
+ctx-notation = { path = "../ctx-notation" }
+infra-notation-io = { path = "../infra-notation-io" }
 serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
@@ -21,4 +26,5 @@ serde_json.workspace = true
 hound = "3.5"
 tempfile = "3"
 infra-persistence.workspace = true
+infra-adapters = { path = "../infra-adapters" }
 proptest.workspace = true

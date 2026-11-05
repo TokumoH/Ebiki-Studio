@@ -41,6 +41,10 @@
     "redoLabel": null,
     "undoLabel": "Região de loop"
   },
+  "lyrics": {
+    "id": "00000000-0000-7000-8000-000000000002",
+    "lines": []
+  },
   "master": {
     "inserts": [],
     "mute": false,
@@ -54,7 +58,7 @@
   },
   "project": {
     "bitDepth": 24,
-    "id": "00000000-0000-7000-8000-000000000002",
+    "id": "00000000-0000-7000-8000-000000000003",
     "name": "Demo",
     "root": "/home/usuario/Musica/Demo.amproj",
     "sampleRate": 48000
@@ -77,11 +81,12 @@
       3840
     ]
   },
+  "scores": [],
   "sources": [
     {
       "channels": 2,
       "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "id": "00000000-0000-7000-8000-000000000003",
+      "id": "00000000-0000-7000-8000-000000000004",
       "lengthFrames": 48000,
       "originalName": "voz.wav",
       "relPath": "audio/imported/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.wav"
@@ -113,16 +118,16 @@
         {
           "endTick": 1920,
           "gain": 0.0,
-          "id": "00000000-0000-7000-8000-000000000004",
+          "id": "00000000-0000-7000-8000-000000000005",
           "lengthFrames": 48000,
           "offsetFrames": 0,
-          "sourceId": "00000000-0000-7000-8000-000000000003",
+          "sourceId": "00000000-0000-7000-8000-000000000004",
           "sourceName": "voz.wav",
           "start": 0,
           "startFrame": 0
         }
       ],
-      "id": "00000000-0000-7000-8000-000000000005",
+      "id": "00000000-0000-7000-8000-000000000006",
       "meterSlot": 1,
       "name": "voz",
       "recording": {
@@ -150,7 +155,7 @@
               },
               "type": "compressor"
             },
-            "id": "00000000-0000-7000-8000-000000000006"
+            "id": "00000000-0000-7000-8000-000000000007"
           },
           {
             "bypass": false,
@@ -189,7 +194,7 @@
               },
               "type": "eq"
             },
-            "id": "00000000-0000-7000-8000-000000000007"
+            "id": "00000000-0000-7000-8000-000000000008"
           }
         ],
         "mute": false,
@@ -200,7 +205,7 @@
         "sends": [
           {
             "bus": "00000000-0000-7000-8000-000000000000",
-            "id": "00000000-0000-7000-8000-000000000008",
+            "id": "00000000-0000-7000-8000-000000000009",
             "level": -12.0,
             "preFader": false
           }
@@ -209,5 +214,9 @@
         "volume": -6.0
       }
     }
-  ]
+  ],
+  "tuning": {
+    "a4Hz": 440.0,
+    "maps": []
+  }
 }

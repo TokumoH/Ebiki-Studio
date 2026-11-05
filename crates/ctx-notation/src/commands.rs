@@ -27,7 +27,13 @@ fn missing() -> CommandError {
 }
 
 /// Edição dentro de uma voz. `index` é a posição do evento na voz; `note` a posição no acorde.
-#[derive(Debug, Clone, PartialEq)]
+/// Serializável (`{"kind": "insert", "index": 0, "event": {...}}`) para o IPC.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(
+    rename_all = "camelCase",
+    tag = "kind",
+    rename_all_fields = "camelCase"
+)]
 pub enum VoiceEdit {
     /// Insere em `index` (≤ len). Em uma voz inexistente (índice = nº de vozes) cria a voz na pauta 0.
     Insert {
@@ -362,8 +368,13 @@ impl Command<Score> for EditVoice {
     }
 }
 
-/// Edição estrutural da partitura.
-#[derive(Debug, Clone, PartialEq)]
+/// Edição estrutural da partitura. Serializável (`{"kind": "setKey", ...}`) para o IPC.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(
+    rename_all = "camelCase",
+    tag = "kind",
+    rename_all_fields = "camelCase"
+)]
 pub enum ScoreEdit {
     /// Insere um compasso vazio (pausas) em todas as partes.
     AddMeasure {

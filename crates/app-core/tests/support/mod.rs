@@ -162,3 +162,36 @@ impl MidiRenderer for SilentSynth {
         })
     }
 }
+
+/// Studio com a fábrica de DSP real (efeitos de verdade, inclusive o corretor de afinação).
+pub fn studio_dsp() -> Studio {
+    Studio::new(StudioDeps {
+        repo: Arc::new(SqliteSessionRepository),
+        media: Arc::new(WavMedia),
+        factory: Arc::new(infra_adapters::DspProcessorFactory),
+        clock: Arc::new(FakeClock(AtomicI64::new(1_000))),
+        synth: Arc::new(SilentSynth),
+    })
+}
+
+/// WAV mono com um seno (amplitude 0,5).
+pub fn sine_wav(dir: &Path, name: &str, hz: f32, frames: usize) -> PathBuf {
+    let p = dir.join(name);
+    let s: Vec<f32> = (0..frames)
+        .map(|i| 0.5 * (std::f32::consts::TAU * hz * i as f32 / SR as f32).sin())
+        .collect();
+    write_wav(&p, vec![s]);
+    p
+}
+
+/// Frequência mediana (Hz) dos quadros vozeados de um trecho (detector YIN do dsp-pitch).
+pub fn median_pitch(samples: &[f32]) -> f32 {
+    let mut f: Vec<f32> = dsp_pitch::pitch_track(samples, SR as f32, 480)
+        .iter()
+        .filter(|f| f.voiced)
+        .map(|f| f.frequency_hz)
+        .collect();
+    assert!(!f.is_empty(), "nenhum quadro vozeado");
+    f.sort_by(|a, b| a.total_cmp(b));
+    f[f.len() / 2]
+}

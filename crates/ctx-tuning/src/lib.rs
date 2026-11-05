@@ -4,9 +4,11 @@
 //! Domínio puro (sem I/O, sem DSP). O DSP correspondente vive em `dsp-pitch`; a camada de
 //! aplicação traduz [`PitchCorrectionMap`] em chamadas de render/correção.
 
+pub mod book;
 pub mod commands;
 pub mod domain;
 
+pub use book::{OnCorrectionMap, OnTuner, PutCorrectionMap, TuningBook};
 pub use commands::{ReplaceDetectedNotes, SetNoteEdit, SetScaleCorrection, SetTunerReference};
 pub use domain::{
     DetectedNote, DetectedNoteId, NoteEdit, PitchCorrectionMap, PitchCorrectionMapId,

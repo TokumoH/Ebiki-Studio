@@ -77,13 +77,13 @@ pub struct StudioDeps {
     pub synth: Arc<dyn MidiRenderer>,
 }
 
-struct OpenProject {
-    root: PathBuf,
-    session: Session,
-    history: History<Session>,
-    sources: HashMap<AudioSourceId, Arc<SourceBuffer>>,
+pub(crate) struct OpenProject {
+    pub(crate) root: PathBuf,
+    pub(crate) session: Session,
+    pub(crate) history: History<Session>,
+    pub(crate) sources: HashMap<AudioSourceId, Arc<SourceBuffer>>,
     /// Verdadeiro após recuperar um autosave (há mudanças em relação ao arquivo salvo).
-    force_dirty: bool,
+    pub(crate) force_dirty: bool,
 }
 
 struct ActiveRecording {
@@ -92,13 +92,15 @@ struct ActiveRecording {
 }
 
 pub struct Studio {
-    deps: StudioDeps,
-    open: Option<OpenProject>,
-    engine: Option<EngineHandle>,
-    input_channels: usize,
+    pub(crate) deps: StudioDeps,
+    pub(crate) open: Option<OpenProject>,
+    pub(crate) engine: Option<EngineHandle>,
+    pub(crate) input_channels: usize,
     sent_effects: HashSet<EffectKey>,
     meters: MeterMap,
     recording: Option<ActiveRecording>,
+    /// Afinador de entrada ativo (Fase 8).
+    pub(crate) tuner: Option<crate::tuning_service::TunerSession>,
 }
 
 /// Nome de pasta seguro a partir do nome do projeto.
@@ -135,6 +137,7 @@ impl Studio {
             sent_effects: HashSet::new(),
             meters: MeterMap::default(),
             recording: None,
+            tuner: None,
         }
     }
 
@@ -144,6 +147,8 @@ impl Studio {
     pub fn attach_engine(&mut self, handle: EngineHandle, input_channels: usize) -> AppResult<()> {
         self.engine = Some(handle);
         self.input_channels = input_channels;
+        // a derivação do afinador pertencia à engine anterior
+        self.tuner = None;
         self.sent_effects.clear();
         self.sync()
     }

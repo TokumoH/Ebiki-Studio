@@ -238,6 +238,71 @@ impl Default for DeEsserParams {
     }
 }
 
+/// Correção de afinação em tempo real (insert estilo "auto-tune"; DSP em `dsp-pitch`).
+///
+/// `scale_mask`: 12 bits, bit `n` = classe de altura `n` permitida (0 = Dó). A tônica (`key_root`,
+/// 0–11) é sempre incluída; máscara vazia vira cromática. Latência constante (PSOLA) reportada à engine.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PitchCorrectorParams {
+    pub enabled: bool,
+    pub key_root: u8,
+    pub scale_mask: u16,
+    /// Constante de tempo da correção (0 = instantânea/robótica; 10–200 ms natural).
+    pub retune_ms: f32,
+    /// 0 = corrige tudo; 1 = preserva todo o desvio.
+    pub humanize: f32,
+    /// Referência do Lá4 (415–466 Hz).
+    pub a4_hz: f32,
+}
+
+/// Máscara cromática (todas as 12 classes).
+pub const CHROMATIC_MASK: u16 = 0x0FFF;
+
+impl Default for PitchCorrectorParams {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            key_root: 0,
+            scale_mask: CHROMATIC_MASK,
+            retune_ms: 20.0,
+            humanize: 0.0,
+            a4_hz: 440.0,
+        }
+    }
+}
+
+impl PitchCorrectorParams {
+    /// Escala maior a partir da tônica (0 = Dó).
+    pub fn major(key_root: u8) -> Self {
+        let root = key_root % 12;
+        let mask = [0u8, 2, 4, 5, 7, 9, 11]
+            .iter()
+            .fold(0u16, |m, i| m | (1 << ((root + i) % 12)));
+        Self {
+            key_root: root,
+            scale_mask: mask,
+            ..Self::default()
+        }
+    }
+
+    pub fn clamped(&self) -> Self {
+        let key_root = self.key_root % 12;
+        let mut mask = self.scale_mask & CHROMATIC_MASK;
+        if mask == 0 {
+            mask = CHROMATIC_MASK;
+        }
+        Self {
+            enabled: self.enabled,
+            key_root,
+            scale_mask: mask | (1 << key_root),
+            retune_ms: c(self.retune_ms, 0.0, 1_000.0, 20.0),
+            humanize: c(self.humanize, 0.0, 1.0, 0.0),
+            a4_hz: c(self.a4_hz, 415.0, 466.0, 440.0),
+        }
+    }
+}
+
 /// Efeito com seus parâmetros.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", content = "params", rename_all = "camelCase")]
@@ -251,6 +316,7 @@ pub enum Effect {
     Saturation(SaturationParams),
     Chorus(ChorusParams),
     DeEsser(DeEsserParams),
+    PitchCorrector(PitchCorrectorParams),
 }
 
 impl Effect {
@@ -314,6 +380,7 @@ impl Effect {
                 threshold_db: c(p.threshold_db, -60.0, 0.0, -28.0),
                 reduction_db: c(p.reduction_db, -24.0, 0.0, -8.0),
             }),
+            Effect::PitchCorrector(p) => Effect::PitchCorrector(p.clamped()),
         }
     }
 
@@ -328,6 +395,7 @@ impl Effect {
             Effect::Saturation(_) => "Saturação",
             Effect::Chorus(_) => "Chorus",
             Effect::DeEsser(_) => "De-esser",
+            Effect::PitchCorrector(_) => "Correção de afinação",
         }
     }
 }
@@ -383,6 +451,36 @@ mod tests {
             panic!()
         };
         assert_eq!(p.bands.len(), MAX_EQ_BANDS);
+    }
+
+    #[test]
+    fn pitch_corrector_params_are_clamped() {
+        let Effect::PitchCorrector(p) = Effect::PitchCorrector(PitchCorrectorParams {
+            enabled: true,
+            key_root: 14,
+            scale_mask: 0xF000,
+            retune_ms: f32::NAN,
+            humanize: 3.0,
+            a4_hz: 1000.0,
+        })
+        .clamped() else {
+            panic!()
+        };
+        assert_eq!(p.key_root, 2);
+        assert_eq!(p.scale_mask, CHROMATIC_MASK, "máscara vazia vira cromática");
+        assert_eq!((p.retune_ms, p.humanize, p.a4_hz), (20.0, 1.0, 466.0));
+        let m = PitchCorrectorParams {
+            scale_mask: 0b1,
+            key_root: 7,
+            ..Default::default()
+        }
+        .clamped();
+        assert_eq!(m.scale_mask, 0b1000_0001, "tônica sempre permitida");
+        assert_eq!(PitchCorrectorParams::major(0).scale_mask, 0b1010_1011_0101);
+        let json =
+            serde_json::to_value(Effect::PitchCorrector(PitchCorrectorParams::default())).unwrap();
+        assert_eq!(json["type"], "pitchCorrector");
+        assert_eq!(json["params"]["scaleMask"], 4095);
     }
 
     #[test]

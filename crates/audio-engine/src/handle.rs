@@ -2,6 +2,7 @@
 
 use crate::core::{EngineCore, Garbage, Message};
 use crate::graph::RenderGraph;
+use crate::input_tap::{input_tap, InputTapReader};
 use crate::recorder::RecorderRt;
 use crate::telemetry::{Telemetry, TelemetrySnapshot};
 use std::sync::Arc;
@@ -104,6 +105,21 @@ impl EngineHandle {
 
     pub fn detach_recorder(&mut self) -> Result<(), EngineError> {
         self.send(Message::DetachRecorder)
+    }
+
+    /// Liga a derivação do canal de entrada `channel` (afinador). `capacity` em amostras.
+    pub fn attach_input_tap(
+        &mut self,
+        channel: usize,
+        capacity: usize,
+    ) -> Result<InputTapReader, EngineError> {
+        let (rt, reader) = input_tap(channel, capacity);
+        self.send(Message::AttachInputTap(Box::new(rt)))?;
+        Ok(reader)
+    }
+
+    pub fn detach_input_tap(&mut self) -> Result<(), EngineError> {
+        self.send(Message::DetachInputTap)
     }
 
     /// Libera objetos devolvidos pelo núcleo. Retorna quantos foram liberados.

@@ -38,6 +38,10 @@ impl SqliteSessionRepository {
     pub fn save_to(&self, path: &Path, s: &Session) -> Result<(), PersistenceError> {
         let mut conn = open_project_db(path)?;
         let tx = conn.transaction()?;
+        for t in crate::music_tables::TABLES {
+            // nomes de tabela são constantes do código, nunca entrada do usuário
+            tx.execute(&format!("DELETE FROM {t}"), [])?;
+        }
         for t in [
             "take",
             "track_recording",
@@ -62,6 +66,10 @@ impl SqliteSessionRepository {
         write_project(&tx, &s.project)?;
         write_mixer(&tx, &s.mixer)?;
         write_recording(&tx, &s.recording)?;
+        let sources = s.project.sources().iter().map(|x| x.id).collect();
+        crate::music_tables::write_lyrics(&tx, &s.lyrics)?;
+        crate::music_tables::write_tuning(&tx, &s.tuning, &sources)?;
+        crate::music_tables::write_scores(&tx, &s.scores)?;
         tx.commit()?;
         Ok(())
     }
@@ -74,10 +82,17 @@ impl SqliteSessionRepository {
         let project = read_project(&conn)?;
         let mixer = read_mixer(&conn)?;
         let recording = read_recording(&conn)?;
+        let lyrics =
+            crate::music_tables::read_lyrics(&conn)?.unwrap_or_else(app_core::empty_lyrics);
+        let tuning = crate::music_tables::read_tuning(&conn)?;
+        let scores = crate::music_tables::read_scores(&conn)?;
         Ok(Session {
             project,
             mixer,
             recording,
+            lyrics,
+            scores,
+            tuning,
         })
     }
 }
