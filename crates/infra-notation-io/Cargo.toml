@@ -1,0 +1,17 @@
+[package]
+name = "infra-notation-io"
+description = "Pure Fabrication de I/O de notação: MIDI (SMF), MusicXML (.musicxml/.mxl) e Guitar Pro 7 (.gp/gpif)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+shared-kernel.workspace = true
+ctx-notation = { path = "../ctx-notation" }
+thiserror.workspace = true
+midly = { version = "0.5.3", default-features = false, features = ["std"] }
+quick-xml = "0.37"
+zip = { version = "2.4", default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+proptest.workspace = true
