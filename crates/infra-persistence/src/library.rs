@@ -1,11 +1,12 @@
-//! `library.db`: dados globais do usuário (projetos recentes, preferências). As tabelas de harmonia e
-//! bases entram em migrações posteriores.
+//! `library.db`: dados globais do usuário (projetos recentes, preferências). Migração 2: esquema de
+//! harmonia e bases (`ctx_harmony::LIBRARY_SCHEMA_V1`); repositórios em `harmony_repo`.
 
 use crate::{migrate, open, PersistenceError};
 use rusqlite::{params, Connection, OptionalExtension};
 use std::path::Path;
 
-const LIBRARY_MIGRATIONS: &[&str] = &["
+const LIBRARY_MIGRATIONS: &[&str] = &[
+    "
 CREATE TABLE recent_project (
     path      TEXT PRIMARY KEY,
     name      TEXT NOT NULL,
@@ -16,7 +17,10 @@ CREATE TABLE setting (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-"];
+",
+    // v2 — Fase 4/5: harmonia + bases (DDL normalizado do contexto Harmony).
+    ctx_harmony::LIBRARY_SCHEMA_V1,
+];
 
 pub const MAX_RECENT: usize = 15;
 
@@ -36,7 +40,10 @@ impl LibraryDb {
     pub fn open(path: &Path) -> Result<Self, PersistenceError> {
         let mut conn = open(path)?;
         migrate(&mut conn, LIBRARY_MIGRATIONS)?;
-        Ok(Self { conn })
+        let db = Self { conn };
+        // vocabulário + catálogo embutido (idempotente; só regrava se a versão aumentou)
+        db.seed_catalog()?;
+        Ok(db)
     }
 
     pub fn connection(&self) -> &Connection {

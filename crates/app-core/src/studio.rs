@@ -1024,6 +1024,15 @@ impl Studio {
     pub fn deps(&self) -> &StudioDeps {
         &self.deps
     }
+
+    /// Registra buffers decodificados de fontes novas (uso dos casos de uso de `composition`).
+    pub(crate) fn register_source_buffers(&mut self, buffers: Vec<(AudioSourceId, SourceBuffer)>) {
+        if let Some(op) = self.open.as_mut() {
+            for (id, buf) in buffers {
+                op.sources.insert(id, Arc::new(buf));
+            }
+        }
+    }
 }
 
 /// Junta caminho relativo validado à raiz do projeto (defesa em profundidade contra path traversal).

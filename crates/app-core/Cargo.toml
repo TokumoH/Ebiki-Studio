@@ -20,6 +20,9 @@ infra-notation-io = { path = "../infra-notation-io" }
 serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
+ctx-harmony = { path = "../ctx-harmony" }
+ctx-library = { path = "../ctx-library" }
+serde_json.workspace = true
 
 [dev-dependencies]
 serde_json.workspace = true

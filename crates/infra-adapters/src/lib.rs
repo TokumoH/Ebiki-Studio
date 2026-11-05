@@ -6,4 +6,4 @@ pub mod synth;
 
 pub use dsp_factory::DspProcessorFactory;
 pub use media::CodecsMedia;
-pub use synth::SynthRenderer;
+pub use synth::{ConfigurableSynthRenderer, SynthRenderer, SynthStatus, SOUNDFONT_SETTING};

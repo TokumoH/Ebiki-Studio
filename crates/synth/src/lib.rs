@@ -2,6 +2,13 @@
 //!
 //! [`SimpleSynth`] não depende de arquivos externos (funciona sempre); timbres aproximados por família
 //! General MIDI e bateria sintetizada no canal 10 (índice 9).
+//!
+//! [`SoundFontSynth`] (opcional) renderiza com um arquivo SoundFont 2 (`.sf2`) via `rustysynth`
+//! (Rust puro, MIT — ADR-0025). Erros de arquivo são tipados ([`SynthError`]); nunca entra em pânico.
+
+pub mod soundfont;
+
+pub use soundfont::{SoundFontSynth, SynthError};
 
 use shared_kernel::{TempoMap, Tick};
 

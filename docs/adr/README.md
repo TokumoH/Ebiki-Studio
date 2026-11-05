@@ -26,3 +26,8 @@ Gerado por `scripts/adr_index.py`.
 | [0021](0021-modelo-notacao-e-io.md) | Modelo de notação próprio (pauta + tablatura sobre as mesmas notas) e I/O isolado | Aceita |
 | [0022](0022-codificadores-exportacao-licencas.md) | Codificadores de exportação e licenças (WAV, AIFF, FLAC, MP3, OGG) | Aceita (modo autônomo) |
 | [0023](0023-exportacao-aac-adiada.md) | Exportação AAC/M4A adiada (importação suportada) | Aceita (modo autônomo) |
+| [0025](0025-soundfont-rustysynth-e-audicao-wav-em-memoria.md) | SoundFont opcional via `rustysynth`; audição como WAV em memória; arraste vira áudio | Aceita (modo autônomo) |
+| [0026](0026-biblioteca-de-composicao-persistencia-e-decisao-de-bases.md) | Biblioteca de composição — persistência, histórico próprio e decisão explícita ao inserir bases | Aceita (modo autônomo) |
+| [0027](0027-partitura-documento-versionado-com-cabecalho-normalizado.md) | Partitura no `project.db` como documento versionado com cabeçalho normalizado | Aceita |
+| [0028](0028-afinador-por-derivacao-lock-free-da-entrada.md) | Afinador por derivação lock-free da entrada na engine | Aceita |
+| [0029](0029-processamento-de-altura-e-tempo-gera-fonte-derivada.md) | Correção de afinação, time-stretch e partitura renderizada geram fontes derivadas; corretor em tempo real como insert | Aceita |

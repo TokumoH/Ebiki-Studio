@@ -19,6 +19,8 @@ serde_json.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 rusqlite = { version = "0.41", features = ["bundled"] }
+ctx-harmony = { path = "../ctx-harmony" }
+ctx-library = { path = "../ctx-library" }
 
 [dev-dependencies]
 tempfile = "3"

@@ -95,7 +95,9 @@ pub fn parse(bytes: &[u8]) -> Result<Element, IoError> {
         };
         for a in e.attributes() {
             let a = a.map_err(IoError::malformed)?;
-            let v = a.unescape_value().map_err(IoError::malformed)?;
+            let v = a
+                .normalized_value(quick_xml::XmlVersion::Implicit1_0)
+                .map_err(IoError::malformed)?;
             el.attrs
                 .push((local(a.key.local_name().as_ref()), v.into_owned()));
         }
