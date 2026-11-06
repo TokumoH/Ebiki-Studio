@@ -47,12 +47,17 @@ export function LyricsPanel() {
   }, [serverText]);
 
   const selected = units[Math.min(sel, units.length - 1)];
-  useEffect(() => {
+  // o formulário acompanha a unidade selecionada **no mesmo render** (estado derivado): com um
+  // useEffect havia um intervalo após a seleção em que o que o usuário digitava era sobrescrito
+  const formKey = selected?.span ? `${sel}:${selected.span.start}:${selected.span.end}` : null;
+  const [syncedKey, setSyncedKey] = useState<string | null>(null);
+  if (formKey !== syncedKey) {
+    setSyncedKey(formKey);
     if (selected?.span) {
       setStart(ticksToBeats(selected.span.start));
       setEnd(ticksToBeats(selected.span.end));
     }
-  }, [selected?.span?.start, selected?.span?.end]); // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
   // tap-sync: Espaço marca, Backspace desfaz, Enter conclui, Esc cancela (captura antes dos atalhos globais)
   const tapRef = useRef(tapState);

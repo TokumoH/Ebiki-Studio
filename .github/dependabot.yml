@@ -19,9 +19,17 @@ updates:
     groups:
       ui-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      # os tipos do Node acompanham o runtime usado (Node 22 LTS); major só junto com o runtime
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
     target-branch: branchTrabalho
     schedule:
       interval: monthly
+    ignore:
+      # a "versão" desta action é a versão do Rust; ela é fixada de propósito junto com o
+      # rust-toolchain.toml e só muda numa atualização deliberada do toolchain
+      - dependency-name: dtolnay/rust-toolchain
