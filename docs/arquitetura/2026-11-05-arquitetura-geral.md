@@ -98,31 +98,60 @@ flowchart TB
 
 ```
 Ebiki Studio/
-├── crates/                     # Cargo workspace
-│   ├── shared-kernel/
-│   ├── ctx-project/            # domain + application de cada contexto
-│   ├── ctx-<contexto>/         # criados conforme as fases
-│   ├── audio-engine/           # Pure Fabrication: engine em tempo real
-│   ├── infra-persistence/      # SQLite, repositórios, migrações
-│   ├── infra-codecs/           # import / export
-│   └── app-desktop/            # Tauri: comandos, composition root
-├── ui/src/{shared,contexts,panels,app,ipc}
-├── docs/{requisitos,arquitetura,adr,specs,diagramas,manual}
+├── crates/                         # Cargo workspace (19 crates)
+│   ├── shared-kernel/              # Value Objects comuns, Tick/TempoMap, Command/History
+│   ├── ctx-project/                # Arranjo: projeto, faixas, clipes, edição (Fase 0 e 3)
+│   ├── ctx-recording/              # Captura: armar, entradas, takes (Fase 1)
+│   ├── ctx-mixing/                 # Mixer, buses, efeitos, auxílio de mix (Fase 2)
+│   ├── ctx-library/                # Biblioteca de bases (Fase 4)
+│   ├── ctx-harmony/                # Campos harmônicos, progressões (Fase 5)
+│   ├── ctx-sync/                   # Letra por sílaba, LRC/SRT (Fase 6)
+│   ├── ctx-notation/               # Partitura e tablatura (Fase 7)
+│   ├── ctx-tuning/                 # Afinador e correção de pitch (Fase 8)
+│   ├── audio-engine/               # PF: grafo em tempo real, gravação, metrônomo
+│   ├── dsp/                        # PF: efeitos nativos (EQ, compressor, reverb…)
+│   ├── dsp-pitch/                  # PF: YIN, PSOLA, time-stretch
+│   ├── synth/                      # PF: síntese General MIDI / SoundFont
+│   ├── app-core/                   # Aplicação: Studio, Composer, portas, casos de uso
+│   ├── infra-persistence/          # PF: SQLite (project.db, library.db), migrações
+│   ├── infra-codecs/               # PF: importação/exportação de áudio, picos
+│   ├── infra-notation-io/          # PF: MusicXML, MXL, MIDI
+│   ├── infra-adapters/             # Adaptadores das portas do app-core
+│   └── app-desktop/                # Tauri: comandos IPC, composition root
+├── ui/src/{shared,ipc,core,contexts,panels,app}
+├── docs/{requisitos,arquitetura,adr,specs,diagramas,manual,processo,relatorios}
 └── .github/workflows/
 ```
 
-Um crate por contexto faz o **compilador** garantir a independência entre contextos.
+Um crate por contexto faz o **compilador** garantir a independência entre contextos: todo
+`ctx-*` depende apenas do `shared-kernel`. Grafo real de dependências (gerado com
+`cargo metadata`; dependências normais entre crates do workspace):
 
 ```mermaid
 flowchart BT
     SK[shared-kernel]
-    CP[ctx-project] --> SK
-    CX[ctx-...] --> SK
-    AE[audio-engine] --> SK
-    IP[infra-persistence] --> CP
+    subgraph Domínio
+      CP[ctx-project]; CR[ctx-recording]; CM[ctx-mixing]; CL[ctx-library]
+      CH[ctx-harmony]; CS[ctx-sync]; CN[ctx-notation]; CT[ctx-tuning]
+    end
+    subgraph "Pure Fabrication técnica"
+      AE[audio-engine]; DSP[dsp]; DP[dsp-pitch]; SY[synth]
+    end
+    CP & CR & CM & CL & CH & CS & CN & CT --> SK
+    AE & DSP & DP & SY --> SK
+    AC[app-core] --> CP & CR & CM & CL & CH & CS & CN & CT & AE & DSP & DP
     IC[infra-codecs] --> SK
-    AD[app-desktop] --> CP & CX & AE & IP & IC
+    INI[infra-notation-io] --> CN
+    IP[infra-persistence] --> AC
+    IA[infra-adapters] --> AC & IC & INI & SY & DSP & DP
+    AD[app-desktop] --> AC & IA & IP
 ```
+
+- **Portas** (`app-core/src/ports.rs`): `SessionRepository`, `MediaPort`, `ProcessorFactory`,
+  `MidiRenderer`, `NotationFormats`, `Clock`. Os adaptadores ficam em `infra-*`; o `app-desktop`
+  é o único lugar que conhece todas as implementações (composition root).
+- `app-core` usa `audio-engine`, `dsp` e `dsp-pitch` diretamente: são serviços técnicos puros
+  (sem I/O), tratados como bibliotecas de cálculo (ADR-0014 e ADR-0029).
 
 ---
 

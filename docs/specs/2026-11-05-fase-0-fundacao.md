@@ -143,7 +143,7 @@ Eventos (núcleo → UI): `transport` (estado + posição, ~30 Hz), `meters` (pi
 
 O `gesture` (opcional) agrupa comandos contínuos (arrastar fader) num único item de desfazer.
 
-## 8. Interface (mockup em `docs/diagramas/mockup-fase-0.html`)
+## 8. Interface (mockups em `docs/specs/2026-11-05-ui-workspace.md`)
 
 Janela única com painéis encaixáveis: **Transporte** (topo), **Faixas + Timeline** (centro), **Mixer** (base),
 **Mapa de tempo** (lateral). Tela inicial com novo projeto, abrir e recentes.

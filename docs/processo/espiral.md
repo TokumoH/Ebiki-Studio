@@ -41,7 +41,7 @@ flowchart LR
 | Unitários Rust | `cargo test` | `crates/*/src` (módulos `tests`) |
 | Propriedade | `proptest` | conversões de tempo, ganho, DSP |
 | Integração Rust | `cargo test` em `crates/*/tests/` | persistência, codecs, engine |
-| Simulação | `crates/simulation` | cenários de sessão renderizados offline com asserções de áudio |
+| Simulação | `crates/infra-adapters/tests/full_chain.rs`, `crates/app-core/tests/*` | cenários de sessão completos (importar → mixar → exportar → analisar) renderizados offline com asserções de áudio |
 | Não-alocação | `assert_no_alloc` | testes da engine |
 | UI unitários | Vitest + Testing Library | `ui/src/**/*.test.tsx` |
 | E2E UI | Playwright + MockTransport | `ui/e2e/` |
