@@ -16,6 +16,7 @@ fn studio() -> Studio {
         factory: Arc::new(DspProcessorFactory),
         clock: Arc::new(SystemClock),
         synth: Arc::new(infra_adapters::SynthRenderer),
+        notation: Arc::new(infra_adapters::NotationIoFormats),
     })
 }
 

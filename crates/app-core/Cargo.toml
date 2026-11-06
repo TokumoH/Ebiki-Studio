@@ -16,7 +16,6 @@ dsp-pitch = { path = "../dsp-pitch" }
 ctx-sync = { path = "../ctx-sync" }
 ctx-tuning = { path = "../ctx-tuning" }
 ctx-notation = { path = "../ctx-notation" }
-infra-notation-io = { path = "../infra-notation-io" }
 serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
@@ -25,6 +24,7 @@ ctx-library = { path = "../ctx-library" }
 serde_json.workspace = true
 
 [dev-dependencies]
+infra-notation-io = { path = "../infra-notation-io" }
 serde_json.workspace = true
 hound = "3.5"
 tempfile = "3"

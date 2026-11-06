@@ -75,6 +75,7 @@ pub struct StudioDeps {
     pub factory: Arc<dyn ProcessorFactory>,
     pub clock: Arc<dyn Clock>,
     pub synth: Arc<dyn MidiRenderer>,
+    pub notation: Arc<dyn NotationFormats>,
 }
 
 pub(crate) struct OpenProject {

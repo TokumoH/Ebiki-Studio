@@ -119,13 +119,7 @@ pub struct ScoreTemplate {
 }
 
 /// Formato de exportação de partitura (PDF é gerado na UI pelo alphaTab).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum ScoreExportFormat {
-    MusicXml,
-    Mxl,
-    Midi,
-}
+pub use crate::ports::ScoreFileFormat as ScoreExportFormat;
 
 /// Relatório de validação de uma partitura.
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -145,10 +139,6 @@ pub struct ScoreImportResult {
     /// Avisos (PT-BR) do importador: o que foi aproximado/descartado.
     pub warnings: Vec<String>,
     pub view: SessionView,
-}
-
-fn io_notation(e: infra_notation_io::IoError) -> AppError {
-    AppError::new(e.code(), e.to_string())
 }
 
 /// Partitura → notas MIDI para o sintetizador (porta `MidiRenderer`).
@@ -288,7 +278,7 @@ impl Studio {
                 "Arquivo de partitura grande demais (máximo de 32 MiB).",
             ));
         }
-        let imported = infra_notation_io::import_any(bytes).map_err(io_notation)?;
+        let imported = self.deps().notation.import(bytes)?;
         let mut score = imported.score;
         if score.title.trim().is_empty() {
             let clean: String = name.chars().filter(|c| !c.is_control()).take(120).collect();
@@ -309,7 +299,16 @@ impl Studio {
     /// MusicXML (texto) da partitura, para o renderizador da UI (alphaTab) e a impressão em PDF.
     pub fn score_musicxml(&self, id: ScoreId) -> AppResult<String> {
         let s = self.op()?.session.scores.get(id).map_err(cmd_err)?;
-        Ok(infra_notation_io::musicxml::export_musicxml(s))
+        let bytes = self
+            .deps()
+            .notation
+            .export(s, ScoreExportFormat::MusicXml)?;
+        String::from_utf8(bytes).map_err(|_| {
+            AppError::new(
+                "notation.encoding",
+                "MusicXML gerado com codificação inválida.",
+            )
+        })
     }
 
     /// Exporta para `path` (escrita atômica).
@@ -320,19 +319,7 @@ impl Studio {
         format: ScoreExportFormat,
     ) -> AppResult<()> {
         let s = self.op()?.session.scores.get(id).map_err(cmd_err)?;
-        let bytes = match format {
-            ScoreExportFormat::MusicXml => {
-                infra_notation_io::musicxml::export_musicxml(s).into_bytes()
-            }
-            ScoreExportFormat::Mxl => {
-                infra_notation_io::musicxml::export_mxl(s).map_err(io_notation)?
-            }
-            ScoreExportFormat::Midi => infra_notation_io::midi::export_midi(
-                s,
-                &infra_notation_io::midi::MidiExportOptions::default(),
-            )
-            .map_err(io_notation)?,
-        };
+        let bytes = self.deps().notation.export(s, format)?;
         write_atomic(path, &bytes)
     }
 

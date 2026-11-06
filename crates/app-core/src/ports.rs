@@ -167,3 +167,30 @@ impl Clock for SystemClock {
             .unwrap_or(0)
     }
 }
+
+/// Formatos de arquivo de partitura tratados pela infraestrutura (PDF é gerado na UI).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ScoreFileFormat {
+    MusicXml,
+    Mxl,
+    Midi,
+}
+
+/// Partitura importada e avisos (PT-BR) do que foi aproximado/descartado.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ImportedScore {
+    pub score: ctx_notation::Score,
+    pub warnings: Vec<String>,
+}
+
+/// Conversão de partituras de/para formatos de arquivo (MusicXML, MXL, MIDI, Guitar Pro 7).
+pub trait NotationFormats: Send + Sync {
+    /// Detecta o formato pelo conteúdo e importa.
+    fn import(&self, bytes: &[u8]) -> Result<ImportedScore, PortError>;
+    fn export(
+        &self,
+        score: &ctx_notation::Score,
+        format: ScoreFileFormat,
+    ) -> Result<Vec<u8>, PortError>;
+}

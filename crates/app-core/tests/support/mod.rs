@@ -121,6 +121,7 @@ pub fn studio() -> Studio {
         factory: Arc::new(HalfGainFactory),
         clock: Arc::new(FakeClock(AtomicI64::new(1_000))),
         synth: Arc::new(SilentSynth),
+        notation: Arc::new(infra_adapters::NotationIoFormats),
     })
 }
 
@@ -171,6 +172,7 @@ pub fn studio_dsp() -> Studio {
         factory: Arc::new(infra_adapters::DspProcessorFactory),
         clock: Arc::new(FakeClock(AtomicI64::new(1_000))),
         synth: Arc::new(SilentSynth),
+        notation: Arc::new(infra_adapters::NotationIoFormats),
     })
 }
 

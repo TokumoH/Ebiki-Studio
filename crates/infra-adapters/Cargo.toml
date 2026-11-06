@@ -13,6 +13,8 @@ audio-engine.workspace = true
 dsp = { path = "../dsp" }
 dsp-pitch = { path = "../dsp-pitch" }
 synth = { path = "../synth" }
+ctx-notation = { path = "../ctx-notation" }
+infra-notation-io = { path = "../infra-notation-io" }
 infra-codecs = { path = "../infra-codecs" }
 serde.workspace = true
 

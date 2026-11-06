@@ -38,6 +38,7 @@ impl AppState {
             factory: Arc::new(DspProcessorFactory),
             clock: Arc::new(SystemClock),
             synth: synth.clone(),
+            notation: Arc::new(infra_adapters::NotationIoFormats),
         };
         Self {
             studio: Mutex::new(Studio::new(deps)),
