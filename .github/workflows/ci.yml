@@ -38,9 +38,13 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Dependências do sistema (Linux)
         if: runner.os == 'Linux'
+        # runners às vezes travam esperando o lock do apt: limite de tempo + espera explícita
+        timeout-minutes: 10
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libasound2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev
+          sudo apt-get -o DPkg::Lock::Timeout=180 update
+          sudo apt-get -o DPkg::Lock::Timeout=180 install -y libwebkit2gtk-4.1-dev libgtk-3-dev libasound2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev
       - name: Placeholder do frontend (o app Tauri exige ui/dist)
         shell: bash
         run: mkdir -p ui/dist && echo '<!doctype html><title>Ebiki Studio</title>' > ui/dist/index.html
