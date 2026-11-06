@@ -8,5 +8,6 @@
     "build": "npm run tauri build",
     "ui": "npm --prefix ui run dev:mock",
     "test": "cargo test --workspace && npm --prefix ui test"
-  }
+  },
+  "license": "GPL-3.0-or-later"
 }

@@ -23,6 +23,7 @@ function TrackHeader({ track, index, selected }: { track: Track; index: number; 
   const target = { kind: "track" as const, id: track.id };
   return (
     <div className="track-header" aria-selected={selected} onPointerDown={() => select({ trackId: track.id })} data-testid={`track-header-${index}`}>
+      <div className="title">
       {editing ? (
         <input
           className="input"
@@ -43,6 +44,11 @@ function TrackHeader({ track, index, selected }: { track: Track; index: number; 
           {track.name}
         </div>
       )}
+        <TrackOrderButtons trackId={track.id} name={track.name} index={index} />
+        <Button size="sm" variant="ghost" icon aria-label={`Remover ${track.name}`} title="Remover faixa" onClick={() => void run(() => api.trackDelete(track.id))}>
+          ✕
+        </Button>
+      </div>
       <div className="row">
         <Toggle className="toggle-m" pressed={track.strip.mute} onChange={(v) => void run(() => api.mixerEdit(target, { op: "mute", value: v }))} aria-label={`Mute ${track.name}`}>
           M
@@ -61,11 +67,6 @@ function TrackHeader({ track, index, selected }: { track: Track; index: number; 
         <Toggle className="toggle-view" pressed={spectrum} onChange={() => toggleSpectrum(track.id)} aria-label={`Espectrograma ${track.name}`} title={spectrum ? "Mostrando espectrograma (clique para forma de onda)" : "Mostrando forma de onda (clique para espectrograma)"}>
           ≋
         </Toggle>
-        <span style={{ flex: 1 }} />
-        <TrackOrderButtons trackId={track.id} name={track.name} index={index} />
-        <Button size="sm" variant="ghost" icon aria-label={`Remover ${track.name}`} title="Remover faixa" onClick={() => void run(() => api.trackDelete(track.id))}>
-          ✕
-        </Button>
       </div>
     </div>
   );

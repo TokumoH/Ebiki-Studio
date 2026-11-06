@@ -44,3 +44,23 @@ for (const size of [{ width: 1280, height: 720 }, { width: 1024, height: 640 }])
     expect(problems.slice(0, 15)).toEqual([]);
   });
 }
+
+test("cabeçalho de faixa mostra o nome e os controles numa linha só", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Cabecalho");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  await page.getByRole("button", { name: "Importar", exact: true }).click();
+  const header = page.getByTestId("track-header-0");
+  await expect(header.locator(".name")).toHaveText("voz");
+  const sizes = await header.evaluate((h) => ({
+    name: h.querySelector(".name")!.getBoundingClientRect().height,
+    row: h.querySelector(".row")!.getBoundingClientRect().height,
+    bottom: Math.max(...[...h.querySelectorAll("button")].map((b) => b.getBoundingClientRect().bottom)),
+    limit: h.getBoundingClientRect().bottom,
+  }));
+  expect(sizes.name, "nome legível (não esmagado)").toBeGreaterThanOrEqual(12);
+  expect(sizes.row, "controles em uma linha").toBeLessThanOrEqual(30);
+  expect(sizes.bottom, "nenhum botão fora do cabeçalho").toBeLessThanOrEqual(sizes.limit);
+});

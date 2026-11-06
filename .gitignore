@@ -8,3 +8,27 @@ ui/playwright-report/
 .claude/worktrees/
 node_modules/
 *.tsbuildinfo
+
+# --- privacidade: projetos e mídias pessoais nunca entram no repositório ---
+*.ebiki/
+*.amproj/
+/recordings/
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+*.aif
+*.aiff
+*.sf2
+!crates/**/tests/data/**
+!assets/bases/**
+
+# --- segredos ---
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore

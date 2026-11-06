@@ -12,7 +12,7 @@
 | 1 Captura | Mono/estéreo, multi-entrada, punch, takes, metrônomo, dispositivo/buffer |
 | 2 Mixagem | EQ, compressor, reverb, delay, limiter, gate, saturação, chorus; buses/sends; LUFS/correlação |
 | 3 Edição | **Entregue nesta rodada** — dividir, aparar, fades/crossfades, normalizar, polaridade, reverso, ganho, espectrograma |
-| 4 Bases | CC0, geradas, do usuário; metadados; decisão BPM/tom |
+| 4 Bases | Geradas e do usuário; metadados; decisão BPM/tom. Pacote CC0: suportado, mas o manifesto ainda está vazio (nenhum áudio CC0 empacotado) |
 | 5 Harmonia | Campos e modos, progressões por gênero, próximo acorde, ouvir, arrastar |
 | 6 Sincronização | Letra por sílaba, LRC/SRT, time-stretch |
 | 7 Notação | Partitura + tablatura, editor, MusicXML/MXL/MIDI, playback GM/SF2 |
@@ -101,6 +101,8 @@ smoke test do app desktop sob Xvfb ok (`img/2026-11-06-smoke-desktop.png`).
 - Efeitos com latência em **buses** não são compensados; monitoração ao vivo soma a latência do efeito.
 - Áudio decodificado em memória (≈ 1 h estéreo por 8 GB).
 - AAC indisponível na exportação; sem VST3/CLAP e automação (arquitetura preparada).
+- Nenhuma base de áudio CC0 empacotada ainda (`assets/bases/manifest.json` vazio); o app usa bases
+  geradas e as do usuário.
 - Logo: a fonte é um PNG de 98×210 px; uma exportação vetorial do autor daria ícones mais nítidos.
 
 ## 6. CI e minutos do GitHub Actions

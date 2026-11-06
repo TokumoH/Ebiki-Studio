@@ -9,8 +9,11 @@
 .track-headers { overflow: hidden; border-right: 1px solid var(--line); background: var(--bg-raised); }
 .track-header { height: var(--track-h); border-bottom: 1px solid var(--line); padding: var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .track-header[aria-selected="true"] { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
+.track-header .title { display: flex; align-items: center; gap: 2px; flex: none; min-width: 0; }
+.track-header .title .name, .track-header .title .input { flex: 1; min-width: 0; }
 .track-header .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: text; }
-.track-header .row { display: flex; gap: var(--space-1); align-items: center; }
+/* uma única linha: se não couber, rola na horizontal em vez de quebrar e esmagar o nome */
+.track-header .row { display: flex; flex-wrap: nowrap; gap: var(--space-1); align-items: center; flex: none; min-width: 0; }
 .track-header .track-order { width: 20px; font-size: 10px; }
 .lanes { position: relative; overflow: auto; }
 .lanes-inner { position: relative; }

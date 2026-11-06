@@ -4,6 +4,10 @@ on:
   push:
     tags: ["v*"]
 
+# padrão somente leitura; só o job de empacotamento escreve (para publicar a release)
+permissions:
+  contents: read
+
 jobs:
   bundle:
     strategy:

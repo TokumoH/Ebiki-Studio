@@ -171,4 +171,5 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
   `audio/` durante a sessão (o desfazer precisa deles) e são apagados ao reabrir o projeto.
 - Exportação AAC indisponível; MP3 até 48 kHz.
 - Sem plugins VST3/CLAP e sem automação nesta versão (arquitetura preparada — ADR-0011).
+- Nenhuma base de áudio CC0 vem empacotada ainda: use as bases geradas ou adicione as suas.
 - Efeitos **por clipe** ainda não existem (efeitos são por faixa/bus no mixer).

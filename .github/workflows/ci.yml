@@ -10,6 +10,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# menor privilégio: o token do workflow só lê o repositório
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -80,3 +84,21 @@ jobs:
         with:
           name: playwright-results
           path: ui/test-results
+
+  audit:
+    name: Auditoria de dependências
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.97.0
+      - name: cargo audit (vulnerabilidades conhecidas — RustSec)
+        run: |
+          cargo install cargo-audit --locked
+          cargo audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: npm audit (alta/crítica)
+        working-directory: ui
+        run: npm audit --audit-level=high
+
