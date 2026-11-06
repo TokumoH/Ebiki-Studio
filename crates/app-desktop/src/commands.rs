@@ -1,7 +1,7 @@
 //! Comandos IPC (adaptador de entrada). Finos: validam/convertem DTOs e delegam ao `Studio`.
 
 use crate::audio::{AudioRuntime, AudioStatus};
-use crate::ipc_args::{bad, id, user_path, Res};
+use crate::ipc_args::{bad, id, output_file, user_path, Res};
 use crate::state::{lock, AppState};
 use app_core::ports::{ExportFormatKind, ExportSettings};
 use app_core::*;
@@ -556,7 +556,9 @@ pub async fn export_mix(
     settings: ExportSettings,
     range: Option<(i64, i64)>,
 ) -> Res<()> {
-    let file = user_path(&path)?;
+    let ext = settings.format.extension();
+    // AIFF aceita também .aif
+    let file = output_file(&path, &[ext, if ext == "aiff" { "aif" } else { ext }])?;
     lock(&state.studio).export_mix(&file, &settings, range.map(|(a, b)| (Tick(a), Tick(b))))
 }
 

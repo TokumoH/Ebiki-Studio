@@ -23,9 +23,51 @@ pub(crate) fn user_path(p: &str) -> Res<PathBuf> {
     Ok(path)
 }
 
+/// Destino de escrita vindo da UI: além de absoluto, precisa ter uma das extensões do formato.
+/// Mesmo com a webview comprometida, uma exportação não consegue sobrescrever arquivos
+/// arbitrários do usuário (ex.: `~/.bashrc`, executáveis).
+pub(crate) fn output_file(p: &str, extensions: &[&str]) -> Res<PathBuf> {
+    let mut path = user_path(p)?;
+    let Some(ext) = path
+        .extension()
+        .map(|e| e.to_string_lossy().to_ascii_lowercase())
+    else {
+        // nome digitado sem extensão: completa com a do formato
+        let mut name = path.file_name().unwrap_or_default().to_os_string();
+        if name.to_string_lossy().starts_with('.') || name.is_empty() {
+            return Err(bad("nome de arquivo inválido"));
+        }
+        name.push(".");
+        name.push(extensions[0]);
+        path.set_file_name(name);
+        return Ok(path);
+    };
+    if !extensions.contains(&ext.as_str()) {
+        return Err(bad(&format!(
+            "extensão de arquivo inválida (esperado: {})",
+            extensions.join(", ")
+        )));
+    }
+    Ok(path)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn output_files_must_carry_the_format_extension() {
+        let abs = if cfg!(windows) { "C:\\x\\" } else { "/x/" };
+        assert!(output_file(&format!("{abs}mix.WAV"), &["wav"]).is_ok());
+        assert!(output_file(&format!("{abs}.bashrc"), &["wav"]).is_err());
+        assert_eq!(
+            output_file(&format!("{abs}mix"), &["wav"]).unwrap(),
+            std::path::PathBuf::from(format!("{abs}mix.wav")),
+            "sem extensão: completa"
+        );
+        assert!(output_file(&format!("{abs}mix.wav.exe"), &["wav"]).is_err());
+        assert!(output_file("mix.wav", &["wav"]).is_err(), "relativo");
+    }
 
     #[test]
     fn user_paths_must_be_absolute_and_clean() {

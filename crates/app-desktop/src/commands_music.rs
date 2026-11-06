@@ -3,7 +3,7 @@
 //! `docs/specs/2026-11-05-fase-7-notacao.md` e `…-fase-6-8-sincronizacao-e-afinacao.md`
 //! (seções "Integração (volta 2)").
 
-use crate::ipc_args::{bad, id, user_path, Res};
+use crate::ipc_args::{bad, id, output_file, user_path, Res};
 use crate::state::{lock, AppState};
 use app_core::lyrics_service::LyricsFileFormat;
 use app_core::notation_service::{
@@ -160,7 +160,12 @@ pub struct ScoreExportReq {
 
 #[tauri::command]
 pub fn score_export(state: State<AppState>, req: ScoreExportReq) -> Res<()> {
-    let p = user_path(&req.path)?;
+    let exts: &[&str] = match req.format {
+        ScoreExportFormat::MusicXml => &["musicxml", "xml"],
+        ScoreExportFormat::Mxl => &["mxl"],
+        ScoreExportFormat::Midi => &["mid", "midi"],
+    };
+    let p = output_file(&req.path, exts)?;
     lock(&state.studio).score_export(id(&req.score_id)?, &p, req.format)
 }
 
@@ -274,7 +279,11 @@ pub struct LyricsExportReq {
 
 #[tauri::command]
 pub fn lyrics_export(state: State<AppState>, req: LyricsExportReq) -> Res<()> {
-    let p = user_path(&req.path)?;
+    let exts: &[&str] = match req.format {
+        LyricsFileFormat::Lrc { .. } => &["lrc"],
+        LyricsFileFormat::Srt => &["srt"],
+    };
+    let p = output_file(&req.path, exts)?;
     lock(&state.studio).lyrics_export(&p, req.format)
 }
 
