@@ -140,7 +140,7 @@ export const HELP_TOPICS: HelpTopic[] = [
       "Sem som: confira a saída em Arquivo › Configurações de áudio; a barra de status avisa o modo silencioso.",
       "Estalos: aumente o buffer (256 ou 512 amostras).",
       "Gravação muda no macOS: Ajustes do Sistema › Privacidade › Microfone › ative o Ebiki Studio.",
-      "Painel sumiu: Janela › Painéis reabre, ou Exibir › Restaurar layout padrão.",
+      "Painel sumiu: reabra pelo menu Janela (ou Exibir › Painéis), ou use Exibir › Restaurar layout padrão.",
     ],
   },
 ];

@@ -2,6 +2,7 @@
 .appbar { display: flex; flex-direction: column; min-width: 0; border-bottom: 1px solid var(--line); }
 .menubar-row { height: 34px; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-2); background: var(--bg-sunken); border-bottom: 1px solid var(--line); min-width: 0; }
 .menubar-row .brand-mark { width: 11px; height: 23px; margin: 0 6px 0 4px; }
+.menubar-row .menubar { flex-shrink: 0; }
 .topbar { height: 44px; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-2); background: var(--bg-raised); min-width: 0; overflow: hidden; }
 .brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .brand-mark { display: inline-block; flex: none; width: 12px; height: 26px; background: var(--brand-fill);

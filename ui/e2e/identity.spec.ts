@@ -84,3 +84,12 @@ test("Sobre mostra a versão e a licença", async ({ page }) => {
   await expect(dialog).toContainText("Ebiki Studio 0.2.0");
   await expect(dialog).toContainText("GPL-3.0");
 });
+
+test("janela estreita: o nome do projeto encolhe sem cobrir o menu", async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await newProject(page, "Projeto com um nome bem comprido para a barra de menus");
+  const ajuda = await menu(page, "Ajuda").boundingBox();
+  const nome = await page.locator(".project-name").boundingBox();
+  expect(nome!.x).toBeGreaterThanOrEqual(ajuda!.x + ajuda!.width);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(800);
+});
