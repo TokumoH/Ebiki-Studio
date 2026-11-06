@@ -2,9 +2,20 @@ name: Release
 
 # Disparado por uma tag `v*` (ex.: v0.1.0). Gera os instaladores dos 3 sistemas, publica a
 # release com as notas do CHANGELOG.md e anexa SHA256SUMS.txt para verificação dos downloads.
+# Também pode ser iniciado manualmente (aba Actions → Release → Run workflow): nesse caso a
+# action cria a tag informada no commit escolhido.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Tag da versão a criar (ex.: v0.1.0)"
+        required: true
+        default: "v0.1.0"
+
+env:
+  TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
 
 # padrão somente leitura; só os jobs que publicam escrevem
 permissions:
@@ -47,11 +58,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libasound2-dev libsoup-3.0-dev librsvg2-dev libayatana-appindicator3-dev
       - run: npm ci --prefix ui
+      - name: Validar versão
+        shell: bash
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Tag inválida: $TAG"; exit 1; }
+          conf=$(node -p "require('./crates/app-desktop/tauri.conf.json').version")
+          [[ "v$conf" == "$TAG" ]] || { echo "tauri.conf.json tem $conf, mas a tag é $TAG"; exit 1; }
       - name: Notas da versão (seção do CHANGELOG.md)
         id: notes
         shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           {
             echo "body<<__EBIKI_NOTES__"
             awk -v v="$version" '
@@ -65,8 +82,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectPath: crates/app-desktop
-          tagName: ${{ github.ref_name }}
-          releaseName: "Ebiki Studio ${{ github.ref_name }}"
+          tagName: ${{ env.TAG }}
+          releaseName: "Ebiki Studio ${{ env.TAG }}"
+          releaseCommitish: ${{ github.sha }}
           releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease: false
@@ -83,7 +101,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
-          TAG: ${{ github.ref_name }}
         run: |
           mkdir dist && cd dist
           gh release download "$TAG" --repo "$REPO" --pattern '*' --skip-existing
