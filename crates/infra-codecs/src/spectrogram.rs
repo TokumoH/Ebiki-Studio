@@ -186,15 +186,14 @@ pub fn compute_spectrogram(
     }
     let total = channels.iter().map(Vec::len).min().unwrap_or(0);
     let gain = 1.0 / channels.len().max(1) as f32;
-    let mono: Vec<f32> = (0..total)
-        .map(|i| {
-            channels
-                .iter()
-                .map(|c| if c[i].is_finite() { c[i] } else { 0.0 })
-                .sum::<f32>()
-                * gain
-        })
-        .collect();
+    // mistura mono calculada sob demanda (sem cópia do áudio inteiro)
+    let mono = |i: usize| -> f32 {
+        channels
+            .iter()
+            .map(|c| if c[i].is_finite() { c[i] } else { 0.0 })
+            .sum::<f32>()
+            * gain
+    };
     let n = params.fft_size as usize;
     let hop = params.hop as usize;
     let window: Vec<f32> = (0..n)
@@ -213,7 +212,7 @@ pub fn compute_spectrogram(
         for (k, slot) in buf.iter_mut().enumerate() {
             let i = center - (n / 2) as isize + k as isize;
             let x = if i >= 0 && (i as usize) < total {
-                mono[i as usize]
+                mono(i as usize)
             } else {
                 0.0
             };

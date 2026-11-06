@@ -5,6 +5,7 @@ use crate::ipc_args::{bad, id, Res};
 use crate::state::{lock, AppState};
 use app_core::edit_service::{FadeRequest, DEFAULT_NORMALIZE_TARGET_DBFS};
 use app_core::ports::SpectrogramRequest;
+use app_core::AppError;
 use app_core::SessionView;
 use ctx_project::{ClipId, FadeShape};
 use shared_kernel::id::AudioSourceId;
@@ -82,13 +83,17 @@ pub fn clip_normalize(
 }
 
 /// Espectrograma de uma fonte em binário (formato `AMSG`, ver `infra_codecs::spectrogram`).
+/// Assíncrono e calculado fora do lock do `Studio`: não congela a UI nem os demais comandos.
 #[tauri::command]
-pub fn source_spectrogram(
-    state: State<AppState>,
+pub async fn source_spectrogram(
+    state: State<'_, AppState>,
     source_id: String,
     params: Option<SpectrogramRequest>,
 ) -> Res<tauri::ipc::Response> {
     let src: AudioSourceId = id(&source_id)?;
-    let bytes = lock(&state.studio).spectrogram(src, params.unwrap_or_default())?;
+    let job = lock(&state.studio).spectrogram_job(src, params.unwrap_or_default())?;
+    let bytes = tauri::async_runtime::spawn_blocking(move || job.run())
+        .await
+        .map_err(|e| AppError::new("app.internal", e.to_string()))??;
     Ok(tauri::ipc::Response::new(bytes))
 }

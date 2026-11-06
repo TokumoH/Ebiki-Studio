@@ -12,11 +12,11 @@ static A: AllocDisabler = AllocDisabler;
 /// Metade das faixas com fades/reverso/polaridade (Fase 3): o caminho por amostra também não aloca.
 fn edited_clip(k: u128, src: Arc<SourceBuffer>, start: u64) -> ClipRender {
     let mut c = clip(src, start);
-    if k % 2 == 0 {
+    if k.is_multiple_of(2) {
         c.fade_in = 5_000;
         c.fade_out = 5_000;
         c.fade_in_shape = FadeShape::EqualPower;
-        c.reverse = k % 4 == 0;
+        c.reverse = k.is_multiple_of(4);
         c.invert = true;
     }
     c

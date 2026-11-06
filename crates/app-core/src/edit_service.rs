@@ -4,10 +4,11 @@
 //! sessão. Nada aqui modifica arquivos de áudio (RNF-07): normalizar só mede a fonte decodificada
 //! e define o ganho do clipe; o espectrograma é calculado pela porta de mídia (Pure Fabrication).
 
-use crate::ports::SpectrogramRequest;
+use crate::ports::{MediaPort, SpectrogramRequest};
 use crate::session::on_project;
 use crate::studio::{AppError, AppResult, Studio};
 use crate::view::SessionView;
+use audio_engine::SourceBuffer;
 use ctx_project::commands::{
     Crossfade, SetClipFades, SetClipGain, SetClipPolarity, SetClipReversed, SplitClip, TrimClip,
 };
@@ -15,6 +16,8 @@ use ctx_project::{ClipId, FadeShape};
 use serde::{Deserialize, Serialize};
 use shared_kernel::id::AudioSourceId;
 use shared_kernel::{Db, Tick};
+use std::path::PathBuf;
+use std::sync::Arc;
 
 /// Alvo padrão da normalização (dBFS de pico).
 pub const DEFAULT_NORMALIZE_TARGET_DBFS: f32 = -1.0;
@@ -132,6 +135,16 @@ impl Studio {
         source: AudioSourceId,
         params: SpectrogramRequest,
     ) -> AppResult<Vec<u8>> {
+        self.spectrogram_job(source, params)?.run()
+    }
+
+    /// Prepara o cálculo do espectrograma sem prendê-lo ao `Studio`: o adaptador pode soltar o
+    /// lock e calcular fora da thread da UI (fontes longas levam segundos).
+    pub fn spectrogram_job(
+        &self,
+        source: AudioSourceId,
+        params: SpectrogramRequest,
+    ) -> AppResult<SpectrogramJob> {
         let op = self.op()?;
         let hash = op
             .session
@@ -140,12 +153,35 @@ impl Studio {
             .map_err(crate::music_support::cmd_err)?
             .content_hash
             .clone();
-        let buf = self.source_buffer(source)?;
-        let sr = self.sample_rate()?;
-        Ok(self
-            .deps
-            .media
-            .spectrogram(&buf, sr, params, Some((op.root.as_path(), &hash)))?)
+        Ok(SpectrogramJob {
+            media: self.deps.media.clone(),
+            audio: self.source_buffer(source)?,
+            sample_rate: self.sample_rate()?,
+            params,
+            root: op.root.clone(),
+            hash,
+        })
+    }
+}
+
+/// Cálculo de espectrograma pronto para rodar fora do `Studio` (dados imutáveis compartilhados).
+pub struct SpectrogramJob {
+    media: Arc<dyn MediaPort>,
+    audio: Arc<SourceBuffer>,
+    sample_rate: u32,
+    params: SpectrogramRequest,
+    root: PathBuf,
+    hash: String,
+}
+
+impl SpectrogramJob {
+    pub fn run(self) -> AppResult<Vec<u8>> {
+        Ok(self.media.spectrogram(
+            &self.audio,
+            self.sample_rate,
+            self.params,
+            Some((self.root.as_path(), &self.hash)),
+        )?)
     }
 }
 
