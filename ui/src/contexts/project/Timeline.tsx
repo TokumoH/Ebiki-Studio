@@ -185,7 +185,7 @@ export function Timeline() {
           <div className="playhead" style={{ left: tick * pxPerTick }} />
         </div>
       </div>
-      <div className="track-headers" ref={headersRef}>
+      <div className="track-headers" ref={headersRef} data-scroll-sync="lanes">
         {session.tracks.map((t, i) => (
           <TrackHeader key={t.id} track={t} index={i} selected={t.id === selectedTrackId} />
         ))}
