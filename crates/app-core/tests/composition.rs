@@ -492,3 +492,51 @@ fn generated_base_save_audition_and_adapt_by_bpm_ratio() {
     c.undo().unwrap();
     assert!(c.base(base.id).is_err());
 }
+
+fn user_base(name: &str) -> NewUserBase {
+    NewUserBase {
+        name: name.into(),
+        bpm: 100.0,
+        key: None,
+        meter: None,
+        genre: None,
+        instruments: Default::default(),
+        tags: vec![],
+        progression: None,
+    }
+}
+
+#[test]
+fn user_base_content_must_match_extension_and_nothing_is_left_behind() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut c = composer_in(dir.path());
+    let fake = dir.path().join("fake.wav");
+    std::fs::write(&fake, "isto é texto, não WAVE").unwrap();
+    let err = c.add_user_base(&fake, &user_base("Falsa")).unwrap_err();
+    assert_eq!(err.code, "composition.unsupported_audio", "{err:?}");
+    let leftovers = std::fs::read_dir(dir.path().join("bases"))
+        .map(|rd| rd.count())
+        .unwrap_or(0);
+    assert_eq!(leftovers, 0, "nenhuma cópia (nem .tmp) fica para trás");
+}
+
+#[test]
+fn unreferenced_user_base_files_are_collected_referenced_kept() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut c = composer_in(dir.path());
+    let src = sine_wav(dir.path(), "loop.wav", SR as usize);
+    let keep = c.add_user_base(&src, &user_base("Fica")).unwrap();
+    let gone = c.add_user_base(&src, &user_base("Sai")).unwrap();
+    let keep_file = c.base_audio_file(&keep).unwrap();
+    let gone_file = c.base_audio_file(&gone).unwrap();
+    c.remove_base(gone.id).unwrap();
+    assert!(
+        gone_file.exists(),
+        "a remoção é desfazível: o arquivo fica durante a sessão"
+    );
+    let stale_tmp = dir.path().join("bases/abc.wav.tmp");
+    std::fs::write(&stale_tmp, b"x").unwrap();
+    c.collect_unreferenced_user_bases();
+    assert!(keep_file.exists());
+    assert!(!gone_file.exists() && !stale_tmp.exists());
+}

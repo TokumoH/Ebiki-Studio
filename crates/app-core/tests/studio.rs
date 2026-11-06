@@ -383,3 +383,34 @@ fn swapping_engine_while_recording_keeps_the_take() {
         .count();
     assert_eq!(wavs, 1);
 }
+
+#[test]
+fn opening_collects_unreferenced_media_but_keeps_backup_references() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    let v = new_project(&mut st, dir.path());
+    let root = std::path::PathBuf::from(&v.project.root);
+    let kept = impulse_wav(dir.path(), "kept.wav", 0, 500);
+    let v = st.import_audio(&[kept], None, Tick(0)).unwrap();
+    let kept_file = root.join(v.sources[0].rel_path.as_str());
+    let in_backup = impulse_wav(dir.path(), "bk.wav", 7, 600);
+    let v = st.import_audio(&[in_backup], None, Tick(0)).unwrap();
+    let backup_file = root.join(v.sources[1].rel_path.as_str());
+    st.autosave().unwrap(); // o autosave referencia bk.wav
+    st.undo().unwrap(); // o projeto salvo não referencia mais
+    st.save().unwrap();
+    st.close().unwrap();
+    let orphan = root.join("audio/rendered/orfao.wav");
+    std::fs::create_dir_all(orphan.parent().unwrap()).unwrap();
+    std::fs::write(&orphan, b"x").unwrap();
+    let orphan2 = root.join("audio/imported/sobra.wav");
+    std::fs::write(&orphan2, b"x").unwrap();
+
+    st.open_project(&root).unwrap();
+    assert!(kept_file.exists(), "fonte do projeto mantida");
+    assert!(
+        backup_file.exists(),
+        "fonte referenciada só pelo autosave mantida"
+    );
+    assert!(!orphan.exists() && !orphan2.exists(), "lixo apagado");
+}

@@ -53,6 +53,8 @@ pub fn open_composer(data_dir: &Path, bundled_dir: PathBuf) -> Res<Composer> {
         user: data_dir.join("bases"),
         bundled: bundled_dir,
     };
+    // a coleta de arquivos de bases só é segura com o catálogo persistido de verdade
+    let mut persistent = false;
     let store: Box<dyn LibraryStore> = match LibraryDb::open(&data_dir.join("library.db")) {
         Ok(db) => {
             let manifest = BundledManifest::parse(BUNDLED_MANIFEST)?;
@@ -60,6 +62,7 @@ pub fn open_composer(data_dir: &Path, bundled_dir: PathBuf) -> Res<Composer> {
                 .map_err(|e| AppError::new(e.code(), e.to_string()))?;
             db.seed_starter_bases(&starter_bases()?, STARTER_BASES_VERSION)
                 .map_err(|e| AppError::new(e.code(), e.to_string()))?;
+            persistent = true;
             Box::new(db)
         }
         Err(_) => Box::new(MemoryLibraryStore::new(Library {
@@ -68,7 +71,11 @@ pub fn open_composer(data_dir: &Path, bundled_dir: PathBuf) -> Res<Composer> {
             ..Library::default()
         })),
     };
-    Composer::open(store, roots)
+    let composer = Composer::open(store, roots)?;
+    if persistent {
+        composer.collect_unreferenced_user_bases();
+    }
+    Ok(composer)
 }
 
 /// Trava o `Composer`, abrindo-o na primeira chamada.

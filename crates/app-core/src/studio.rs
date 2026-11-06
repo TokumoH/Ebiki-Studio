@@ -237,8 +237,43 @@ impl Studio {
             path.to_path_buf()
         };
         let session = self.deps.repo.load(&root.join(DB_FILE))?;
+        // ao abrir o histórico está vazio: arquivos sem fonte no projeto nem nos backups
+        // (renders de time-stretch, takes substituídos, importações desfeitas) são lixo
+        self.collect_unreferenced_media(&root, &session.project);
         let sources = self.decode_sources(&root, &session.project)?;
         self.install(root, session, sources)
+    }
+
+    /// Apaga arquivos de mídia que nenhuma fonte referencia — nem o projeto atual nem
+    /// qualquer autosave (que pode ser recuperado depois). Falhas de leitura cancelam a coleta.
+    fn collect_unreferenced_media(&self, root: &Path, project: &Project) {
+        let mut referenced: std::collections::HashSet<PathBuf> = project
+            .sources()
+            .iter()
+            .filter_map(|s| safe_join(root, &s.rel_path).ok())
+            .collect();
+        let Ok(backups) = list_backups(&root.join("backups")) else {
+            return;
+        };
+        for b in backups {
+            match self.deps.repo.load(&b) {
+                Ok(s) => referenced.extend(
+                    s.project
+                        .sources()
+                        .iter()
+                        .filter_map(|src| safe_join(root, &src.rel_path).ok()),
+                ),
+                // backup ilegível: na dúvida, não apaga nada
+                Err(_) => return,
+            }
+        }
+        for dir in MEDIA_DIRS {
+            for f in list_files(&root.join(dir)) {
+                if !referenced.contains(&f) {
+                    let _ = std::fs::remove_file(&f);
+                }
+            }
+        }
     }
 
     fn decode_sources(
@@ -1176,6 +1211,14 @@ impl Drop for OrphanFiles {
         }
     }
 }
+
+/// Pastas do projeto cujos arquivos pertencem a fontes de áudio.
+const MEDIA_DIRS: [&str; 4] = [
+    "audio/imported",
+    "audio/recorded",
+    crate::music_support::RENDERED_DIR,
+    crate::composition::GENERATED_AUDIO_DIR,
+];
 
 /// Arquivos regulares de uma pasta (vazio se a pasta não existir).
 fn list_files(dir: &Path) -> std::collections::HashSet<PathBuf> {

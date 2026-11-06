@@ -458,6 +458,7 @@ impl Composer {
                 "Arquivo de áudio não encontrado.",
             ));
         }
+        check_audio_file(src, &ext)?;
         let id = BaseId::new();
         let rel = AudioPath::new(format!("{id}.{ext}")).map_err(library_err)?;
         let mut base = Base::new(
@@ -481,8 +482,7 @@ impl Composer {
             .ok_or_else(|| invalid("internal", "Base sem arquivo."))?;
         std::fs::create_dir_all(&self.roots().user)
             .map_err(|e| AppError::new("app.io", format!("Erro de arquivo: {e}")))?;
-        std::fs::copy(src, &dest)
-            .map_err(|e| AppError::new("app.io", format!("Erro de arquivo: {e}")))?;
+        copy_atomically(src, &dest)?;
         if let Err(e) = self.execute(Box::new(OnBases(Box::new(AddBase::new(
             base.clone(),
             usize::MAX,
@@ -496,6 +496,78 @@ impl Composer {
     /// Remove uma base gerada/do usuário (o arquivo copiado fica em disco para permitir desfazer).
     pub fn remove_base(&mut self, id: BaseId) -> AppResult<()> {
         self.execute(Box::new(OnBases(Box::new(RemoveBase::new(id)))))
+    }
+}
+
+/// Tamanho máximo de uma base do usuário (mesmo limite da importação de áudio).
+pub const MAX_BASE_BYTES: u64 = 2 * 1024 * 1024 * 1024;
+
+/// Verificação barata antes de copiar: tamanho e assinatura do contêiner condizente com a extensão.
+fn check_audio_file(src: &Path, ext: &str) -> AppResult<()> {
+    let io = |e: std::io::Error| AppError::new("app.io", format!("Erro de arquivo: {e}"));
+    let len = std::fs::metadata(src).map_err(io)?.len();
+    if len > MAX_BASE_BYTES {
+        return Err(invalid("too_large", "Arquivo grande demais (máx. 2 GB)."));
+    }
+    let mut head = [0u8; 12];
+    let n =
+        std::io::Read::read(&mut std::fs::File::open(src).map_err(io)?, &mut head).map_err(io)?;
+    if !audio_signature_matches(&head[..n], ext) {
+        return Err(invalid(
+            "unsupported_audio",
+            "O conteúdo do arquivo não é um áudio válido para a extensão.",
+        ));
+    }
+    Ok(())
+}
+
+/// Assinatura mágica dos formatos aceitos.
+fn audio_signature_matches(h: &[u8], ext: &str) -> bool {
+    match ext {
+        "wav" => h.len() >= 12 && &h[0..4] == b"RIFF" && &h[8..12] == b"WAVE",
+        "flac" => h.starts_with(b"fLaC"),
+        "ogg" => h.starts_with(b"OggS"),
+        "aiff" | "aif" => {
+            h.len() >= 12 && &h[0..4] == b"FORM" && (&h[8..12] == b"AIFF" || &h[8..12] == b"AIFC")
+        }
+        "mp3" => h.starts_with(b"ID3") || (h.len() >= 2 && h[0] == 0xFF && h[1] & 0xE0 == 0xE0),
+        _ => false,
+    }
+}
+
+/// Copia para um temporário ao lado do destino e renomeia: nunca deixa base pela metade.
+fn copy_atomically(src: &Path, dest: &Path) -> AppResult<()> {
+    let io = |e: std::io::Error| AppError::new("app.io", format!("Erro de arquivo: {e}"));
+    let mut tmp = dest.as_os_str().to_owned();
+    tmp.push(".tmp");
+    let tmp = PathBuf::from(tmp);
+    if let Err(e) = std::fs::copy(src, &tmp).and_then(|_| std::fs::rename(&tmp, dest)) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(io(e));
+    }
+    Ok(())
+}
+
+impl Composer {
+    /// Apaga arquivos da pasta de bases do usuário que nenhuma base referencia
+    /// (bases removidas em sessões anteriores, cópias `.tmp` interrompidas).
+    /// Chamado ao abrir: o histórico de desfazer está vazio.
+    pub fn collect_unreferenced_user_bases(&self) {
+        let referenced: BTreeSet<PathBuf> = self
+            .library
+            .bases
+            .bases()
+            .iter()
+            .filter_map(|b| self.base_audio_file(b))
+            .collect();
+        let Ok(rd) = std::fs::read_dir(&self.roots().user) else {
+            return;
+        };
+        for p in rd.filter_map(Result::ok).map(|e| e.path()) {
+            if p.is_file() && !referenced.contains(&p) {
+                let _ = std::fs::remove_file(&p);
+            }
+        }
     }
 }
 
