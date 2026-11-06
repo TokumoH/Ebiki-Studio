@@ -44,7 +44,8 @@ fn records_punch_range_to_wav_with_start_frame() {
     h.detach_recorder().unwrap();
     core.process(&mut [0.0; 2], 2, &[], 0);
     h.collect_garbage();
-    let files = session.finish().unwrap();
+    let (files, errors) = session.finish();
+    assert!(errors.is_empty(), "{errors:?}");
     assert_eq!(files.len(), 1);
     assert_eq!(files[0].frames, 2_000, "somente a janela de punch");
     let (sr, ch) = read_wav_f32(&path).unwrap();
@@ -102,4 +103,50 @@ fn input_monitoring_passes_through_strip() {
         (l[500] - 0.25).abs() < 1e-6 && (r[500] - 0.25).abs() < 1e-6,
         "monitoração mesmo parado"
     );
+}
+
+#[test]
+fn abandoned_session_stops_threads_and_deletes_partial_files() {
+    let dir = tempfile::tempdir().unwrap();
+    let a = dir.path().join("a.wav");
+    let b = dir.path().join("b.wav");
+    let taps: Vec<TapConfig> = [&a, &b]
+        .iter()
+        .enumerate()
+        .map(|(i, p)| TapConfig {
+            key: i as u128,
+            left: 0,
+            right: None,
+            path: (*p).clone(),
+        })
+        .collect();
+    let (_rt, session) = RecordingSession::start(&taps, SR, 1).unwrap();
+    assert!(a.exists() && b.exists());
+    drop(session); // sem finish: deve terminar (sem travar) e limpar
+    assert!(!a.exists() && !b.exists());
+}
+
+#[test]
+fn failing_tap_cleans_up_taps_already_started() {
+    let dir = tempfile::tempdir().unwrap();
+    let ok = dir.path().join("ok.wav");
+    // diretório no lugar do arquivo: a criação do WAV falha
+    let bad = dir.path().join("bad.wav");
+    std::fs::create_dir(&bad).unwrap();
+    let taps = vec![
+        TapConfig {
+            key: 0,
+            left: 0,
+            right: None,
+            path: ok.clone(),
+        },
+        TapConfig {
+            key: 1,
+            left: 0,
+            right: None,
+            path: bad,
+        },
+    ];
+    assert!(RecordingSession::start(&taps, SR, 1).is_err());
+    assert!(!ok.exists(), "o arquivo do primeiro tap deve ser apagado");
 }

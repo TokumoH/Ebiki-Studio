@@ -38,6 +38,8 @@ pub enum Garbage {
     InputTap(Box<InputTapRt>),
 }
 
+/// Itens de lixo que o núcleo segura se a fila encher (controle sem coletar).
+const PENDING_GARBAGE_CAP: usize = 64;
 pub struct EngineCore {
     graph: Box<RenderGraph>,
     messages: rtrb::Consumer<Message>,
@@ -59,7 +61,8 @@ pub struct EngineCore {
     click_l: Vec<f32>,
     click_r: Vec<f32>,
     /// Garbage que não coube na fila (fica até haver espaço; nunca é liberado aqui).
-    pending_garbage: Option<Garbage>,
+    /// Transbordo da fila de lixo, pré-alocado (push sem alocar enquanto houver capacidade).
+    pending_garbage: Vec<Garbage>,
 }
 
 impl EngineCore {
@@ -90,7 +93,7 @@ impl EngineCore {
             master_r: vec![0.0; MAX_BLOCK],
             click_l: vec![0.0; MAX_BLOCK],
             click_r: vec![0.0; MAX_BLOCK],
-            pending_garbage: None,
+            pending_garbage: Vec::with_capacity(PENDING_GARBAGE_CAP),
         }
     }
 
@@ -111,18 +114,28 @@ impl EngineCore {
     }
 
     fn discard(&mut self, g: Garbage) {
-        if let Some(p) = self.pending_garbage.take() {
-            if let Err(rtrb::PushError::Full(p)) = self.garbage.push(p) {
-                // fila cheia: mantém o mais antigo pendente e "vaza" para o próximo ciclo
-                self.pending_garbage = Some(p);
-                // sem espaço para `g`: guarda-o no lugar do pendente seria perder o anterior;
-                // como último recurso, esquece (leak) em vez de liberar no tempo real.
+        self.flush_garbage();
+        if let Err(rtrb::PushError::Full(g)) = self.garbage.push(g) {
+            if self.pending_garbage.len() < self.pending_garbage.capacity() {
+                self.pending_garbage.push(g); // capacidade reservada: não aloca
+            } else {
+                // último recurso (controle travado por muito tempo): vazar em vez de liberar no RT
                 std::mem::forget(g);
-                return;
             }
         }
-        if let Err(rtrb::PushError::Full(g)) = self.garbage.push(g) {
-            self.pending_garbage = Some(g);
+    }
+
+    /// Reenvia o transbordo para a fila, na ordem, enquanto houver espaço.
+    fn flush_garbage(&mut self) {
+        while !self.pending_garbage.is_empty() {
+            if self.garbage.is_full() {
+                return;
+            }
+            let g = self.pending_garbage.remove(0);
+            if let Err(rtrb::PushError::Full(g)) = self.garbage.push(g) {
+                self.pending_garbage.insert(0, g);
+                return;
+            }
         }
     }
 
@@ -250,11 +263,7 @@ impl EngineCore {
         in_channels: usize,
     ) {
         self.handle_messages();
-        if let Some(p) = self.pending_garbage.take() {
-            if let Err(rtrb::PushError::Full(p)) = self.garbage.push(p) {
-                self.pending_garbage = Some(p);
-            }
-        }
+        self.flush_garbage();
         if let Some(tap) = self.input_tap.as_mut() {
             if in_channels > 0 {
                 tap.capture(input, in_channels, input.len() / in_channels);
@@ -615,22 +624,21 @@ fn render_grid_clicks(
 ) {
     let sr = g.sample_rate;
     let t0 = g.tempo.seconds_to_ticks_f64(pos as f64 / sr as f64);
-    let t1 = g
-        .tempo
-        .seconds_to_ticks_f64((pos + len as u64) as f64 / sr as f64);
     let meter = g.tempo.meter_at(shared_kernel::Tick(t0.floor() as i64));
     let sub = g.metronome.subdivision.max(1) as i64;
     let step = (meter.beat_ticks() / sub).max(1);
     let rel = t0 - meter.tick.0 as f64;
-    let mut k = (rel / step as f64).ceil() as i64;
+    // começa um passo antes: um clique cujo tick cai no fim do bloco anterior mas cujo
+    // quadro arredonda para este bloco não pode ser perdido. A pertença é decidida pelo quadro.
+    let mut k = ((rel / step as f64).ceil() as i64 - 1).max(0);
     let mut cursor = offset;
     loop {
         let tick = meter.tick.0 + k * step;
-        if tick as f64 >= t1 {
+        let frame = g.tempo.tick_to_frame(shared_kernel::Tick(tick), sr);
+        if frame >= pos + len as u64 {
             break;
         }
-        let frame = g.tempo.tick_to_frame(shared_kernel::Tick(tick), sr);
-        if frame >= pos && frame < pos + len as u64 {
+        if frame >= pos {
             let at = offset + (frame - pos) as usize;
             // renderiza o clique anterior até este ponto
             click.render(&mut out_l[cursor..at], &mut out_r[cursor..at], 0);

@@ -98,6 +98,7 @@ dependencies = [
  "infra-adapters",
  "infra-notation-io",
  "infra-persistence",
+ "log",
  "proptest",
  "serde",
  "serde_json",

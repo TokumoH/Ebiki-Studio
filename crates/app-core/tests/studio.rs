@@ -290,3 +290,96 @@ fn safe_join_rejects_escape() {
         "primeira barreira: RelPath"
     );
 }
+
+#[test]
+fn failed_import_batch_leaves_no_orphan_copies() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    let v = new_project(&mut st, dir.path());
+    let imported = std::path::Path::new(&v.project.root).join("audio/imported");
+    // um arquivo já importado continua (pode pertencer ao histórico)
+    let keep = impulse_wav(dir.path(), "keep.wav", 0, 500);
+    st.import_audio(&[keep], None, Tick(0)).unwrap();
+    let before = std::fs::read_dir(&imported).unwrap().count();
+    let good = impulse_wav(dir.path(), "good.wav", 3, 800);
+    let bad = dir.path().join("bad.wav");
+    std::fs::write(&bad, b"isto nao e um wav").unwrap();
+    let err = st.import_audio(&[good, bad], None, Tick(0)).unwrap_err();
+    assert_eq!(err.code, "codec.corrupt");
+    assert_eq!(
+        std::fs::read_dir(&imported).unwrap().count(),
+        before,
+        "cópias do lote com falha devem ser apagadas, as anteriores mantidas"
+    );
+    assert_eq!(st.view().unwrap().tracks.len(), 1, "estado intacto");
+}
+
+#[test]
+fn discard_recovery_removes_wal_sidecars() {
+    let dir = tempfile::tempdir().unwrap();
+    let backups = dir.path().join("backups");
+    std::fs::create_dir_all(&backups).unwrap();
+    let db = backups.join("autosave-1.db");
+    for f in [
+        db.clone(),
+        backups.join("autosave-1.db-wal"),
+        backups.join("autosave-1.db-shm"),
+    ] {
+        std::fs::write(f, b"x").unwrap();
+    }
+    Studio::discard_recovery(dir.path()).unwrap();
+    assert_eq!(std::fs::read_dir(&backups).unwrap().count(), 0);
+}
+
+#[test]
+fn swapping_engine_while_recording_keeps_the_take() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    let start_dev = |st: &mut Studio| {
+        let (h, core) = create_engine(EngineConfig {
+            sample_rate: SR,
+            ..Default::default()
+        });
+        let gen: audio_engine::null_device::InputGenerator = Box::new(|buf: &mut [f32]| {
+            buf.iter_mut().for_each(|x| *x = 0.25);
+        });
+        let dev = audio_engine::null_device::NullDevice::start(core, 256, 2, Some(gen));
+        st.attach_engine(h, 2).unwrap();
+        dev
+    };
+    let dev1 = start_dev(&mut st);
+    new_project(&mut st, dir.path());
+    let (tid, _) = st.create_track("Voz", None).unwrap();
+    let rec = TrackRecording {
+        armed: true,
+        input: Some(InputAssignment {
+            left: 0,
+            right: None,
+        }),
+        monitor: MonitorMode::Off,
+        ..Default::default()
+    };
+    st.execute(
+        on_recording(SetTrackRecording::new(tid, rec, "Armar")),
+        None,
+    )
+    .unwrap();
+    st.start_recording(Tick(0), false).unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(300));
+    // troca de dispositivo no meio do take
+    let dev2 = start_dev(&mut st);
+    dev1.stop();
+    assert!(!st.is_recording());
+    let v = st.view().unwrap();
+    dev2.stop();
+    assert_eq!(
+        v.tracks[0].recording.takes.len(),
+        1,
+        "o take não pode ser perdido"
+    );
+    assert!(v.tracks[0].clips[0].length_frames > 5_000);
+    let wavs = std::fs::read_dir(std::path::Path::new(&v.project.root).join("audio/recorded"))
+        .unwrap()
+        .count();
+    assert_eq!(wavs, 1);
+}

@@ -110,9 +110,13 @@ impl RecordingSession {
         sample_rate: u32,
         buffer_seconds: u32,
     ) -> Result<(RecorderRt, Self), RecordError> {
-        let stop = Arc::new(AtomicBool::new(false));
+        // `session` é criada antes das threads: se um tap falhar no meio, o `Drop`
+        // encerra as threads já iniciadas e apaga os arquivos parciais.
+        let mut session = Self {
+            stop: Arc::new(AtomicBool::new(false)),
+            workers: Vec::new(),
+        };
         let mut rt = Vec::new();
-        let mut workers = Vec::new();
         for cfg in taps {
             let channels: u16 = if cfg.right.is_some() { 2 } else { 1 };
             let cap = (sample_rate as usize * buffer_seconds.max(1) as usize) * channels as usize;
@@ -128,15 +132,19 @@ impl RecordingSession {
             }
             let writer = hound::WavWriter::create(&cfg.path, spec)
                 .map_err(|e| RecordError::Io(e.to_string()))?;
-            let stop_flag = stop.clone();
+            let stop_flag = session.stop.clone();
             let key = cfg.key;
             let path = cfg.path.clone();
-            workers.push(
-                std::thread::Builder::new()
-                    .name("ebiki-rec".into())
-                    .spawn(move || write_loop(consumer, writer, stop_flag, key, path, channels))
-                    .map_err(|e| RecordError::Io(e.to_string()))?,
-            );
+            let spawned = std::thread::Builder::new()
+                .name("ebiki-rec".into())
+                .spawn(move || write_loop(consumer, writer, stop_flag, key, path, channels));
+            match spawned {
+                Ok(h) => session.workers.push(h),
+                Err(e) => {
+                    let _ = std::fs::remove_file(&cfg.path);
+                    return Err(RecordError::Io(e.to_string()));
+                }
+            }
             rt.push(RecordTap {
                 key: cfg.key,
                 left: cfg.left,
@@ -144,19 +152,37 @@ impl RecordingSession {
                 producer,
             });
         }
-        Ok((RecorderRt { taps: rt }, Self { stop, workers }))
+        Ok((RecorderRt { taps: rt }, session))
     }
 
     /// Finaliza (depois que o núcleo devolveu o `RecorderRt`) e retorna os arquivos.
-    pub fn finish(self) -> Result<Vec<RecordedFile>, RecordError> {
+    ///
+    /// Cada faixa é independente: a falha de uma não descarta os takes das outras.
+    /// Um arquivo cuja escrita falhou já foi apagado pela própria thread.
+    pub fn finish(mut self) -> (Vec<RecordedFile>, Vec<RecordError>) {
         self.stop.store(true, Ordering::Release);
-        self.workers
-            .into_iter()
-            .map(|w| {
-                w.join()
-                    .map_err(|_| RecordError::Io("thread de gravação falhou".into()))?
-            })
-            .collect()
+        let mut files = Vec::new();
+        let mut errors = Vec::new();
+        for w in std::mem::take(&mut self.workers) {
+            match w.join() {
+                Ok(Ok(f)) => files.push(f),
+                Ok(Err(e)) => errors.push(e),
+                Err(_) => errors.push(RecordError::Io("thread de gravação falhou".into())),
+            }
+        }
+        (files, errors)
+    }
+}
+
+impl Drop for RecordingSession {
+    /// Gravação abandonada (sem `finish`): encerra as threads e apaga os arquivos parciais.
+    fn drop(&mut self) {
+        self.stop.store(true, Ordering::Release);
+        for w in std::mem::take(&mut self.workers) {
+            if let Ok(Ok(f)) = w.join() {
+                let _ = std::fs::remove_file(&f.path);
+            }
+        }
     }
 }
 
@@ -168,6 +194,33 @@ fn write_loop(
     path: PathBuf,
     channels: u16,
 ) -> Result<RecordedFile, RecordError> {
+    let r = write_samples(&mut consumer, &mut writer, &stop, channels);
+    let r = r.and_then(|frames| {
+        writer
+            .finalize()
+            .map_err(|e| RecordError::Io(e.to_string()))
+            .map(|()| frames)
+    });
+    match r {
+        Ok(frames) => Ok(RecordedFile {
+            key,
+            path,
+            channels,
+            frames,
+        }),
+        Err(e) => {
+            let _ = std::fs::remove_file(&path);
+            Err(e)
+        }
+    }
+}
+
+fn write_samples(
+    consumer: &mut rtrb::Consumer<f32>,
+    writer: &mut hound::WavWriter<std::io::BufWriter<std::fs::File>>,
+    stop: &AtomicBool,
+    channels: u16,
+) -> Result<u64, RecordError> {
     let mut samples = 0u64;
     loop {
         let stopping = stop.load(Ordering::Acquire);
@@ -190,15 +243,7 @@ fn write_loop(
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
     }
-    writer
-        .finalize()
-        .map_err(|e| RecordError::Io(e.to_string()))?;
-    Ok(RecordedFile {
-        key,
-        path,
-        channels,
-        frames: samples / channels as u64,
-    })
+    Ok(samples / channels as u64)
 }
 
 /// Lê um WAV gravado como canais não intercalados (utilitário para testes e importação de takes).

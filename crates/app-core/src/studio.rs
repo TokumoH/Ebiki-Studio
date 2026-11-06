@@ -146,6 +146,8 @@ impl Studio {
 
     /// Conecta (ou troca) a engine. O grafo atual é reenviado com processadores novos.
     pub fn attach_engine(&mut self, handle: EngineHandle, input_channels: usize) -> AppResult<()> {
+        // a gravação em curso pertence à engine anterior: finaliza o take antes de trocar
+        self.finish_recording_if_any();
         self.engine = Some(handle);
         self.input_channels = input_channels;
         // a derivação do afinador pertencia à engine anterior
@@ -155,6 +157,7 @@ impl Studio {
     }
 
     pub fn detach_engine(&mut self) -> Option<EngineHandle> {
+        self.finish_recording_if_any();
         self.sent_effects.clear();
         self.engine.take()
     }
@@ -264,6 +267,8 @@ impl Studio {
         session: Session,
         sources: HashMap<AudioSourceId, Arc<SourceBuffer>>,
     ) -> AppResult<SessionView> {
+        // trocar de projeto durante a gravação: o take vai para o projeto que estava aberto
+        self.finish_recording_if_any();
         self.open = Some(OpenProject {
             root,
             session,
@@ -359,7 +364,13 @@ impl Studio {
     /// Descarta autosaves (o usuário escolheu manter o arquivo salvo).
     pub fn discard_recovery(root: &Path) -> AppResult<()> {
         for f in list_backups(&root.join("backups")).map_err(AppError::io)? {
-            std::fs::remove_file(f).map_err(AppError::io)?;
+            std::fs::remove_file(&f).map_err(AppError::io)?;
+            // o banco usa WAL: os arquivos auxiliares também precisam sair
+            for ext in ["-wal", "-shm"] {
+                let mut side = f.clone().into_os_string();
+                side.push(ext);
+                let _ = std::fs::remove_file(side);
+            }
         }
         Ok(())
     }
@@ -480,13 +491,56 @@ impl Studio {
         if paths.is_empty() {
             return self.view();
         }
+        let root = self
+            .project_root()
+            .ok_or_else(AppError::no_project)?
+            .to_path_buf();
+        let imported_dir = root.join("audio/imported");
+        let before = list_files(&imported_dir);
+        // se o lote falhar no meio, apaga só as cópias criadas por ele (arquivos já existentes
+        // podem pertencer a fontes do histórico de desfazer)
+        let cleanup = |dir: &Path| {
+            for f in list_files(dir).difference(&before) {
+                let _ = std::fs::remove_file(f);
+            }
+        };
+        let (steps, new_buffers) = match self.plan_import(paths, track, at) {
+            Ok(p) => p,
+            Err(e) => {
+                cleanup(&imported_dir);
+                return Err(e);
+            }
+        };
+        if let Some(op) = self.open.as_mut() {
+            for (id, buf) in new_buffers {
+                op.sources.insert(id, Arc::new(buf));
+            }
+        }
+        let r = self.execute(Box::new(Composite::new("Importar áudio", steps)), None);
+        if r.is_err() {
+            cleanup(&imported_dir);
+        }
+        r
+    }
+
+    #[allow(clippy::type_complexity)]
+    fn plan_import(
+        &mut self,
+        paths: &[PathBuf],
+        track: Option<TrackId>,
+        at: Tick,
+    ) -> AppResult<(
+        Vec<Box<dyn Command<Session>>>,
+        Vec<(AudioSourceId, SourceBuffer)>,
+    )> {
         let (root, sr) = {
             let op = self.open.as_ref().ok_or_else(AppError::no_project)?;
             (op.root.clone(), op.session.project.format.sample_rate.hz())
         };
         let mut steps: Vec<Box<dyn Command<Session>>> = Vec::new();
         let mut new_buffers = Vec::new();
-        let mut planned_hashes: HashMap<String, AudioSourceId> = HashMap::new();
+        // hash → (fonte, duração decodificada) planejada neste lote
+        let mut planned: HashMap<String, (AudioSourceId, u64)> = HashMap::new();
         for path in paths {
             let m = self.deps.media.import(path, &root, sr)?;
             if m.frames == 0 {
@@ -495,31 +549,43 @@ impl Studio {
                     format!("O arquivo \"{}\" não tem áudio.", m.original_name),
                 ));
             }
-            let existing = self
-                .session()
-                .and_then(|s| s.project.source_by_hash(&m.content_hash).map(|s| s.id));
-            let source_id = match existing.or_else(|| planned_hashes.get(&m.content_hash).copied())
-            {
-                Some(id) => id,
-                None => {
-                    let rel = RelPath::new(m.rel_path.clone())
-                        .map_err(|e| AppError::from(CommandError::from(e)))?;
-                    let src = AudioSource {
-                        id: AudioSourceId::new(),
-                        content_hash: m.content_hash.clone(),
-                        rel_path: rel,
-                        original_name: m.original_name.clone(),
-                        channels: m.channels,
-                        length_frames: m.frames,
-                    };
-                    let file = safe_join(&root, &src.rel_path)?;
-                    new_buffers.push((src.id, self.deps.media.decode(&file, sr)?));
-                    planned_hashes.insert(m.content_hash.clone(), src.id);
-                    let id = src.id;
-                    steps.push(on_project(AddSource::new(src)));
-                    id
-                }
-            };
+            let existing = self.session().and_then(|s| {
+                s.project
+                    .source_by_hash(&m.content_hash)
+                    .map(|s| (s.id, s.length_frames))
+            });
+            let (source_id, frames) =
+                match existing.or_else(|| planned.get(&m.content_hash).copied()) {
+                    Some(found) => found,
+                    None => {
+                        let rel = RelPath::new(m.rel_path.clone())
+                            .map_err(|e| AppError::from(CommandError::from(e)))?;
+                        let file = safe_join(&root, &rel)?;
+                        let buf = self.deps.media.decode(&file, sr)?;
+                        // a duração vem do áudio decodificado, não do cabeçalho do contêiner
+                        // (MP3 com padding/cabeçalho incorreto faria o clipe ser descartado)
+                        let frames = buf.frames();
+                        if frames == 0 {
+                            return Err(AppError::new(
+                                "app.empty_audio",
+                                format!("O arquivo \"{}\" não tem áudio.", m.original_name),
+                            ));
+                        }
+                        let src = AudioSource {
+                            id: AudioSourceId::new(),
+                            content_hash: m.content_hash.clone(),
+                            rel_path: rel,
+                            original_name: m.original_name.clone(),
+                            channels: m.channels,
+                            length_frames: frames,
+                        };
+                        new_buffers.push((src.id, buf));
+                        planned.insert(m.content_hash.clone(), (src.id, frames));
+                        let id = src.id;
+                        steps.push(on_project(AddSource::new(src)));
+                        (id, frames)
+                    }
+                };
             let target = match track {
                 Some(t) => t,
                 None => {
@@ -545,17 +611,12 @@ impl Studio {
                 source_id,
                 start: at,
                 offset_frames: 0,
-                length_frames: m.frames,
+                length_frames: frames,
                 gain: Db::UNITY,
             };
             steps.push(on_project(AddClip::new(target, clip)));
         }
-        if let Some(op) = self.open.as_mut() {
-            for (id, buf) in new_buffers {
-                op.sources.insert(id, Arc::new(buf));
-            }
-        }
-        self.execute(Box::new(Composite::new("Importar áudio", steps)), None)
+        Ok((steps, new_buffers))
     }
 
     // -------------------------------------------------------------- transporte
@@ -652,6 +713,17 @@ impl Studio {
 
     // --------------------------------------------------------------- gravação
 
+    /// Encerra uma gravação em curso preservando o take (troca de engine/projeto).
+    fn finish_recording_if_any(&mut self) {
+        if self.recording.is_some() && self.engine.is_some() && self.open.is_some() {
+            if let Err(e) = self.stop_recording() {
+                log::warn!("gravação encerrada com erro: {e}");
+            }
+        }
+        // sem engine/projeto: o Drop do RecordingSession apaga os parciais
+        self.recording = None;
+    }
+
     pub fn is_recording(&self) -> bool {
         self.recording.is_some()
     }
@@ -707,13 +779,15 @@ impl Studio {
         let (rt, session) = RecordingSession::start(&taps, sr, 8)
             .map_err(|e| AppError::new("app.record_io", e.to_string()))?;
         let start = self.tick_to_frame(at)?;
+        // em erro, `session` sai de escopo: o Drop encerra as threads e apaga os arquivos
         let engine = self.engine()?;
         engine
             .attach_recorder(rt)
             .map_err(|e| AppError::new("app.engine", e.to_string()))?;
-        engine
-            .record(start, count_in)
-            .map_err(|e| AppError::new("app.engine", e.to_string()))?;
+        if let Err(e) = engine.record(start, count_in) {
+            let _ = engine.detach_recorder();
+            return Err(AppError::new("app.engine", e.to_string()));
+        }
         self.recording = Some(ActiveRecording { session, tracks });
         Ok(())
     }
@@ -744,16 +818,18 @@ impl Studio {
             engine.collect_garbage();
             rs
         };
-        let files = rec
-            .session
-            .finish()
-            .map_err(|e| AppError::new("app.record_io", e.to_string()))?;
+        let (files, write_errors) = rec.session.finish();
+        for e in &write_errors {
+            log::warn!("falha ao gravar uma faixa: {e}");
+        }
         let Some(start_frame) = record_start else {
             for f in &files {
                 let _ = std::fs::remove_file(&f.path);
             }
             return self.view();
         };
+        // qualquer saída antecipada (erro ou faixa descartada) apaga os WAVs não incorporados
+        let mut orphans = OrphanFiles(files.iter().map(|f| f.path.clone()).collect());
         let (root, sr) = {
             let op = self.open.as_ref().ok_or_else(AppError::no_project)?;
             (op.root.clone(), op.session.project.format.sample_rate.hz())
@@ -799,6 +875,7 @@ impl Studio {
             let start_tick_frame = tempo.tick_to_frame(start_tick, sr);
             let offset = (start_tick_frame - start_frame) + latency;
             if offset >= f.frames {
+                let _ = std::fs::remove_file(&f.path);
                 continue;
             }
             let mut tr = s.recording.track(*track);
@@ -843,7 +920,9 @@ impl Studio {
                 op.sources.insert(id, Arc::new(b));
             }
         }
-        self.execute(Box::new(Composite::new("Gravação", steps)), None)
+        let view = self.execute(Box::new(Composite::new("Gravação", steps)), None)?;
+        orphans.disarm();
+        Ok(view)
     }
 
     /// Escolhe outro take como ativo (troca o clipe da faixa).
@@ -1078,4 +1157,34 @@ fn rotate_backups(dir: &Path, keep: usize) -> std::io::Result<()> {
         }
     }
     Ok(())
+}
+
+/// Arquivos gravados ainda não incorporados ao projeto: apagados no `Drop`
+/// a menos que `disarm` seja chamado após o commit.
+struct OrphanFiles(Vec<PathBuf>);
+
+impl OrphanFiles {
+    fn disarm(&mut self) {
+        self.0.clear();
+    }
+}
+
+impl Drop for OrphanFiles {
+    fn drop(&mut self) {
+        for p in &self.0 {
+            let _ = std::fs::remove_file(p);
+        }
+    }
+}
+
+/// Arquivos regulares de uma pasta (vazio se a pasta não existir).
+fn list_files(dir: &Path) -> std::collections::HashSet<PathBuf> {
+    std::fs::read_dir(dir)
+        .map(|rd| {
+            rd.filter_map(Result::ok)
+                .map(|e| e.path())
+                .filter(|p| p.is_file())
+                .collect()
+        })
+        .unwrap_or_default()
 }

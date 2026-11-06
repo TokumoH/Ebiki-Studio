@@ -245,7 +245,9 @@ fn open_streams(
             .build_input_stream(
                 in_config,
                 move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                    if let Ok(mut chunk) = prod.write_chunk_uninit(data.len().min(prod.slots())) {
+                    // só quadros inteiros: um corte no meio do quadro trocaria L/R para sempre
+                    let whole = (data.len().min(prod.slots()) / in_ch) * in_ch;
+                    if let Ok(mut chunk) = prod.write_chunk_uninit(whole) {
                         let n = chunk.len();
                         let (a, b) = chunk.as_mut_slices();
                         for (dst, src) in a.iter_mut().chain(b.iter_mut()).zip(data) {

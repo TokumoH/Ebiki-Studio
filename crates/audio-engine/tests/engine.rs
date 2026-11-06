@@ -229,3 +229,54 @@ fn stop_returns_position_and_seek_moves() {
     assert_eq!(core.position(), 5000);
     assert_eq!(h.telemetry().position(), 5000);
 }
+
+/// Regressão: um clique cujo tick cai no fim de um bloco mas cujo quadro arredonda
+/// para o bloco seguinte era perdido. Tempo com batida fracionária + vários tamanhos de bloco.
+#[test]
+fn metronome_never_drops_clicks_at_block_boundaries() {
+    let bpm = 97.0; // 1 tempo = 29690,72 quadros (não inteiro)
+    let sub = 4;
+    let seconds = 12.0;
+    let frames = (SR as f64 * seconds) as usize;
+    let step_frames = SR as f64 * 60.0 / bpm / sub as f64;
+    let expected = (frames as f64 / step_frames).ceil() as usize;
+    // bloco (≤ MAX_BLOCK) cujo múltiplo cai exatamente no quadro arredondado (para cima) de um clique
+    let map = shared_kernel::tempo::TempoMap::new(bpm, 4, 4).unwrap();
+    let step_ticks = map.meter_at(shared_kernel::Tick(0)).beat_ticks() / sub as i64;
+    let tricky = (1..64)
+        .map(|k| map.tick_to_seconds(shared_kernel::Tick(k * step_ticks)) * SR as f64)
+        .filter(|f| f.fract() >= 0.5 && *f < frames as f64)
+        .find_map(|f| {
+            let b = f.ceil() as usize;
+            (64..=audio_engine::MAX_BLOCK)
+                .rev()
+                .find(|d| b.is_multiple_of(*d))
+        })
+        .expect("há um clique com quadro fracionário divisível por um bloco válido");
+    for block in [tricky, 31, 37, 64, 127, 256, 441, 512] {
+        let mut g = RenderGraph::empty(SR);
+        g.tempo = shared_kernel::tempo::TempoMap::new(bpm, 4, 4).unwrap();
+        g.metronome = MetronomeSettings {
+            enabled: true,
+            volume: 1.0,
+            subdivision: sub,
+            ..Default::default()
+        };
+        let (_h, mut core) = playing(g);
+        let (l, _) = offline::render(&mut core, frames, block);
+        let mut onsets = 0;
+        let mut last: Option<usize> = None;
+        for (i, x) in l.iter().enumerate() {
+            if x.abs() > 1e-6 {
+                if last.is_none_or(|p| i - p > 400) {
+                    onsets += 1;
+                }
+                last = Some(i);
+            }
+        }
+        assert_eq!(
+            onsets, expected,
+            "bloco {block}: cliques perdidos ou duplicados"
+        );
+    }
+}
