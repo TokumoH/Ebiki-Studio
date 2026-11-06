@@ -52,7 +52,7 @@ export function StartScreen() {
     <div className="start">
       <header>
         <div className="brand">
-          <span className="brand-dot" /> Ebiki Studio
+          <span className="brand-mark" role="img" aria-label="Ebiki Studio" /> Ebiki Studio
         </div>
         <Button variant="ghost" onClick={toggleTheme} aria-label="Alternar tema claro/escuro">
           ◐ Tema

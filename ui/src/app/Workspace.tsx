@@ -107,7 +107,7 @@ export function Workspace() {
     <div className="app" aria-busy={busy}>
       <header className="topbar">
         <div className="brand">
-          <span className="brand-dot" />
+          <span className="brand-mark" role="img" aria-label="Ebiki Studio" />
         </div>
         <span className="project-name" title={session.project.root}>
           {session.project.name}
