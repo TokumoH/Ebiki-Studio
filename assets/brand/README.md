@@ -9,11 +9,14 @@ codificados no canal alfa (preenchimento ≈ 75 %, traços 100 %). Qualquer text
 | `ebiki-mark.png` | Marca recortada (98×210, tinta sumi, fundo transparente) |
 | `ebiki-mark@4x.png` | Marca original ampliada 4× (Lanczos), sem textura |
 | `ebiki-icon-1024.png` | Ícone do app: marca original em tinta sobre papel Agridoce (`#f3efe9`), cantos arredondados |
-| `opcoes-textura.png` | Folha comparativa das opções de pincel (claro e escuro) |
-| `opcao-textura-1..4.png` | 1 bordas suaves · 2 pincel seco sutil · 3 kasure leve · 4 tinta absorvida no papel |
+| `ebiki-mark-suave@8x.png` | **Marca em uso**: bordas suavizadas como contorno de pincel (784×1680) |
+| `bordas-suavizadas-comparacao.png` | Original × suavização leve × média (adotada) |
+| `opcoes-cores.png` | 8 opções de cor sólida sobre a marca suavizada (papel, noite e ícone) |
 
 - Na UI a marca é uma **máscara CSS**; a cor vem do tema (`--brand-fill`): tinta papel `#eee7f2` no escuro, tinta `#1d2430` no claro.
-- **Em uso:** marca original (0). Para adotar uma opção de textura, copiar `opcao-textura-N.png` sobre
-  `ebiki-mark@4x.png` e `ui/src/shared/assets/ebiki-mark.png`, recompor o ícone e regenerar:
+- **Suavização das bordas** (`scripts/brand_smooth_edges.py ebiki-mark.png saida.png 4.5`, requer numpy/scipy/Pillow): cada conjunto de nível `{alfa ≥ t}` (128 níveis) é
+  suavizado (gaussiana σ = 4,5 px em 8×) e re-limiarizado. Tons planos, degradês e pontos internos ficam
+  idênticos (diferença máxima no interior < 1 %); só os contornos em escada viram curvas de pincel.
+- Para trocar o ícone: recompor `ebiki-icon-1024.png` e regenerar:
   `npm run tauri -- icon crates/app-desktop/icons/source.png -o crates/app-desktop/icons` (apagar `android/` e `ios/` gerados).
 - Para nitidez máxima, substituir por exportação vetorial ou PNG ≥ 1024 px de altura.
