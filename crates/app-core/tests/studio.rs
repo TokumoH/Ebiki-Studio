@@ -15,6 +15,23 @@ fn new_project(st: &mut Studio, dir: &std::path::Path) -> SessionView {
         .unwrap()
 }
 
+/// Espera o dispositivo simulado gravar `frames` amostras (pela posição real do transporte),
+/// em vez de um `sleep` fixo — runners de CI lentos não podem tornar o teste instável.
+fn wait_recorded(st: &Studio, frames: u64) {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    loop {
+        let t = st.transport().unwrap();
+        if t.record_start.is_some_and(|rs| t.frame >= rs + frames) {
+            return;
+        }
+        assert!(
+            std::time::Instant::now() < deadline,
+            "dispositivo simulado não avançou: {t:?}"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+}
+
 #[test]
 fn create_import_play_is_sample_accurate() {
     let dir = tempfile::tempdir().unwrap();
@@ -255,7 +272,7 @@ fn records_from_simulated_device_into_take_and_clip() {
     )
     .unwrap();
     st.start_recording(Tick(960), false).unwrap();
-    std::thread::sleep(std::time::Duration::from_millis(400));
+    wait_recorded(&st, 19_200); // 0,4 s
     let v = st.stop_recording().unwrap();
     dev.stop();
     let t = &v.tracks[0];
@@ -365,8 +382,8 @@ fn swapping_engine_while_recording_keeps_the_take() {
     )
     .unwrap();
     st.start_recording(Tick(0), false).unwrap();
-    std::thread::sleep(std::time::Duration::from_millis(300));
-    // troca de dispositivo no meio do take
+    wait_recorded(&st, 14_400); // 0,3 s
+                                // troca de dispositivo no meio do take
     let dev2 = start_dev(&mut st);
     dev1.stop();
     assert!(!st.is_recording());

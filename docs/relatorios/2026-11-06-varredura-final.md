@@ -50,6 +50,16 @@ smoke test do app desktop sob Xvfb ok (`img/2026-11-06-smoke-desktop.png`).
 | 8 | **Fração de partitura perdia 50%** perto do limite i64 | redução por divisões sucessivas por 2 | melhor aproximação com denominador que cabe | proptest (erro relativo < 1e-9) |
 | 9 | **UI congelada** durante a análise de mixagem | renderização de todas as faixas segurando o mutex | `RenderSnapshot` + `spawn_blocking` | teste IPC |
 
+### Encontrados pela CI nos 3 sistemas (após a varredura local)
+
+- **Rampa de ganho recuava no fim** (Linux, proptest): o erro acumulado de ponto flutuante passava
+  do alvo e o último passo voltava — clique inaudível mas não monotônico. Passo limitado ao alvo;
+  regressão com os bits exatos do caso (falha no código antigo).
+- **Testes não linkavam no macOS**: `generate_context!()` expandido duas vezes duplicava
+  `_EMBED_INFO_PLIST`; uma única `app_context()` serve app e testes.
+- **Teste de gravação instável** (macOS lento): `sleep` fixo trocado por espera pela posição real
+  do transporte.
+
 ### Demais (resumo)
 
 - Exportações só gravam arquivos com a extensão do formato (defesa contra webview comprometida).
