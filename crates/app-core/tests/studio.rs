@@ -26,7 +26,7 @@ fn create_import_play_is_sample_accurate() {
     st.attach_engine(h, 0).unwrap();
     let v = new_project(&mut st, dir.path());
     assert!(
-        v.project.root.ends_with("Demo_ música_1.amproj"),
+        v.project.root.ends_with("Demo_ música_1.ebiki"),
         "nome de pasta saneado: {}",
         v.project.root
     );
@@ -282,7 +282,7 @@ fn records_from_simulated_device_into_take_and_clip() {
 
 #[test]
 fn safe_join_rejects_escape() {
-    let root = std::path::Path::new("/tmp/proj.amproj");
+    let root = std::path::Path::new("/tmp/proj.ebiki");
     let ok = ctx_project::RelPath::new("audio/x.wav").unwrap();
     assert_eq!(safe_join(root, &ok).unwrap(), root.join("audio/x.wav"));
     assert!(

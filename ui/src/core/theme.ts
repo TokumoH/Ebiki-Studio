@@ -4,7 +4,7 @@ type Theme = "dark" | "light";
 
 function load(): Theme {
   try {
-    return localStorage.getItem("appmusica.theme") === "light" ? "light" : "dark";
+    return localStorage.getItem("ebiki.theme") === "light" ? "light" : "dark";
   } catch {
     return "dark";
   }
@@ -15,7 +15,7 @@ export const useTheme = create<{ theme: Theme; toggle: () => void }>((set, get) 
   toggle: () => {
     const theme: Theme = get().theme === "dark" ? "light" : "dark";
     try {
-      localStorage.setItem("appmusica.theme", theme);
+      localStorage.setItem("ebiki.theme", theme);
     } catch {
       /* armazenamento indisponível */
     }

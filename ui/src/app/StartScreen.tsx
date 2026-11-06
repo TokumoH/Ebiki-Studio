@@ -44,7 +44,7 @@ export function StartScreen() {
   };
 
   const pickProject = async () => {
-    const r = await transport().pickOpen({ directory: true, title: "Abrir projeto (.amproj)" });
+    const r = await transport().pickOpen({ directory: true, title: "Abrir projeto (.ebiki)" });
     if (r?.[0]) await open(r[0]);
   };
 
@@ -52,7 +52,7 @@ export function StartScreen() {
     <div className="start">
       <header>
         <div className="brand">
-          <span className="brand-dot" /> AppMusica
+          <span className="brand-dot" /> Ebiki Studio
         </div>
         <Button variant="ghost" onClick={toggleTheme} aria-label="Alternar tema claro/escuro">
           ◐ Tema

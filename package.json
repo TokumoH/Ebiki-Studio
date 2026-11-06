@@ -1,5 +1,5 @@
 {
-  "name": "appmusica",
+  "name": "ebiki-studio",
   "private": true,
   "description": "Raiz do monorepo: atalhos para o app desktop (Tauri) e a UI.",
   "scripts": {

@@ -28,7 +28,7 @@ pub const PROJECT_SCHEMA_VERSION: u32 = PROJECT_MIGRATIONS.len() as u32;
 pub enum PersistenceError {
     #[error("erro no banco de dados: {0}")]
     Sql(#[from] rusqlite::Error),
-    #[error("o projeto foi criado por uma versão mais nova do AppMusica (schema {found}, suportado {supported})")]
+    #[error("o projeto foi criado por uma versão mais nova do Ebiki Studio (schema {found}, suportado {supported})")]
     TooNew { found: u32, supported: u32 },
     #[error("dados corrompidos no projeto: {0}")]
     Corrupt(String),

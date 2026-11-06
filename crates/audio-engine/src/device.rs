@@ -157,7 +157,7 @@ impl DeviceHost {
         let (ready_tx, ready_rx) = mpsc::channel::<Result<RunningInfo, DeviceError>>();
         let (stop_tx, stop_rx) = mpsc::channel::<()>();
         let thread = std::thread::Builder::new()
-            .name("appmusica-audio-host".into())
+            .name("ebiki-audio-host".into())
             .spawn(move || match open_streams(core, &req) {
                 Ok((streams, info)) => {
                     let _ = ready_tx.send(Ok(info));

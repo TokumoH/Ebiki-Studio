@@ -20,8 +20,8 @@ fn normalize(mut v: serde_json::Value) -> serde_json::Value {
                         ids.len() - 1
                     });
                     *s = format!("00000000-0000-7000-8000-{i:012}");
-                } else if s.contains(".amproj") {
-                    *s = "/home/usuario/Musica/Demo.amproj".into();
+                } else if s.contains(".ebiki") {
+                    *s = "/home/usuario/Musica/Demo.ebiki".into();
                 } else if s.len() == 64 && s.chars().all(|c| c.is_ascii_hexdigit()) {
                     *s = "a".repeat(64);
                 } else if s.starts_with("audio/imported/") {

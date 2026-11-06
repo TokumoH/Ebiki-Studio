@@ -26,7 +26,7 @@ impl NullDevice {
         let r = running.clone();
         let sr = core.sample_rate() as f64;
         let thread = std::thread::Builder::new()
-            .name("appmusica-null-audio".into())
+            .name("ebiki-null-audio".into())
             .spawn(move || {
                 let mut out = vec![0.0f32; block * 2];
                 let mut inp = vec![0.0f32; block * in_channels];

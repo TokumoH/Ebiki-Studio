@@ -1,4 +1,4 @@
-//! Shared Kernel do AppMusica.
+//! Shared Kernel do Ebiki Studio.
 //!
 //! Contém apenas conceitos estáveis e compartilhados por vários bounded contexts.
 //! Nada aqui faz I/O.

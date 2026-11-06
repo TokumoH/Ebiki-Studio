@@ -39,7 +39,7 @@ export function isTypingTarget(t: EventTarget | null): boolean {
 
 export function loadShortcuts(): Shortcut[] {
   try {
-    const raw = localStorage.getItem("appmusica.shortcuts");
+    const raw = localStorage.getItem("ebiki.shortcuts");
     if (!raw) return DEFAULT_SHORTCUTS;
     const custom = JSON.parse(raw) as Record<string, string>;
     return DEFAULT_SHORTCUTS.map((s) => ({ ...s, keys: custom[s.id] ?? s.keys }));
@@ -50,10 +50,10 @@ export function loadShortcuts(): Shortcut[] {
 
 export function saveShortcut(id: string, keys: string) {
   try {
-    const raw = localStorage.getItem("appmusica.shortcuts");
+    const raw = localStorage.getItem("ebiki.shortcuts");
     const custom = raw ? (JSON.parse(raw) as Record<string, string>) : {};
     custom[id] = keys;
-    localStorage.setItem("appmusica.shortcuts", JSON.stringify(custom));
+    localStorage.setItem("ebiki.shortcuts", JSON.stringify(custom));
   } catch {
     /* armazenamento indisponível */
   }

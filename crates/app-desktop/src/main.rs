@@ -1,4 +1,4 @@
-//! AppMusica — ponto de entrada do aplicativo desktop.
+//! Ebiki Studio — ponto de entrada do aplicativo desktop.
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod audio;
@@ -54,7 +54,7 @@ fn main() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("falha ao iniciar o AppMusica");
+        .expect("falha ao iniciar o Ebiki Studio");
 }
 
 /// Registra todos os comandos IPC (usado pelo app e pelos testes de IPC).
@@ -176,7 +176,7 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
 /// Publica posição e medidores (~30 Hz) enquanto houver projeto aberto.
 fn spawn_telemetry(app: tauri::AppHandle) {
     std::thread::Builder::new()
-        .name("appmusica-telemetry".into())
+        .name("ebiki-telemetry".into())
         .spawn(move || loop {
             std::thread::sleep(TELEMETRY_INTERVAL);
             let state = app.state::<AppState>();
@@ -197,7 +197,7 @@ fn spawn_telemetry(app: tauri::AppHandle) {
 
 fn spawn_autosave(app: tauri::AppHandle) {
     std::thread::Builder::new()
-        .name("appmusica-autosave".into())
+        .name("ebiki-autosave".into())
         .spawn(move || loop {
             std::thread::sleep(AUTOSAVE_INTERVAL);
             let state = app.state::<AppState>();

@@ -1,13 +1,13 @@
 [package]
 name = "app-desktop"
-description = "AppMusica — aplicativo desktop (Tauri): adaptador de entrada (comandos IPC) e composition root."
+description = "Ebiki Studio — aplicativo desktop (Tauri): adaptador de entrada (comandos IPC) e composition root."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-default-run = "appmusica"
+default-run = "ebiki-studio"
 
 [[bin]]
-name = "appmusica"
+name = "ebiki-studio"
 path = "src/main.rs"
 
 [build-dependencies]

@@ -84,6 +84,15 @@ export function ScorePanel() {
   const audio = useRef<{ ctx: AudioContext; src: AudioBufferSourceNode } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const editor = useRef<HTMLDivElement>(null);
+  // foco pendente (partitura recém-criada): aplicado quando o editor estiver montado, sem depender de atraso fixo
+  const focusPending = useRef(false);
+  const editorRef = useCallback((el: HTMLDivElement | null) => {
+    editor.current = el;
+    if (el && focusPending.current) {
+      focusPending.current = false;
+      el.focus();
+    }
+  }, []);
   const scores = session?.scores ?? [];
 
   useEffect(() => {
@@ -473,7 +482,7 @@ export function ScorePanel() {
               {current?.dynamic ? ` ${current.dynamic}` : ""} · entrada: {DURATION_LABELS[duration.value].toLowerCase()}
               {duration.dots ? " pontuada" : ""} · {measure ? keyName(measure.key.fifths, measure.key.mode) : ""} {meter.numerator}/{meter.denominator}
             </div>
-            <div className="notation-editor" ref={editor} tabIndex={0} role="application" aria-label="Editor de partitura" aria-describedby="score-help" onKeyDown={onKeyDown}>
+            <div className="notation-editor" ref={editorRef} tabIndex={0} role="application" aria-label="Editor de partitura" aria-describedby="score-help" onKeyDown={onKeyDown}>
               <ol className="event-strip" aria-label={`Eventos do compasso ${cursor.measure + 1}`}>
                 {(voice?.events ?? []).map((ev, i) => (
                   <li key={ev.id}>
@@ -515,7 +524,12 @@ export function ScorePanel() {
           </>
         )}
       </section>
-      <CreateScoreDialog open={creating} bpm={session.tempo.tempos[0]?.bpm ?? 120} onClose={() => setCreating(false)} onCreated={(id) => (setSelected(id), setCur(START), setTimeout(() => editor.current?.focus(), 50))} />
+      <CreateScoreDialog open={creating} bpm={session.tempo.tempos[0]?.bpm ?? 120} onClose={() => setCreating(false)} onCreated={(id) => {
+          setSelected(id);
+          setCur(START);
+          if (editor.current) editor.current.focus();
+          else focusPending.current = true;
+        }} />
       {score && selected ? <TransposeDialog open={transposing} parts={score.parts.map((p) => p.name)} onClose={() => setTransposing(false)} scoreId={selected} /> : null}
     </div>
   );

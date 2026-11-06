@@ -21,7 +21,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
-pub const PROJECT_EXT: &str = "amproj";
+pub const PROJECT_EXT: &str = "ebiki";
 pub const DB_FILE: &str = "project.db";
 pub const AUTOSAVE_KEEP: usize = 5;
 
@@ -193,7 +193,7 @@ impl Studio {
         self.open.as_ref().map(|o| o.root.as_path())
     }
 
-    /// Cria `<dir>/<nome>.amproj/` com a estrutura padrão e abre.
+    /// Cria `<dir>/<nome>.ebiki/` com a estrutura padrão e abre.
     pub fn create_project(
         &mut self,
         dir: &Path,
@@ -225,7 +225,7 @@ impl Studio {
         self.install(root, session, HashMap::new())
     }
 
-    /// Abre a partir da pasta `.amproj` (ou do `project.db` dentro dela).
+    /// Abre a partir da pasta `.ebiki` (ou do `project.db` dentro dela).
     pub fn open_project(&mut self, path: &Path) -> AppResult<SessionView> {
         let root = if path.file_name().is_some_and(|f| f == DB_FILE) {
             path.parent().unwrap_or(path).to_path_buf()

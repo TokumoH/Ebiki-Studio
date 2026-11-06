@@ -1,7 +1,7 @@
 .app { display: grid; grid-template-rows: 44px minmax(0, 1fr) 24px; height: 100%; }
 .topbar { display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-2); border-bottom: 1px solid var(--line); background: var(--bg-raised); min-width: 0; overflow: hidden; }
 .brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-.brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--horizon, var(--accent)); }
 .project-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
 .dirty { color: var(--accent); }
 .topbar .sep { width: 1px; height: 24px; background: var(--line); flex: none; }

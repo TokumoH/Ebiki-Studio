@@ -1,4 +1,4 @@
-//! Engine de áudio do AppMusica (Pure Fabrication).
+//! Engine de áudio do Ebiki Studio (Pure Fabrication).
 //!
 //! Arquitetura (ADR-0005):
 //! - A thread de controle **compila** um [`graph::RenderGraph`] a partir do domínio e o envia por fila

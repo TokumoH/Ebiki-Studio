@@ -199,7 +199,7 @@ export function createMockTransport(): Transport {
     audio_configure: (a) => ({ mode: "null", outputName: "Saída simulada", inputName: a.req.inputId ? "Entrada simulada" : null, sampleRate: sr(), bufferSize: a.req.bufferSize ?? 256, inputChannels: 2, estimatedLatencyMs: ((a.req.bufferSize ?? 256) * 2000) / sr(), error: null }),
     project_create: (a) => {
       const name = validName(a.req.name);
-      const root = `${a.req.dir}/${name}.amproj`;
+      const root = `${a.req.dir}/${name}.ebiki`;
       if (st.recent.some((r) => r.path === root)) fail("app.exists", "Já existe um projeto com este nome nesta pasta.");
       st.session = newSession(name, root, a.req.sampleRate, a.req.bitDepth);
       st.undo = [];

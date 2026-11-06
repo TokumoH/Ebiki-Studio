@@ -3,7 +3,7 @@ import { DockviewReact, themeDark, themeLight, type DockviewReadyEvent, type IDo
 import "dockview-react/dist/styles/dockview.css";
 import { PANELS } from "./registry";
 
-const LAYOUT_KEY = "appmusica.layout.v1";
+const LAYOUT_KEY = "ebiki.layout.v1";
 
 function PanelHost(props: IDockviewPanelProps<{ id: string }>) {
   const def = PANELS.find((p) => p.id === props.params.id);

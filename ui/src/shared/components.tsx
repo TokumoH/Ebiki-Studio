@@ -64,9 +64,13 @@ export function Dialog({ title, open, onClose, children, footer }: { title: stri
       }
     };
     window.addEventListener("keydown", onKey, true);
+    const dialogEl = ref.current;
     return () => {
       window.removeEventListener("keydown", onKey, true);
-      prev?.focus();
+      // devolve o foco só se ninguém o assumiu depois (ex.: o editor que o diálogo acabou de abrir)
+      const active = document.activeElement;
+      const unclaimed = !active || active === document.body || (dialogEl?.contains(active) ?? false);
+      if (unclaimed) prev?.focus();
     };
   }, [open, onClose]);
   if (!open) return null;

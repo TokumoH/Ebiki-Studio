@@ -56,3 +56,41 @@ describe("Segmented e Dialog", () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
+
+describe("Dialog e foco", () => {
+  it("não rouba o foco de quem o assumiu enquanto o diálogo fechava", () => {
+    const opener = document.createElement("button");
+    const target = document.createElement("button");
+    document.body.append(opener, target);
+    opener.focus();
+    const { rerender } = render(
+      <Dialog title="X" open onClose={() => undefined}>
+        <input aria-label="campo" />
+      </Dialog>,
+    );
+    target.focus(); // outro componente assume o foco antes do diálogo fechar
+    rerender(
+      <Dialog title="X" open={false} onClose={() => undefined}>
+        <input aria-label="campo" />
+      </Dialog>,
+    );
+    expect(document.activeElement).toBe(target);
+  });
+
+  it("devolve o foco ao elemento de origem quando ninguém o assumiu", () => {
+    const opener = document.createElement("button");
+    document.body.append(opener);
+    opener.focus();
+    const { rerender } = render(
+      <Dialog title="Y" open onClose={() => undefined}>
+        <input aria-label="campo y" />
+      </Dialog>,
+    );
+    rerender(
+      <Dialog title="Y" open={false} onClose={() => undefined}>
+        <input aria-label="campo y" />
+      </Dialog>,
+    );
+    expect(document.activeElement).toBe(opener);
+  });
+});

@@ -32,5 +32,5 @@ jobs:
         with:
           projectPath: crates/app-desktop
           tagName: ${{ github.ref_name }}
-          releaseName: "AppMusica ${{ github.ref_name }}"
+          releaseName: "Ebiki Studio ${{ github.ref_name }}"
           releaseDraft: true

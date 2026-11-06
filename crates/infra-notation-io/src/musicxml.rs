@@ -83,7 +83,7 @@ pub fn export_musicxml(score: &Score) -> String {
         w.leaf_with("creator", &[("type", "composer".into())], &score.composer);
     }
     w.open("encoding", &[]);
-    w.leaf("software", "AppMusica");
+    w.leaf("software", "Ebiki Studio");
     w.close("encoding");
     w.close("identification");
 

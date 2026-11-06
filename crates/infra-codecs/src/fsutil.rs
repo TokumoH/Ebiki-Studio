@@ -33,7 +33,7 @@ pub(crate) fn ensure_dir_within(root: &Path, rel_dir: &[&str]) -> Result<PathBuf
 /// Cria um arquivo temporário oculto na mesma pasta do destino (para o rename ser atômico).
 pub(crate) fn temp_in(dir: &Path) -> Result<NamedTempFile, CodecError> {
     tempfile::Builder::new()
-        .prefix(".appmusica-")
+        .prefix(".ebiki-")
         .suffix(".part")
         .tempfile_in(dir)
         .map_err(|e| CodecError::from_io(&e, dir))

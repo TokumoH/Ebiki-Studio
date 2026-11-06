@@ -1,4 +1,4 @@
-//! DSP de altura do AppMusica (Pure Fabrication, depende apenas do `shared-kernel`).
+//! DSP de altura do Ebiki Studio (Pure Fabrication, depende apenas do `shared-kernel`).
 //!
 //! - [`detector`]: porta [`PitchDetector`] (AI-ready, ADR-0011) + YIN.
 //! - [`tuner`]: frequência → nota/cents com Lá4 configurável; afinador de tempo real.

@@ -133,7 +133,7 @@ impl RecordingSession {
             let path = cfg.path.clone();
             workers.push(
                 std::thread::Builder::new()
-                    .name("appmusica-rec".into())
+                    .name("ebiki-rec".into())
                     .spawn(move || write_loop(consumer, writer, stop_flag, key, path, channels))
                     .map_err(|e| RecordError::Io(e.to_string()))?,
             );
