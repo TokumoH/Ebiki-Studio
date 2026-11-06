@@ -10,6 +10,9 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - **Entrada de áudio no painel Gravação**: escolha do dispositivo de entrada, medidores de nível por
   canal e **🎧 Ouvir entrada** (ouve o dispositivo direto na saída, com volume próprio, sem armar
   faixa; não entra na gravação nem na exportação).
+- **Partitura mais direta**: modo *✎ Inserir notas* (passe o mouse na pauta, veja a nota fantasma
+  e clique) e campo **Digitar notas** para lotes em texto (`C, C, C, x, x, x, D, D, D`, com oitava,
+  acidentes, duração e acordes), com prévia, erros apontados e um único passo de desfazer.
 
 ### Corrigido
 

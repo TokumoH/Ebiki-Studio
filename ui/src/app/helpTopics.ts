@@ -92,11 +92,13 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     id: "partitura",
     title: "Partitura e tablatura",
-    keywords: "notação partitura tablatura musicxml midi guitar pro imprimir pdf notas",
+    keywords: "notação partitura tablatura musicxml midi guitar pro imprimir pdf notas inserir clicar digitar texto lote acorde pausa",
     intro: "Editor completo de partitura e tablatura com reprodução por SoundFont.",
     steps: [
       "No painel Partitura, crie uma partitura em branco ou importe MusicXML, MIDI ou Guitar Pro.",
-      "Digite notas pelo teclado; a validação aponta compassos incompletos.",
+      "✎ Inserir notas: passe o mouse na pauta e clique — a altura define a nota (balão mostra o nome).",
+      "Digitar notas: escreva C, C, C, x, x, x, D, D, D (x = pausa, C5 = oitava, :8 = duração, C+E+G = acorde) e confira a prévia; Enter insere tudo com um único desfazer.",
+      "Teclado: A–G nota, 0 pausa, 1–7 duração; a validação aponta compassos incompletos.",
       "Exporte em MusicXML ou MIDI, ou use Imprimir / PDF.",
     ],
   },

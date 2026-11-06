@@ -108,12 +108,14 @@ pub fn score_edit_voice(state: State<AppState>, req: ScoreEditVoiceReq) -> Res<S
 pub struct ScoreEditReq {
     pub score_id: String,
     pub edit: ScoreEdit,
+    #[serde(default)]
+    pub gesture: Option<u64>,
 }
 
 #[tauri::command]
 pub fn score_edit(state: State<AppState>, req: ScoreEditReq) -> Res<SessionView> {
     let sid: ScoreId = id(&req.score_id)?;
-    lock(&state.studio).score_edit(sid, req.edit)
+    lock(&state.studio).score_edit(sid, req.edit, req.gesture)
 }
 
 #[tauri::command]

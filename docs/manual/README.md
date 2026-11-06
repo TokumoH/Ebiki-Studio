@@ -153,6 +153,28 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 
 - **Partitura**: crie, importe (MusicXML, MXL, MIDI, Guitar Pro 7; GP3–6 são convertidos na
   interface) e exporte (MusicXML, MXL, MIDI); partitura e tablatura; ouça ou renderize para uma faixa.
+  Três jeitos de escrever notas, com a duração escolhida na barra:
+  - **Inserir notas (clique):** ative *✎ Inserir notas* e passe o mouse na pauta — a nota fantasma
+    e o balão ("Dó 5 · semínima") mostram o que entra; a altura define a nota (linha ou espaço, pela
+    clave e armadura; ♭ ♮ ♯ na barra forçam o acidente) e o clique insere no primeiro tempo livre do
+    compasso apontado. *↖ Selecionar* volta à edição de notas existentes.
+  - **Digitar notas (texto):** escreva a sequência e confira a prévia antes de inserir (Enter).
+    Tudo entra a partir do cursor como **um único passo de desfazer**; uma nota que não cabe no fim
+    do compasso vai para o próximo.
+
+    | Escrita | Significado |
+    |---|---|
+    | `C D E F G A B` ou `Dó Ré Mi Fá Sol Lá Si` | notas |
+    | `x` (ou `pausa`) | pausa |
+    | `C#` `Eb` (`♯` `♭`), `Fn` (`♮`) | sustenido, bemol, bequadro (sem acidente: o da armadura) |
+    | `C5` | oitava (sem número: a mais próxima da nota anterior) |
+    | `:1 :2 :4 :8 :16 :32 :64`, `:4.` | duração da nota; com ponto = pontuada |
+    | `C+E+G` | acorde (as notas sobem a partir da primeira) |
+    | `,` espaço `|` `;` | separadores |
+
+    Exemplo: `C, C, C, x, x, x, D, D, D, E5:8, F#:8, C+E+G:2`. Um erro mostra o trecho e a posição,
+    e nada é inserido até corrigir.
+  - **Teclado:** A–G nota · 0 pausa · 1–7 duração · ↑/↓ semitom (como antes).
 - **Letra**: cole o texto (separação silábica automática), sincronize por sílaba/palavra/linha
   tocando a barra de espaço durante a reprodução, exporte LRC ou SRT.
 - **Afinação**: afinador em tempo real na entrada; editor de notas por clipe (analisar, arrastar

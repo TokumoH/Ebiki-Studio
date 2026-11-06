@@ -111,6 +111,7 @@ fn score_edits_undo_and_redo_through_the_studio_history() {
                 title: "Outro".into(),
                 composer: "Ela".into(),
             },
+            None,
         )
         .unwrap();
     assert_eq!(v.scores[0].title, "Outro");

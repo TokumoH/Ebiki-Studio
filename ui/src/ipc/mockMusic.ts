@@ -579,7 +579,7 @@ export function musicHandlers(ctx: MockCtx): { handlers: Record<string, (a: Reco
         sync(v);
       }),
     score_edit: (a) =>
-      mutate("Editar partitura", null, (v) => {
+      mutate("Editar partitura", a.req.gesture ?? null, (v) => {
         const sc = scoreOf(v, a.req.scoreId);
         const backup = structuredClone(sc);
         try {

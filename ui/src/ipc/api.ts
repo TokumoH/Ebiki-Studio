@@ -181,7 +181,7 @@ export const musicApi = {
   scoreMusicXml: (scoreId: string) => call(z.string(), "score_musicxml", { scoreId }),
   scoreDelete: (scoreId: string) => call(Session, "score_delete", { scoreId }),
   scoreEditVoice: (scoreId: string, loc: VoiceLoc, edit: VoiceEdit, gesture?: number) => call(Session, "score_edit_voice", { req: { scoreId, loc, edit, gesture: gest(gesture) } }),
-  scoreEdit: (scoreId: string, edit: ScoreEdit) => call(Session, "score_edit", { req: { scoreId, edit } }),
+  scoreEdit: (scoreId: string, edit: ScoreEdit, gesture?: number) => call(Session, "score_edit", { req: { scoreId, edit, gesture: gest(gesture) } }),
   scoreImport: (path: string) => call(S.ScoreImportResult, "score_import", { path }),
   /** Bytes lidos na UI (GP3–GP6 já convertidos para GP7 pelo alphaTab — ADR-0020). */
   scoreImportBytes: (name: string, bytes: Uint8Array) => call(S.ScoreImportResult, "score_import_bytes", { req: { name, bytes: Array.from(bytes) } }),

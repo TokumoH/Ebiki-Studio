@@ -145,6 +145,7 @@ export type NoteValue = z.infer<typeof S.NoteValue>;
 export type Pitch = z.infer<typeof S.Pitch>;
 export type Step = z.infer<typeof S.Step>;
 export type KeySignature = z.infer<typeof S.KeySignature>;
+export type Clef = z.infer<typeof S.Clef>;
 export type Articulation = z.infer<typeof S.Articulation>;
 export type Dynamic = z.infer<typeof S.Dynamic>;
 export type TabPosition = z.infer<typeof S.TabPosition>;

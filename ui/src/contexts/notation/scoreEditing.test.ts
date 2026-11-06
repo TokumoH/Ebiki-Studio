@@ -1,5 +1,5 @@
 import type { NoteDuration, Score, ScoreVoice } from "../../ipc/types";
-import { applyVoiceEdits, decomposeRests, durationFrac, keyAlter, keyToAction, moveCursor, noteEvent, pitchNear, placeEvent, restEvent, spellMidi, voiceFill, midiOf, eventLabel } from "./scoreEditing";
+import { applyVoiceEdits, decomposeRests, durationFrac, keyAlter, keyToAction, moveCursor, noteEvent, pitchNear, placeEvent, restEvent, spellMidi, voiceFill, midiOf, eventLabel, snapHalfSpaces, staffPitch } from "./scoreEditing";
 
 const d = (value: NoteDuration["value"], dots = 0): NoteDuration => ({ value, dots, tuplet: null });
 const key = (k: string, mods: Partial<KeyboardEvent> = {}) => keyToAction({ key: k, ctrlKey: false, metaKey: false, altKey: false, shiftKey: false, ...mods });
@@ -116,5 +116,35 @@ describe("cursor de eventos", () => {
     expect(moveCursor(sc, { ...c, measure: 1, index: 0 }, -1)).toMatchObject({ measure: 0, index: 1 });
     expect(moveCursor(sc, { ...c, measure: 1, index: 1 }, 1)).toMatchObject({ measure: 1, index: 1 });
     expect(moveCursor(sc, { ...c, index: 0 }, -1)).toMatchObject({ measure: 0, index: 0 });
+  });
+});
+
+describe("clique na pauta", () => {
+  const C = { fifths: 0, mode: "major" as const };
+  it("linhas e espaços da clave de Sol", () => {
+    expect(staffPitch("treble", 0, C)).toEqual({ step: "F", alter: 0, octave: 5 }); // linha de cima
+    expect(staffPitch("treble", 8, C)).toEqual({ step: "E", alter: 0, octave: 4 }); // linha de baixo
+    expect(staffPitch("treble", 10, C)).toEqual({ step: "C", alter: 0, octave: 4 }); // 1ª suplementar inferior
+    expect(staffPitch("treble", -2, C)).toEqual({ step: "A", alter: 0, octave: 5 }); // 1ª suplementar superior
+  });
+  it("Fá, Dó e 8vb", () => {
+    expect(staffPitch("bass", 0, C)).toEqual({ step: "A", alter: 0, octave: 3 });
+    expect(staffPitch("bass", 8, C)).toEqual({ step: "G", alter: 0, octave: 2 });
+    expect(staffPitch("alto", 4, C)).toEqual({ step: "C", alter: 0, octave: 4 }); // linha do meio = Dó central
+    expect(staffPitch("treble8vb", 8, C)).toEqual({ step: "E", alter: 0, octave: 3 });
+  });
+  it("armadura e acidente escolhido", () => {
+    const G = { fifths: 1, mode: "major" as const };
+    expect(staffPitch("treble", 0, G).alter).toBe(1); // Fá♯ pela armadura
+    expect(staffPitch("treble", 0, G, 0).alter).toBe(0); // bequadro escolhido
+    expect(staffPitch("treble", 9, C, -1)).toEqual({ step: "D", alter: -1, octave: 4 });
+  });
+  it("arredonda para a linha ou espaço mais próximo e limita as suplementares", () => {
+    expect(snapHalfSpaces(100, 100, 8)).toBe(0);
+    expect(snapHalfSpaces(103.9, 100, 8)).toBe(1);
+    expect(snapHalfSpaces(102.1, 100, 8)).toBe(1);
+    expect(snapHalfSpaces(101.9, 100, 8)).toBe(0);
+    expect(snapHalfSpaces(-500, 100, 8)).toBe(-12);
+    expect(snapHalfSpaces(900, 100, 8)).toBe(20);
   });
 });

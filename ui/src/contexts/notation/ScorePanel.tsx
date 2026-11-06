@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import "./notation.css";
 import { musicApi } from "../../ipc/api";
 import { transport } from "../../ipc/transport";
@@ -25,13 +25,16 @@ import {
   previousPitch,
   restEvent,
   spellMidi,
+  staffPitch,
   voiceAt,
   applyVoiceEdits,
   type Cursor,
   type ScoreAction,
 } from "./scoreEditing";
 import { convertToGp7, isLegacyGuitarPro } from "./alphaTab";
-import { ScoreView } from "./ScoreView";
+import { ScoreView, type InsertMode, type StaffPick } from "./ScoreView";
+import { NoteTextEntry } from "./NoteTextEntry";
+import type { ParseOptions } from "./noteText";
 
 const ENTRY_VALUES: NoteValue[] = ["whole", "half", "quarter", "eighth", "sixteenth", "thirtySecond"];
 const VALUE_FRACTION: Record<NoteValue, string> = { whole: "1", half: "1/2", quarter: "1/4", eighth: "1/8", sixteenth: "1/16", thirtySecond: "1/32", sixtyFourth: "1/64", oneTwentyEighth: "1/128" };
@@ -81,6 +84,12 @@ export function ScorePanel() {
   const [exportFmt, setExportFmt] = useState<ScoreExportFormat>("musicXml");
   const [playing, setPlaying] = useState(false);
   const [tab, setTab] = useState({ string: 1, fret: 0 });
+  /** Modo do mouse na pauta: selecionar eventos ou inserir notas por clique. */
+  const [mode, setMode] = useState<"select" | "insert">("select");
+  /** Acidente para o clique na pauta (null = armadura). */
+  const [accidental, setAccidental] = useState<number | null>(null);
+  const accRef = useRef(accidental);
+  accRef.current = accidental;
   const audio = useRef<{ ctx: AudioContext; src: AudioBufferSourceNode } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const editor = useRef<HTMLDivElement>(null);
@@ -146,37 +155,117 @@ export function ScorePanel() {
   }, []);
   useEffect(() => stopAudio, [stopAudio]);
 
-  const voiceEdits = async (edits: VoiceEdit[], c: Cursor = cursorRef.current) => {
+  /** Aplica edições de voz. Com `gesture` (lote), não abre nem fecha o gesto de desfazer. */
+  const voiceEdits = async (edits: VoiceEdit[], c: Cursor = cursorRef.current, gesture?: number) => {
     if (!selected || edits.length === 0) return false;
-    const g = newGesture();
+    const g = gesture ?? newGesture();
     let ok = true;
     for (const e of edits) {
       ok = await run(() => musicApi.scoreEditVoice(selected, { part: c.part, measure: c.measure, voice: c.voice }, e, g));
       if (!ok) break;
     }
-    await endGesture();
+    if (gesture === undefined) await endGesture();
     if (ok) await reload(selected);
     return ok;
   };
 
-  /** Coloca um evento no cursor e avança (cria compasso no fim, como editores de partitura). */
-  const enter = async (ev: ScoreEvent) => {
+  /** Vai ao início do próximo compasso (criando-o no fim da partitura). */
+  const nextMeasure = async (c: Cursor, gesture?: number) => {
     const sc = scoreRef.current;
-    const c = cursorRef.current;
-    if (!sc || !selected) return;
-    const v = voiceAt(sc, c);
-    if (!v) return;
-    const plan = placeEvent(v, c.index, ev, measureCapacity(sc, c.measure));
-    if ("error" in plan) return notify.error(plan.error);
-    if (!(await voiceEdits(plan, c))) return;
-    const len = applyVoiceEdits(v, plan).events.length;
-    if (c.index + 1 < len) return setCur({ ...c, index: c.index + 1 });
+    if (!sc || !selected) return null;
     const measures = sc.parts[c.part]?.measures.length ?? 0;
     if (c.measure + 1 >= measures) {
-      if (!(await run(() => musicApi.scoreEdit(selected, { kind: "addMeasure", index: measures })))) return;
+      if (!(await run(() => musicApi.scoreEdit(selected, { kind: "addMeasure", index: measures }, gesture)))) return null;
       await reload(selected);
     }
-    setCur({ ...c, measure: c.measure + 1, index: 0 });
+    const n = { ...c, measure: c.measure + 1, index: 0 };
+    setCur(n);
+    return n;
+  };
+
+  /**
+   * Coloca um evento no cursor e avança (cria compasso no fim, como editores de partitura).
+   * `overflow: "next"` (lote de texto): se não couber no resto do compasso, vai para o próximo.
+   */
+  const enter = async (ev: ScoreEvent, opts: { gesture?: number; overflow?: "error" | "next" } = {}): Promise<boolean> => {
+    const sc = scoreRef.current;
+    let c = cursorRef.current;
+    if (!sc || !selected) return false;
+    let v = voiceAt(sc, c);
+    if (!v) return false;
+    let plan = placeEvent(v, c.index, ev, measureCapacity(sc, c.measure));
+    if ("error" in plan && opts.overflow === "next") {
+      const n = await nextMeasure(c, opts.gesture);
+      const sc2 = scoreRef.current;
+      v = n && sc2 ? voiceAt(sc2, n) : null;
+      if (!n || !sc2 || !v) return false;
+      c = n;
+      plan = placeEvent(v, c.index, ev, measureCapacity(sc2, c.measure));
+    }
+    if ("error" in plan) {
+      notify.error(plan.error);
+      return false;
+    }
+    if (!(await voiceEdits(plan, c, opts.gesture))) return false;
+    const len = applyVoiceEdits(v, plan).events.length;
+    if (c.index + 1 < len) {
+      setCur({ ...c, index: c.index + 1 });
+      return true;
+    }
+    return (await nextMeasure(c, opts.gesture)) !== null;
+  };
+
+  /** Lote digitado: um único passo de desfazer. Para no primeiro evento que não puder entrar. */
+  const enterBatch = (events: ScoreEvent[]) =>
+    new Promise<boolean>((resolve) => {
+      queue.current = queue.current
+        .then(async () => {
+          const g = newGesture();
+          let ok = true;
+          for (const ev of events) {
+            ok = await enter(ev, { gesture: g, overflow: "next" });
+            if (!ok) break;
+          }
+          await endGesture();
+          editor.current?.focus();
+          resolve(ok);
+        })
+        .catch((e: unknown) => {
+          notify.error(errorMessage(e));
+          resolve(false);
+        });
+    });
+
+  /** Clique na pauta (modo Inserir): nota pela clave/armadura no primeiro tempo livre do compasso apontado. */
+  const pickEvent = (pick: StaffPick) => {
+    const sc = scoreRef.current;
+    const pt = sc?.parts[pick.part];
+    const m = pt?.measures[pick.measure];
+    const st = pt?.staves[pick.staff];
+    if (!sc || !m || !st) return null;
+    return noteEvent(durRef.current, staffPitch(st.clef, pick.halfSpaces, m.key, accRef.current));
+  };
+  const insertAt = (pick: StaffPick) => {
+    queue.current = queue.current
+      .then(async () => {
+        const sc = scoreRef.current;
+        const ev = pickEvent(pick);
+        const m = sc?.parts[pick.part]?.measures[pick.measure];
+        if (!sc || !ev || !m) return;
+        // voz: a atual se estiver na pauta clicada; senão a primeira voz dessa pauta
+        const cur = cursorRef.current;
+        const inStaff = m.voices.map((v, i) => ({ v, i })).filter((x) => x.v.staff === pick.staff);
+        const target = (cur.part === pick.part && inStaff.find((x) => x.i === cur.voice)) || inStaff[0];
+        if (!target) return;
+        const events = target.v.events;
+        const from = pick.beat !== null && pick.beat < events.length ? pick.beat : 0;
+        let index = events.findIndex((e, i) => i >= from && e.kind.type === "rest");
+        if (index < 0) index = events.findIndex((e) => e.kind.type === "rest");
+        if (index < 0) return notify.error("Compasso cheio: apague uma nota (modo Selecionar) ou clique em outro compasso.");
+        setCur({ part: pick.part, measure: pick.measure, voice: target.i, index });
+        await enter(ev);
+      })
+      .catch((e: unknown) => notify.error(errorMessage(e)));
   };
 
   const current = score ? eventAt(score, cursor) : null;
@@ -184,6 +273,26 @@ export function ScorePanel() {
   const part = score?.parts[cursor.part];
   const voice = score ? voiceAt(score, cursor) : null;
   const staffCfg = part?.staves[voice?.staff ?? 0];
+
+  // modo Inserir: balão com a nota apontada e clique que insere
+  const insertMode: InsertMode | null = useMemo(
+    () =>
+      mode === "insert"
+        ? {
+            describe: (pick) => {
+              const ev = pickEvent(pick);
+              return ev?.kind.type === "chord" ? `${pitchLabel(ev.kind.notes[0]!.pitch)} · ${DURATION_LABELS[ev.duration.value].toLowerCase()}${ev.duration.dots ? " pontuada" : ""}` : null;
+            },
+            onPick: insertAt,
+          }
+        : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- funções leem refs (estado mais recente)
+    [mode, duration, accidental, score],
+  );
+  const textOptions: ParseOptions = useMemo(
+    () => ({ duration, key: measure?.key ?? { fifths: 0, mode: "major" }, previous: score ? previousPitch(score, cursor) : null, defaultOctave: score ? defaultOctave(score, cursor) : 4 }),
+    [duration, measure, score, cursor],
+  );
 
   const act = async (a: ScoreAction) => {
     const sc = scoreRef.current;
@@ -357,6 +466,14 @@ export function ScorePanel() {
         ) : (
           <>
             <div className="notation-toolbar" role="toolbar" aria-label="Entrada de notas">
+              <div className="tool-group mode-switch" role="radiogroup" aria-label="Modo do mouse na pauta">
+                <button type="button" role="radio" className="btn btn--sm" aria-checked={mode === "select"} onClick={() => setMode("select")} title="Clique numa nota para selecioná-la">
+                  ↖ Selecionar
+                </button>
+                <button type="button" role="radio" className="btn btn--sm" aria-checked={mode === "insert"} onClick={() => setMode("insert")} title="Clique na pauta para inserir a nota apontada">
+                  ✎ Inserir notas
+                </button>
+              </div>
               <div className="tool-group" role="radiogroup" aria-label="Duração">
                 {ENTRY_VALUES.map((v) => (
                   <button key={v} type="button" role="radio" className="btn btn--sm dur" aria-checked={duration.value === v} title={DURATION_LABELS[v]} aria-label={DURATION_LABELS[v]} onClick={() => setDuration((d) => ({ ...d, value: v }))}>
@@ -366,6 +483,13 @@ export function ScorePanel() {
                 <Toggle pressed={duration.dots > 0} onChange={(p) => setDuration((d) => ({ ...d, dots: p ? 1 : 0 }))} aria-label="Ponto de aumento" title="Ponto de aumento (.)">
                   ·
                 </Toggle>
+              </div>
+              <div className="tool-group" role="radiogroup" aria-label="Acidente do clique">
+                {([[-1, "♭", "Bemol"], [0, "♮", "Bequadro"], [1, "♯", "Sustenido"]] as const).map(([v, sym, label]) => (
+                  <button key={v} type="button" role="radio" className="btn btn--sm" aria-checked={accidental === v} aria-label={label} title={`${label} no clique (de novo = armadura)`} onClick={() => setAccidental((a) => (a === v ? null : v))}>
+                    {sym}
+                  </button>
+                ))}
               </div>
               <div className="tool-group" aria-label="Notas">
                 {(Object.keys(STEP_NAMES) as Step[]).map((st) => (
@@ -494,11 +618,21 @@ export function ScorePanel() {
                   </li>
                 ))}
               </ol>
-              <ScoreView xml={xml} cursor={cursor} staffOf={voice?.staff ?? 0} voiceInStaff={voicesInStaff} />
+              <ScoreView xml={xml} cursor={cursor} staffOf={voice?.staff ?? 0} voiceInStaff={voicesInStaff} insert={insertMode} />
             </div>
             <p id="score-help" className="hint">
-              Clique no editor e use o teclado: A–G nota · 0 pausa · 1–7 duração (5 = semínima) · . ponto · ←/→ evento · ↑/↓ semitom (Ctrl = oitava) · + ligadura · Delete apaga.
+              {mode === "insert"
+                ? "Inserir notas: passe o mouse na pauta — a altura define a nota; o clique insere no compasso apontado. "
+                : "Selecionar: clique numa nota da lista acima para editá-la. "}
+              Teclado: A–G nota · 0 pausa · 1–7 duração (5 = semínima) · . ponto · ←/→ evento · ↑/↓ semitom (Ctrl = oitava) · + ligadura · Delete apaga.
             </p>
+            {measure ? (
+              <NoteTextEntry
+                options={textOptions}
+                capacity={measureCapacity(score, cursor.measure)}
+                onInsert={enterBatch}
+              />
+            ) : null}
             {report ? (
               <div className="score-report" aria-label="Relatório de validação">
                 <strong>Validação</strong>

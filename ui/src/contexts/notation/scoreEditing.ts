@@ -1,6 +1,6 @@
 // Regras de edição da partitura no editor (puras, testáveis): teclado → ação, cursor de eventos,
 // altura pela armadura e redistribuição de pausas para manter o compasso cheio.
-import type { KeySignature, NoteDuration, NoteValue, Pitch, Score, ScoreEvent, ScoreVoice, Step, VoiceEdit } from "../../ipc/types";
+import type { Clef, KeySignature, NoteDuration, NoteValue, Pitch, Score, ScoreEvent, ScoreVoice, Step, VoiceEdit } from "../../ipc/types";
 
 export interface Cursor {
   part: number;
@@ -297,4 +297,35 @@ export function defaultOctave(score: Score, c: Cursor): number {
   const v = voiceAt(score, c);
   const clef = score.parts[c.part]?.staves[v?.staff ?? 0]?.clef;
   return clef === "bass" || clef === "treble8vb" ? 3 : 4;
+}
+
+// ------------------------------------------------------------------- clique na pauta
+
+const STEP_ORDER: Step[] = ["C", "D", "E", "F", "G", "A", "B"];
+/** Nota na linha de cima da pauta (altura real: a clave 8vb soa uma oitava abaixo do escrito). */
+const TOP_LINE: Record<Clef, { step: Step; octave: number }> = {
+  treble: { step: "F", octave: 5 },
+  treble8vb: { step: "F", octave: 4 },
+  bass: { step: "A", octave: 3 },
+  alto: { step: "G", octave: 4 },
+  tenor: { step: "E", octave: 4 },
+  percussion: { step: "F", octave: 5 },
+};
+
+/** Meias-distâncias entre linhas a partir da linha de cima (0 = linha de cima, 1 = 1º espaço…), até 6 linhas suplementares. */
+export function snapHalfSpaces(y: number, topLineY: number, lineSpacing: number): number {
+  const h = Math.round((y - topLineY) / (lineSpacing / 2));
+  return Math.max(-12, Math.min(20, h));
+}
+
+/**
+ * Altura de uma posição da pauta: `halfSpaces` abaixo da linha de cima na clave `clef`.
+ * Acidente: o escolhido (−1/0/+1) ou, sem escolha, o da armadura.
+ */
+export function staffPitch(clef: Clef, halfSpaces: number, key: KeySignature, accidental: number | null = null): Pitch {
+  const top = TOP_LINE[clef];
+  const index = top.octave * 7 + STEP_ORDER.indexOf(top.step) - halfSpaces;
+  const step = STEP_ORDER[((index % 7) + 7) % 7]!;
+  const octave = Math.floor(index / 7);
+  return { step, alter: accidental ?? keyAlter(step, key.fifths), octave };
 }

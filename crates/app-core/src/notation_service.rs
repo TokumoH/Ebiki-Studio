@@ -252,9 +252,15 @@ impl Studio {
         self.execute(on_score(id, EditVoice::new(loc, edit)), gesture)
     }
 
-    /// Edição estrutural (desfazível).
-    pub fn score_edit(&mut self, id: ScoreId, edit: ScoreEdit) -> AppResult<SessionView> {
-        self.execute(on_score(id, EditScore::new(edit)), None)
+    /// Edição estrutural (desfazível; `gesture` agrupa com edições de voz — ex.: notas digitadas
+    /// em lote que criam compassos viram um único passo de desfazer).
+    pub fn score_edit(
+        &mut self,
+        id: ScoreId,
+        edit: ScoreEdit,
+        gesture: Option<u64>,
+    ) -> AppResult<SessionView> {
+        self.execute(on_score(id, EditScore::new(edit)), gesture)
     }
 
     /// Importa MusicXML/MXL/MIDI/Guitar Pro 7 (detecção pelo conteúdo) como nova partitura.

@@ -40,3 +40,24 @@
   html.printing-score .score-paper { position: fixed; left: 0; top: 0; width: 100%; overflow: visible; }
   html.printing-score .score-cursor { display: none; }
 }
+
+/* Inserir por clique (mockup 8) */
+.mode-switch .btn[aria-checked="true"], .tool-group .btn[role="radio"][aria-checked="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.score-at--insert { cursor: crosshair; }
+.score-bar-hl { position: absolute; background: rgba(244, 163, 182, 0.14); border-radius: 4px; pointer-events: none; }
+.score-ghost { position: absolute; border-radius: 50%; background: rgba(215, 106, 135, 0.75); transform: rotate(-20deg); pointer-events: none; }
+.score-tip { position: absolute; background: var(--panel, #262239); color: var(--fg); padding: 5px 9px; border-radius: 6px; font-size: var(--text-xs); line-height: 1.4; white-space: nowrap; pointer-events: none; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; z-index: 2; }
+.score-tip small { color: var(--fg-muted); }
+html.printing-score .score-bar-hl, html.printing-score .score-ghost, html.printing-score .score-tip { display: none; }
+
+/* Digitar notas */
+.note-text { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); background: var(--bg-raised); }
+.note-text-head { display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap; }
+.note-text-row { display: flex; gap: var(--space-2); }
+.note-text-row .input { flex: 1; min-width: 0; font-size: var(--text-md); }
+.note-text-row .input[aria-invalid="true"] { border-color: var(--crit); }
+.note-text-preview { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.note-text-preview .chip { padding: 2px 8px; border-radius: 4px; background: var(--panel-2, #302b48); font-size: var(--text-sm); }
+.note-text-preview .chip.rest { color: var(--fg-muted); background: transparent; border: 1px dashed var(--line-strong); }
+.note-text-ok { color: var(--ok); font-size: var(--text-sm); margin-left: var(--space-2); }
+.note-text-error { color: var(--crit); font-size: var(--text-sm); margin: 0; }
