@@ -49,23 +49,23 @@ export const PARAMS: Record<string, ParamMeta[]> = {
     { key: "damping", label: "Amortecimento", min: 0, max: 1, step: 0.01, unit: "" },
     { key: "width", label: "Largura", min: 0, max: 1, step: 0.01, unit: "" },
     { key: "predelayMs", label: "Pré-atraso", min: 0, max: 200, step: 1, unit: "ms" },
-    { key: "mix", label: "Mix", min: 0, max: 1, step: 0.01, unit: "" },
+    { key: "mix", label: "Mistura", min: 0, max: 1, step: 0.01, unit: "" },
   ],
   delay: [
     { key: "timeMs", label: "Tempo", min: 1, max: 2000, step: 1, unit: "ms" },
     { key: "feedback", label: "Realimentação", min: 0, max: 0.95, step: 0.01, unit: "" },
     { key: "highCutHz", label: "Corte de agudos", min: 500, max: 20000, step: 10, unit: "Hz" },
-    { key: "mix", label: "Mix", min: 0, max: 1, step: 0.01, unit: "" },
+    { key: "mix", label: "Mistura", min: 0, max: 1, step: 0.01, unit: "" },
   ],
   saturation: [
-    { key: "driveDb", label: "Drive", min: 0, max: 36, step: 0.5, unit: "dB" },
+    { key: "driveDb", label: "Saturação", min: 0, max: 36, step: 0.5, unit: "dB" },
     { key: "tone", label: "Tom", min: 0, max: 1, step: 0.01, unit: "" },
-    { key: "mix", label: "Mix", min: 0, max: 1, step: 0.01, unit: "" },
+    { key: "mix", label: "Mistura", min: 0, max: 1, step: 0.01, unit: "" },
   ],
   chorus: [
     { key: "rateHz", label: "Velocidade", min: 0.05, max: 10, step: 0.05, unit: "Hz" },
     { key: "depthMs", label: "Profundidade", min: 0.1, max: 15, step: 0.1, unit: "ms" },
-    { key: "mix", label: "Mix", min: 0, max: 1, step: 0.01, unit: "" },
+    { key: "mix", label: "Mistura", min: 0, max: 1, step: 0.01, unit: "" },
   ],
   deEsser: [
     { key: "freqHz", label: "Frequência", min: 2000, max: 12000, step: 50, unit: "Hz" },
