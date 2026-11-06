@@ -31,7 +31,10 @@ describe("transporte simulado cumpre o contrato da API", () => {
     const v = await api.projectCreate({ dir: "/tmp", name: "B", sampleRate: 48000, bitDepth: 24 });
     const v2 = await api.audioImport(["/x/a.wav"], null, 0);
     const peaks = await api.waveform(v2.sources[0]!.id, 1024);
-    expect(peaks.length % 2).toBe(0);
+    // 8 s a 48 kHz = 384000 quadros → ceil(384000 / 1024) = 375 picos (mín., máx.) = 750 valores
+    expect(peaks).toHaveLength(750);
+    expect(peaks[0]).toBeLessThan(0);
+    expect(peaks[1]).toBeCloseTo(-peaks[0]!, 6);
     expect(v.project.name).toBe("B");
   });
 });

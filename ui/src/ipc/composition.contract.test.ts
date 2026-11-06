@@ -33,7 +33,9 @@ describe("contrato IPC de composição Rust ↔ UI", () => {
 
   it("progressões sugeridas e do usuário", () => {
     const list = S.ProgressionSuggestion.array().parse(progressions);
-    expect(list.length).toBeGreaterThan(0);
+    expect(list).toHaveLength(3);
+    expect(list[0]?.cifra).toEqual(["C", "Am", "F", "G"]);
+    expect(list[0]?.progression.ref).toEqual({ kind: "builtin", slug: "doo-wop" });
     for (const p of list) expect(p.cifra).toHaveLength(p.progression.roman.length);
     const u = S.ProgressionView.parse(userProgression);
     expect(u.origin).toBe("user");
@@ -43,7 +45,8 @@ describe("contrato IPC de composição Rust ↔ UI", () => {
   it("próximo acorde após G7 em Dó começa por Dó", () => {
     const s = S.ChordSuggestion.array().parse(suggestNext);
     expect(s[0]?.symbol).toBe("C");
-    expect(s[0]?.reasonLabel.length).toBeGreaterThan(0);
+    expect(s).toHaveLength(4);
+    expect(s[0]?.reasonLabel).toBe("Cadência autêntica (V → I)");
   });
 
   it("realização e clipe inserido (com a sessão)", () => {
@@ -64,7 +67,8 @@ describe("contrato IPC de composição Rust ↔ UI", () => {
     const list = S.LibraryBase.array().parse(bases);
     expect(new Set(list.map((b) => b.kind.kind))).toEqual(new Set(["generated", "userAudio"]));
     const g = S.GeneratedBase.parse(generated);
-    expect(g.events.length).toBeGreaterThan(0);
+    expect(g.events).toHaveLength(30);
+    expect(g.events[0]).toEqual({ channel: 0, durationTicks: 960, key: 57, program: 25, startTick: 0, velocity: 100 });
   });
 
   it("divergência e inserção com tag de status", () => {
