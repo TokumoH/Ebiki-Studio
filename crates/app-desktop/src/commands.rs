@@ -409,7 +409,14 @@ pub struct MixReport {
 
 #[tauri::command]
 pub async fn mix_analyze(state: State<'_, AppState>, target_lufs: Option<f32>) -> Res<MixReport> {
-    let (analysis, advice) = lock(&state.studio).analyze_mix(target_lufs.unwrap_or(-14.0))?;
+    // renderizar todas as faixas pode levar minutos: o estúdio fica livre (telemetria,
+    // autosave, transporte) enquanto a análise roda numa thread de bloqueio
+    let snapshot = lock(&state.studio).render_snapshot()?;
+    let target = target_lufs.unwrap_or(-14.0);
+    let (analysis, advice) =
+        tauri::async_runtime::spawn_blocking(move || snapshot.analyze_mix(target))
+            .await
+            .map_err(|e| AppError::new("app.internal", e.to_string()))??;
     Ok(MixReport { analysis, advice })
 }
 

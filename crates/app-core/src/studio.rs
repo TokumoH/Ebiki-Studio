@@ -1079,6 +1079,8 @@ impl Studio {
     }
 
     /// Analisa a mixagem (offline) e devolve as medições + conselhos por regras.
+    /// Mixagem e cada canal solo renderizados e medidos (pode levar segundos):
+    /// prefira `render_snapshot()` + `RenderSnapshot::analyze_mix` fora do lock.
     pub fn analyze_mix(
         &self,
         target_lufs: f32,
@@ -1086,30 +1088,17 @@ impl Studio {
         ctx_mixing::advisor::MixAnalysis,
         Vec<ctx_mixing::advisor::Advice>,
     )> {
-        use ctx_mixing::advisor::{MixAdvisor, RuleBasedMixAdvisor};
+        self.render_snapshot()?.analyze_mix(target_lufs)
+    }
+
+    /// Cópia imutável (sessão + buffers compartilhados) para renderizar sem segurar o estúdio.
+    pub fn render_snapshot(&self) -> AppResult<RenderSnapshot> {
         let op = self.open.as_ref().ok_or_else(AppError::no_project)?;
-        let sr = op.session.project.format.sample_rate.hz();
-        let (l, r) = self.render_mixdown(None, 0.5)?;
-        let master = crate::render::analyze_master(&l, &r, sr);
-        let mut channels = Vec::new();
-        for t in op.session.project.tracks().iter().take(64) {
-            let solo = crate::render::solo_session(&op.session, t.id);
-            let (tl, tr) = crate::render::render_session(
-                &solo,
-                &op.sources,
-                self.deps.factory.as_ref(),
-                None,
-                0.0,
-            )?;
-            channels.push(crate::render::analyze_channel(&t.name, &tl, &tr));
-        }
-        let analysis = ctx_mixing::advisor::MixAnalysis {
-            master,
-            channels,
-            target_lufs,
-        };
-        let advice = RuleBasedMixAdvisor.advise(&analysis);
-        Ok((analysis, advice))
+        Ok(RenderSnapshot {
+            session: op.session.clone(),
+            sources: op.sources.clone(),
+            factory: self.deps.factory.clone(),
+        })
     }
 
     /// Picos (mín./máx. intercalados por bloco, canais combinados) para desenhar a forma de onda.
@@ -1230,4 +1219,52 @@ fn list_files(dir: &Path) -> std::collections::HashSet<PathBuf> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+/// Estado necessário para renderizações offline longas, desacoplado do `Studio`
+/// (o comando libera o lock e renderiza em outra thread).
+pub struct RenderSnapshot {
+    session: Session,
+    sources: HashMap<AudioSourceId, Arc<SourceBuffer>>,
+    factory: Arc<dyn ProcessorFactory>,
+}
+
+impl RenderSnapshot {
+    pub fn analyze_mix(
+        &self,
+        target_lufs: f32,
+    ) -> AppResult<(
+        ctx_mixing::advisor::MixAnalysis,
+        Vec<ctx_mixing::advisor::Advice>,
+    )> {
+        use ctx_mixing::advisor::{MixAdvisor, RuleBasedMixAdvisor};
+        let sr = self.session.project.format.sample_rate.hz();
+        let (l, r) = crate::render::render_session(
+            &self.session,
+            &self.sources,
+            self.factory.as_ref(),
+            None,
+            0.5,
+        )?;
+        let master = crate::render::analyze_master(&l, &r, sr);
+        let mut channels = Vec::new();
+        for t in self.session.project.tracks().iter().take(64) {
+            let solo = crate::render::solo_session(&self.session, t.id);
+            let (tl, tr) = crate::render::render_session(
+                &solo,
+                &self.sources,
+                self.factory.as_ref(),
+                None,
+                0.0,
+            )?;
+            channels.push(crate::render::analyze_channel(&t.name, &tl, &tr));
+        }
+        let analysis = ctx_mixing::advisor::MixAnalysis {
+            master,
+            channels,
+            target_lufs,
+        };
+        let advice = RuleBasedMixAdvisor.advise(&analysis);
+        Ok((analysis, advice))
+    }
 }

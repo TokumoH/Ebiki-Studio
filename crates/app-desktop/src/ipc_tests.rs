@@ -185,6 +185,21 @@ fn commands_accept_the_ui_payloads() {
     );
     assert_eq!(stems.as_array().unwrap().len(), 1);
 
+    // análise de mixagem roda fora do lock do estúdio e devolve medidas por canal
+    let report = ok(&w, "mix_analyze", json!({ "targetLufs": -14.0 }));
+    let lufs = report["analysis"]["master"]["integratedLufs"]
+        .as_f64()
+        .unwrap();
+    assert!(
+        (-70.0..0.0).contains(&lufs),
+        "tom audível medido: {lufs} LUFS"
+    );
+    assert_eq!(report["analysis"]["targetLufs"], -14.0);
+    assert!(!report["analysis"]["channels"]
+        .as_array()
+        .unwrap()
+        .is_empty());
+
     // erros tipados chegam como { code, message }
     let err = call(
         &w,
