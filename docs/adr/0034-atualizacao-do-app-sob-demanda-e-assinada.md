@@ -17,8 +17,10 @@ escopo e a política de privacidade prometia nenhuma conexão de rede. Decisões
    barra de status, e falhas dela são silenciosas.
 2. **Como instalar:** `tauri-plugin-updater` baixa o pacote indicado em
    `releases/latest/download/latest.json`, **verifica a assinatura minisign** contra a chave pública
-   do `tauri.conf.json` e instala; `tauri-plugin-process` reinicia. O projeto é salvo antes, se houver
-   alterações. Windows usa o instalador NSIS em modo passivo.
+   do `tauri.conf.json` e instala; `tauri-plugin-process` reinicia. Ordem obrigatória:
+   **baixar → parar o transporte e salvar → instalar → reiniciar**, porque no Windows a instalação
+   encerra o app na hora (o instalador NSIS, em modo passivo, assume). Se parar ou salvar falhar, nada
+   é instalado. *(Corrigido na varredura 3: a primeira versão salvava depois de instalar.)*
 3. **Onde não dá para instalar:** `.deb`/`.rpm` pertencem ao gerenciador de pacotes. O comando
    `app_update_mode` (Rust, função pura testada) devolve `manual` fora de Windows/macOS/AppImage, e a UI
    abre a página de releases (`tauri-plugin-opener`, permissão restrita a essa URL).

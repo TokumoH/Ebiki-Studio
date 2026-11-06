@@ -46,7 +46,7 @@ export function isNewer(candidate: string, current: string): boolean {
   return false;
 }
 
-export type UpdateStatus = "idle" | "checking" | "upToDate" | "available" | "downloading" | "restarting" | "error";
+export type UpdateStatus = "idle" | "checking" | "upToDate" | "available" | "downloading" | "installing" | "error";
 
 interface UpdateState {
   status: UpdateStatus;
@@ -60,7 +60,8 @@ interface UpdateState {
   notice: boolean;
   prefs: UpdatePrefs;
   check: (opts: { manual: boolean }) => Promise<void>;
-  install: (beforeRestart: () => Promise<void>) => Promise<void>;
+  /** Baixa → `beforeInstall` (parar o transporte, salvar) → instala → reinicia. */
+  install: (beforeInstall: () => Promise<void>) => Promise<void>;
   openPage: () => Promise<void>;
   show: () => void;
   later: () => void;
@@ -79,7 +80,7 @@ export const useUpdates = create<UpdateState>((set, get) => ({
   prefs: loadUpdatePrefs(),
 
   check: async ({ manual }) => {
-    const busy = ["checking", "downloading", "restarting"].includes(get().status);
+    const busy = ["checking", "downloading", "installing"].includes(get().status);
     if (busy) {
       if (manual) set({ open: true });
       return;
@@ -105,13 +106,15 @@ export const useUpdates = create<UpdateState>((set, get) => ({
     }
   },
 
-  install: async (beforeRestart) => {
+  install: async (beforeInstall) => {
     if (get().status !== "available" || get().mode !== "inApp") return;
     set({ status: "downloading", progress: { done: 0, total: null }, error: null, open: true });
     try {
-      await updater().install((done, total) => set({ progress: { done, total } }));
-      set({ status: "restarting" });
-      await beforeRestart();
+      await updater().download((done, total) => set({ progress: { done, total } }));
+      set({ status: "installing" });
+      // antes de instalar: no Windows a instalação encerra o app imediatamente
+      await beforeInstall();
+      await updater().install();
       await updater().relaunch();
     } catch (e) {
       set({ status: "error", error: e instanceof UpdateError ? e.kind : "other" });

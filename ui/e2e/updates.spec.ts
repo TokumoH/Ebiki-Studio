@@ -20,14 +20,18 @@ const checkFromMenu = async (page: Page) => {
 
 const NEW = JSON.stringify({ version: "9.0.0", notes: "### Novidades\n\n- Automação de volume" });
 
-test("Ajuda › Verificar atualizações: instala, salva e reinicia", async ({ page }) => {
+test("Ajuda › Verificar atualizações: salva o projeto antes de instalar e reinicia", async ({ page }) => {
   await newProject(page, { "ebiki.mock.update": NEW });
+  await page.getByRole("button", { name: "+ Faixa" }).click();
+  const status = page.getByRole("contentinfo", { name: "Status" });
+  await expect(status).toContainText("Alterações não salvas");
   await checkFromMenu(page);
   const dialog = page.getByRole("dialog", { name: "Atualizações" });
   await expect(dialog).toContainText("Atualização disponível");
   await expect(dialog).toContainText("• Automação de volume");
   await dialog.getByRole("button", { name: "Instalar e reiniciar" }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __ebikiRelaunched?: boolean }).__ebikiRelaunched)).toBe(true);
+  await expect(status).toContainText("Salvo");
 });
 
 test("sem versão nova e sem internet: mensagens claras, nada é verificado sozinho", async ({ page }) => {

@@ -1,5 +1,5 @@
 .transport { display: flex; align-items: center; gap: var(--space-1); min-width: 0; flex-wrap: nowrap; }
 .transport-display { display: flex; flex-direction: column; align-items: flex-start; padding: 0 var(--space-3); border-left: 1px solid var(--line); line-height: 1.1; font-size: var(--text-xs); color: var(--fg-muted); }
-.transport-display .big { font-size: var(--text-lg); color: var(--fg); }
+.transport-display .big { font-size: var(--text-lg); color: var(--fg); white-space: nowrap; }
 .badge-rec { color: var(--rec); font-weight: 600; margin-left: var(--space-2); animation: blink 1s steps(2) infinite; white-space: nowrap; }
 @keyframes blink { 50% { opacity: 0.4; } }

@@ -9,7 +9,8 @@ function fakeUpdater(over: Partial<Updater> = {}): Updater {
   return {
     mode: async () => "inApp",
     check: async () => ({ version: "99.0.0", notes: "Novidades" }),
-    install: async (p) => p(10, 10),
+    download: async (p) => p(10, 10),
+    install: async () => {},
     relaunch: vi.fn(async () => {}),
     openReleasePage: vi.fn(async () => {}),
     ...over,
@@ -89,19 +90,20 @@ describe("verificação", () => {
 });
 
 describe("instalação", () => {
-  it("baixa, salva o projeto e reinicia, nessa ordem", async () => {
+  it("baixa, salva ANTES de instalar (no Windows a instalação encerra o app) e reinicia", async () => {
     const order: string[] = [];
     const u = fakeUpdater({
-      install: async (p) => {
-        order.push("install");
+      download: async (p) => {
+        order.push("download");
         p(5, 10);
       },
+      install: async () => void order.push("install"),
       relaunch: async () => void order.push("relaunch"),
     });
     setUpdater(u);
     await useUpdates.getState().check({ manual: true });
     await useUpdates.getState().install(async () => void order.push("save"));
-    expect(order).toEqual(["install", "save", "relaunch"]);
+    expect(order).toEqual(["download", "save", "install", "relaunch"]);
     expect(useUpdates.getState().progress).toEqual({ done: 5, total: 10 });
   });
 
@@ -109,16 +111,34 @@ describe("instalação", () => {
     const relaunch = vi.fn(async () => {});
     setUpdater(fakeUpdater({ install: async () => Promise.reject(new UpdateError("signature", "bad")), relaunch }));
     await useUpdates.getState().check({ manual: true });
+    await useUpdates.getState().install(async () => {});
+    expect(useUpdates.getState()).toMatchObject({ status: "error", error: "signature" });
+    expect(relaunch).not.toHaveBeenCalled();
+  });
+
+  it("falha no download não salva nem instala", async () => {
+    const install = vi.fn(async () => {});
+    setUpdater(fakeUpdater({ download: async () => Promise.reject(new UpdateError("offline", "reset")), install }));
+    await useUpdates.getState().check({ manual: true });
     const save = vi.fn(async () => {});
     await useUpdates.getState().install(save);
-    expect(useUpdates.getState()).toMatchObject({ status: "error", error: "signature" });
+    expect(useUpdates.getState()).toMatchObject({ status: "error", error: "offline" });
     expect(save).not.toHaveBeenCalled();
-    expect(relaunch).not.toHaveBeenCalled();
+    expect(install).not.toHaveBeenCalled();
+  });
+
+  it("se salvar falhar, não instala (não perde o trabalho)", async () => {
+    const install = vi.fn(async () => {});
+    setUpdater(fakeUpdater({ install }));
+    await useUpdates.getState().check({ manual: true });
+    await useUpdates.getState().install(async () => Promise.reject(new Error("disco cheio")));
+    expect(useUpdates.getState()).toMatchObject({ status: "error", error: "other" });
+    expect(install).not.toHaveBeenCalled();
   });
 
   it("instalação manual (.deb/.rpm) não instala dentro do app", async () => {
     const install = vi.fn(async () => {});
-    setUpdater(fakeUpdater({ mode: async () => "manual", install }));
+    setUpdater(fakeUpdater({ mode: async () => "manual", download: install, install }));
     await useUpdates.getState().check({ manual: true });
     await useUpdates.getState().install(async () => {});
     expect(install).not.toHaveBeenCalled();

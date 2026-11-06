@@ -18,7 +18,12 @@ flowchart LR
     user -- grava, mixa, edita, compõe --> app
     app -- entrada / saída de áudio --> dev
     app -- lê / grava projetos e arquivos --> fs
+    gh[(GitHub Releases<br/>latest.json + pacotes assinados)]
+    app -. só sob demanda ou opt-in: verifica e baixa atualização .-> gh
 ```
+
+A única conexão de rede é opcional: a verificação de atualizações (ADR-0034), feita pelo núcleo em
+Rust — o webview não acessa a rede (CSP).
 
 ## 2. Camadas (arquitetura hexagonal + DDD)
 
@@ -407,7 +412,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TB
-    APP[app/ — shell: docking, tema, atalhos]
+    APP[app/ — shell: menu fixo, docking, tema, atalhos, ajuda, tutorial, atualizações]
     PAN[panels/ — TimelinePanel, MixerPanel, ScorePanel...]
     subgraph CTX[contexts/ — um por Bounded Context]
         CP[project]
@@ -416,9 +421,10 @@ flowchart TB
         CO[...]
     end
     SH[shared/ — Design System: tokens, Button, Knob, Fader, Meter]
-    IPC[ipc/ — bindings gerados]
+    IPC[ipc/ — portas e adaptadores: transporte IPC, atualizador]
     APP --> PAN --> CTX --> SH
     CTX --> IPC
+    APP --> IPC
 ```
 
 **Regra:** um contexto da UI nunca importa outro; composição apenas em `panels/`.
@@ -430,7 +436,10 @@ flowchart TB
 | Timeline / waveform | Canvas 2D (WebGL se necessário) |
 | Partitura / tablatura | alphaTab |
 | Tema | CSS custom properties; escuro padrão |
-| Atalhos | `KeymapService` persistido em `library.db` |
+| Atalhos | Registro único de comandos (teclado + menu); personalizações no armazenamento local da janela |
+| Menu principal | `shared/MenuBar` dirigido por dados + `app/menuModel` puro (ADR-0033) |
+| Ajuda e tutorial | Conteúdo estático, busca local; tour por seletores `data-tour` (ADR-0033) |
+| Atualizações | Porta `ipc/updater` + `tauri-plugin-updater` (assinatura minisign), store `app/updates` (ADR-0034) |
 
 ### 7.4 Tratamento de Erros
 

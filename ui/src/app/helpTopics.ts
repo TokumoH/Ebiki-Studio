@@ -138,7 +138,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     intro: "O app só procura versões novas quando você pede (ou se ligar a verificação ao abrir). Cada pacote é assinado e conferido antes de instalar.",
     steps: [
       "Ajuda › Verificar atualizações…: se houver versão nova, veja as novidades e clique em Instalar e reiniciar.",
-      "Alterações não salvas são salvas antes de reiniciar.",
+      "Antes de instalar, o app para a reprodução ou gravação e salva o projeto; se salvar falhar, nada é instalado.",
       "Marque Verificar ao abrir o app para receber um aviso discreto na barra de status; Pular esta versão silencia esse aviso.",
       "Instalações .deb/.rpm no Linux: o botão abre a página de download para instalar a nova versão por cima.",
     ],

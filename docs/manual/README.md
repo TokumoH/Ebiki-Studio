@@ -164,7 +164,9 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 
 - **Ajuda › Verificar atualizações…** consulta a página de releases. Se houver versão nova, o
   diálogo mostra as novidades e oferece **Instalar e reiniciar**: o app baixa o pacote, confere a
-  **assinatura digital** (arquivo adulterado é recusado) e reinicia. Alterações não salvas são salvas antes.
+  **assinatura digital** (arquivo adulterado é recusado) e reinicia. Antes de instalar, o transporte
+  para (uma gravação em andamento vira take) e as alterações não salvas são salvas; se salvar falhar,
+  nada é instalado.
 - **Verificar ao abrir o app** (no mesmo diálogo, desligado por padrão): com ela ligada, uma versão
   nova aparece só como aviso na barra de status — nunca interrompe uma gravação.
 - **Pular esta versão** silencia o aviso automático daquela versão (a verificação manual ainda a mostra).

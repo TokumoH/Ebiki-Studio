@@ -24,6 +24,7 @@ function fake(over: Partial<Updater> = {}): Updater {
   return {
     mode: async () => "inApp",
     check: async () => ({ version: "9.0.0", date: "2026-12-12T12:00:00Z", notes: NOTES }),
+    download: async () => {},
     install: async () => {},
     relaunch: async () => {},
     openReleasePage: vi.fn(async () => {}),
@@ -54,7 +55,7 @@ describe("UpdateDialog", () => {
     const install = vi.fn(async () => {});
     setUpdater(fake({ install }));
     const save = vi.fn(async () => {});
-    render(<UpdateDialog beforeRestart={save} />);
+    render(<UpdateDialog beforeInstall={save} />);
     await useUpdates.getState().check({ manual: true });
     expect(await screen.findByText("Atualização disponível")).toBeTruthy();
     expect(screen.getByText(/Automação de volume e pan/)).toBeTruthy();
@@ -67,7 +68,7 @@ describe("UpdateDialog", () => {
   it("instalação .deb/.rpm oferece a página de download", async () => {
     const openReleasePage = vi.fn(async () => {});
     setUpdater(fake({ mode: async () => "manual", openReleasePage }));
-    render(<UpdateDialog beforeRestart={async () => {}} />);
+    render(<UpdateDialog beforeInstall={async () => {}} />);
     await useUpdates.getState().check({ manual: true });
     expect(screen.queryByRole("button", { name: "Instalar e reiniciar" })).toBeNull();
     await userEvent.click(await screen.findByRole("button", { name: "Abrir página de download" }));
@@ -76,7 +77,7 @@ describe("UpdateDialog", () => {
 
   it("a caixa 'Verificar ao abrir' grava a preferência", async () => {
     setUpdater(fake({ check: async () => null }));
-    render(<UpdateDialog beforeRestart={async () => {}} />);
+    render(<UpdateDialog beforeInstall={async () => {}} />);
     await useUpdates.getState().check({ manual: true });
     expect(await screen.findByText("Você está na versão mais recente")).toBeTruthy();
     const box = screen.getByRole("checkbox", { name: "Verificar ao abrir o app" });

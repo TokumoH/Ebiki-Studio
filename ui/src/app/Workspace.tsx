@@ -78,11 +78,15 @@ export function Workspace() {
     if (shouldAutoStartTutorial()) startTour(1);
   }, [startTour]);
 
-  // atualização: aviso discreto na barra de status e salvamento antes de reiniciar
+  // atualização: aviso discreto na barra de status; antes de instalar, para o transporte (uma
+  // gravação em andamento vira take) e salva — no Windows a instalação encerra o app na hora
   const updateNotice = useUpdates((u) => (u.notice && u.info ? u.info.version : null));
   const showUpdate = useUpdates((u) => u.show);
-  const saveBeforeRestart = useCallback(async () => {
-    if (useSession.getState().session?.history.dirty) await api.projectSave();
+  const prepareForUpdate = useCallback(async () => {
+    // via run(): aplica a sessão devolvida e mostra o erro; falhou → a instalação é abortada
+    const st = useLive.getState().transport?.state;
+    if (st && st !== "stopped" && !(await run(() => api.stop(false)))) throw new Error("não foi possível parar o transporte");
+    if (useSession.getState().session?.history.dirty && !(await run(() => api.projectSave()))) throw new Error("não foi possível salvar o projeto");
   }, []);
 
   // registro único de comandos: usado pelos atalhos de teclado e pelo menu principal
@@ -290,7 +294,7 @@ export function Workspace() {
         onEditShortcuts={() => setDialog("shortcuts")}
       />
       <AboutDialog open={dialog === "about"} onClose={() => setDialog(null)} />
-      <UpdateDialog beforeRestart={saveBeforeRestart} />
+      <UpdateDialog beforeInstall={prepareForUpdate} />
       <Tutorial />
       <CloseProjectDialog open={dialog === "close"} onClose={() => setDialog(null)} />
     </div>

@@ -36,8 +36,13 @@ export interface Updater {
   mode(): Promise<UpdateMode>;
   /** Consulta o manifesto da última release; `null` = já está na mais recente. */
   check(): Promise<UpdateInfo | null>;
-  /** Baixa, verifica a assinatura e instala a versão encontrada pelo último `check`. */
-  install(onProgress: (downloaded: number, total: number | null) => void): Promise<void>;
+  /** Baixa o pacote da versão encontrada pelo último `check` (a assinatura é verificada na instalação). */
+  download(onProgress: (downloaded: number, total: number | null) => void): Promise<void>;
+  /**
+   * Verifica a assinatura e instala o pacote baixado. **No Windows o app é encerrado aqui** (o
+   * instalador assume): tudo o que precisa acontecer antes de sair deve vir antes desta chamada.
+   */
+  install(): Promise<void>;
   relaunch(): Promise<void>;
   openReleasePage(): Promise<void>;
 }
@@ -71,13 +76,15 @@ export function createMockUpdater(read: (key: string) => string | null = safeRea
       if (s === "signature") return { version: "9.9.9", notes: "Versão adulterada" };
       return JSON.parse(s) as UpdateInfo;
     },
-    install: async (onProgress) => {
-      if (scenario() === "signature") throw new UpdateError("signature", "signature verification failed");
+    download: async (onProgress) => {
       const total = 14_000_000;
       for (const done of [0, total / 2, total]) {
         onProgress(done, total);
         await new Promise((r) => setTimeout(r, 30));
       }
+    },
+    install: async () => {
+      if (scenario() === "signature") throw new UpdateError("signature", "signature verification failed");
     },
     relaunch: async () => {
       (window as unknown as { __ebikiRelaunched?: boolean }).__ebikiRelaunched = true;

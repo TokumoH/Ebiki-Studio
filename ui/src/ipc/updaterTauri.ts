@@ -23,16 +23,25 @@ export function createTauriUpdater(): Updater {
       }
       return pending ? { version: pending.version, date: pending.date, notes: pending.body ?? "" } : null;
     },
-    install: async (onProgress) => {
+    download: async (onProgress) => {
       if (!pending) throw new UpdateError("other", "nenhuma atualização verificada");
       let total: number | null = null;
       let done = 0;
       try {
-        await pending.downloadAndInstall((ev) => {
+        await pending.download((ev) => {
           if (ev.event === "Started") total = ev.data.contentLength ?? null;
           else if (ev.event === "Progress") done += ev.data.chunkLength;
           onProgress(done, total);
         });
+      } catch (e) {
+        throw wrap(e);
+      }
+    },
+    // no Windows, encerra o app depois de lançar o instalador (comportamento do plugin)
+    install: async () => {
+      if (!pending) throw new UpdateError("other", "nenhuma atualização verificada");
+      try {
+        await pending.install();
       } catch (e) {
         throw wrap(e);
       }

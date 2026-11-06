@@ -39,10 +39,12 @@ const ERROR_TEXT = {
   other: { title: "Não foi possível atualizar", body: "O servidor de atualizações não respondeu como esperado. Tente mais tarde ou baixe pela página de releases." },
 } as const;
 
-export function UpdateDialog({ beforeRestart }: { beforeRestart: () => Promise<void> }) {
+const ignoreClose = () => {};
+
+export function UpdateDialog({ beforeInstall }: { beforeInstall: () => Promise<void> }) {
   const u = useUpdates();
   const close = u.later;
-  const busy = u.status === "downloading" || u.status === "restarting";
+  const busy = u.status === "downloading" || u.status === "installing";
   const checkbox = (
     <label className="update-auto">
       <input type="checkbox" checked={u.prefs.checkOnOpen} onChange={(e) => u.setCheckOnOpen(e.target.checked)} /> Verificar ao abrir o app
@@ -106,13 +108,13 @@ export function UpdateDialog({ beforeRestart }: { beforeRestart: () => Promise<v
         ) : null}
         {busy ? (
           <div className="update-progress" role="status">
-            <span>{u.status === "restarting" ? "Reiniciando…" : `Baixando ${u.info.version}…`}</span>
+            <span>{u.status === "installing" ? "Salvando o projeto e instalando…" : `Baixando ${u.info.version}…`}</span>
             <progress max={u.progress.total ?? undefined} value={u.progress.total ? u.progress.done : undefined} aria-label="Progresso do download" />
             <span className="update-muted">{formatProgress(u.progress.done, u.progress.total)} · depois verifica a assinatura e reinicia</span>
           </div>
         ) : u.mode === "inApp" ? (
           <span className="update-muted">
-            <span className="update-ok" aria-hidden="true">✓</span> Download assinado e verificado antes de instalar. Alterações não salvas são salvas antes de reiniciar.
+            <span className="update-ok" aria-hidden="true">✓</span> Download assinado e verificado antes de instalar. O projeto é salvo antes.
           </span>
         ) : (
           <span className="update-muted">Esta instalação (.deb/.rpm) é atualizada pelo instalador da nova versão, na página de downloads.</span>
@@ -126,7 +128,7 @@ export function UpdateDialog({ beforeRestart }: { beforeRestart: () => Promise<v
         </button>
         <Button onClick={close}>Depois</Button>
         {u.mode === "inApp" ? (
-          <Button variant="primary" onClick={() => void u.install(beforeRestart)}>
+          <Button variant="primary" onClick={() => void u.install(beforeInstall)}>
             Instalar e reiniciar
           </Button>
         ) : (
@@ -142,7 +144,7 @@ export function UpdateDialog({ beforeRestart }: { beforeRestart: () => Promise<v
     <Dialog
       title="Atualizações"
       open={u.open}
-      onClose={busy ? () => {} : close}
+      onClose={busy ? ignoreClose : close}
       footer={
         <div className="update-footer">
           {checkbox}

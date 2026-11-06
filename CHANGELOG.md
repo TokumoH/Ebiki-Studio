@@ -3,6 +3,16 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Corrigido
+
+- **Atualização no Windows**: o projeto agora é salvo (e a reprodução ou gravação é parada) **antes**
+  de instalar. Antes, o salvamento vinha depois da instalação, que no Windows encerra o app na hora —
+  alterações feitas desde o último autosave podiam se perder. Se salvar falhar, nada é instalado.
+  *Quem atualizar a partir da 0.2.0 ainda usa o fluxo antigo: salve o projeto antes de instalar.*
+- Mostrador de andamento não quebra mais em duas linhas em janelas estreitas.
+
 ## [0.2.0] - 2026-11-06
 
 Identidade Ebiki em todo o app e nos instaladores, com navegação e ajuda novas.
