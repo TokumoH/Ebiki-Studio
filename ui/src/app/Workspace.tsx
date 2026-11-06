@@ -5,13 +5,16 @@ import type { AudioStatus } from "../ipc/types";
 import { run, useSession } from "../core/session";
 import { useLive } from "../core/live";
 import { useTheme } from "../core/theme";
-import { Button, Dialog } from "../shared/components";
+import { loopRangeFromCursor } from "../core/bars";
+import { Button, InlineRename } from "../shared/components";
 import { TransportBar } from "../contexts/transport/TransportBar";
 import { DockLayout } from "../panels/DockLayout";
+import { PanelsMenu } from "../panels/PanelsMenu";
 import { AudioSettingsDialog } from "./AudioSettingsDialog";
 import { ExportDialog } from "./ExportDialog";
 import { ShortcutsDialog } from "./ShortcutsDialog";
-import { eventKeys, isTypingTarget, loadShortcuts } from "./shortcuts";
+import { CloseProjectDialog, closeProject } from "./CloseProjectDialog";
+import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts } from "./shortcuts";
 
 const AUDIO_EXT = ["wav", "wave", "aif", "aiff", "flac", "mp3", "ogg", "oga", "m4a", "aac", "mp4"];
 
@@ -58,14 +61,17 @@ export function Workspace() {
         if (m) void run(() => api.recordingMetronome({ ...m, enabled: !m.enabled }));
       },
       loop: () => {
-        const r = useSession.getState().session?.recording.loopRange;
-        void run(() => api.recordingLoop(r ? null : [0, 960 * 16]));
+        const s = useSession.getState().session;
+        if (!s) return;
+        // liga: 4 compassos a partir do compasso do cursor; desliga se já houver loop
+        void run(() => api.recordingLoop(s.recording.loopRange ? null : loopRangeFromCursor(s.tempo, useLive.getState().transport?.tick ?? 0)));
       },
       home: () => void run(() => api.seek(0)),
     };
     const onKey = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target) || document.querySelector(".dialog-backdrop")) return;
       const keys = eventKeys(e);
+      if (isActivationKey(keys, e.target)) return;
       const sc = shortcuts.current.find((s) => s.keys === keys);
       if (!sc) return;
       e.preventDefault();
@@ -97,11 +103,6 @@ export function Workspace() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, []);
 
-  const close = async () => {
-    const ok = await run(() => api.projectClose());
-    if (ok) useSession.getState().setSession(null);
-  };
-
   const h = session.history;
   return (
     <div className="app" aria-busy={busy}>
@@ -110,7 +111,7 @@ export function Workspace() {
           <span className="brand-mark" role="img" aria-label="Ebiki Studio" />
         </div>
         <span className="project-name" title={session.project.root}>
-          {session.project.name}
+          <InlineRename value={session.project.name} label={`Renomear projeto ${session.project.name}`} inputLabel="Novo nome do projeto" onCommit={(name) => void run(() => api.projectRename(name))} />
           {h.dirty ? <span className="dirty" title="Alterações não salvas"> ●</span> : null}
         </span>
         <span className="sep" />
@@ -123,6 +124,7 @@ export function Workspace() {
         <span className="sep" />
         <TransportBar />
         <span style={{ flex: 1 }} />
+        <PanelsMenu />
         <Button size="sm" onClick={() => void importAudio(useSession.getState().selectedTrackId)} title="Importar áudio (Ctrl+I)">
           Importar
         </Button>
@@ -141,7 +143,7 @@ export function Workspace() {
         <Button size="sm" variant="ghost" icon onClick={toggle} title="Alternar tema" aria-label="Alternar tema">
           ◐
         </Button>
-        <Button size="sm" variant="ghost" icon onClick={() => (h.dirty ? setDialog("close") : void close())} title="Fechar projeto" aria-label="Fechar projeto">
+        <Button size="sm" variant="ghost" icon onClick={() => (h.dirty ? setDialog("close") : void closeProject())} title="Fechar projeto" aria-label="Fechar projeto">
           ✕
         </Button>
       </header>
@@ -159,24 +161,7 @@ export function Workspace() {
       <AudioSettingsDialog open={dialog === "audio"} onClose={() => setDialog(null)} onChanged={setAudio} />
       <ExportDialog open={dialog === "export"} onClose={() => setDialog(null)} />
       <ShortcutsDialog open={dialog === "shortcuts"} onClose={() => setDialog(null)} onChanged={(s) => (shortcuts.current = s)} />
-      <Dialog
-        title="Fechar sem salvar?"
-        open={dialog === "close"}
-        onClose={() => setDialog(null)}
-        footer={
-          <>
-            <Button onClick={() => setDialog(null)}>Cancelar</Button>
-            <Button variant="danger" onClick={() => void close().then(() => setDialog(null))}>
-              Fechar sem salvar
-            </Button>
-            <Button variant="primary" onClick={() => void run(() => api.projectSave()).then(async (ok) => { if (ok) await close(); }).then(() => setDialog(null))}>
-              Salvar e fechar
-            </Button>
-          </>
-        }
-      >
-        <p>O projeto tem alterações que ainda não foram salvas.</p>
-      </Dialog>
+      <CloseProjectDialog open={dialog === "close"} onClose={() => setDialog(null)} />
     </div>
   );
 }

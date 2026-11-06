@@ -1,9 +1,9 @@
 // Design System: componentes visuais sem regra de negócio, reutilizáveis em qualquer contexto.
-import { useCallback, useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ButtonHTMLAttributes, type ReactNode, type Ref } from "react";
 
 type BtnVariant = "default" | "primary" | "ghost" | "danger";
 
-export function Button({ variant = "default", size, icon, className = "", ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant; size?: "sm"; icon?: boolean }) {
+export function Button({ variant = "default", size, icon, className = "", ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: BtnVariant; size?: "sm"; icon?: boolean; ref?: Ref<HTMLButtonElement> }) {
   const cls = ["btn", variant !== "default" && `btn--${variant}`, size && `btn--${size}`, icon && "btn--icon", className].filter(Boolean).join(" ");
   return <button type="button" className={cls} {...rest} />;
 }
@@ -82,6 +82,54 @@ export function Dialog({ title, open, onClose, children, footer }: { title: stri
         {footer ? <footer>{footer}</footer> : null}
       </div>
     </div>
+  );
+}
+
+/**
+ * Texto que vira campo ao clicar (ou Enter/F2 com foco). Enter ou perder o foco confirma; Esc cancela.
+ * Só chama `onCommit` quando o valor (sem espaços nas pontas) muda e não fica vazio.
+ */
+export function InlineRename({ value, onCommit, label, inputLabel, className = "", children }: { value: string; onCommit: (v: string) => void; label: string; inputLabel: string; className?: string; children?: ReactNode }) {
+  const [editing, setEditing] = useState(false);
+  const cancelled = useRef(false);
+  if (editing) {
+    return (
+      <input
+        className={`input inline-rename-input ${className}`}
+        autoFocus
+        defaultValue={value}
+        aria-label={inputLabel}
+        onFocus={(e) => e.currentTarget.select()}
+        onBlur={(e) => {
+          setEditing(false);
+          const v = e.currentTarget.value.trim();
+          if (!cancelled.current && v && v !== value) onCommit(v);
+          cancelled.current = false;
+        }}
+        onKeyDown={(e) => {
+          e.stopPropagation();
+          if (e.key === "Enter") e.currentTarget.blur();
+          if (e.key === "Escape") {
+            cancelled.current = true;
+            e.currentTarget.blur();
+          }
+        }}
+      />
+    );
+  }
+  return (
+    <button
+      type="button"
+      className={`inline-rename ${className}`}
+      aria-label={label}
+      title={label}
+      onClick={() => setEditing(true)}
+      onKeyDown={(e) => {
+        if (e.key === "F2") setEditing(true);
+      }}
+    >
+      {children ?? value}
+    </button>
   );
 }
 

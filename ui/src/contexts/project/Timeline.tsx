@@ -7,6 +7,7 @@ import { useLive } from "../../core/live";
 import { Button, EmptyState, Toggle } from "../../shared/components";
 import { gridLines, snapToBeat, PPQ } from "./grid";
 import { ClipView } from "./ClipView";
+import { TrackOrderButtons } from "./TrackOrderButtons";
 
 const TRACK_H = 72;
 
@@ -52,6 +53,7 @@ function TrackHeader({ track, index, selected }: { track: Track; index: number; 
           ⏺
         </Toggle>
         <span style={{ flex: 1 }} />
+        <TrackOrderButtons trackId={track.id} name={track.name} index={index} />
         <Button size="sm" variant="ghost" icon aria-label={`Remover ${track.name}`} title="Remover faixa" onClick={() => void run(() => api.trackDelete(track.id))}>
           ✕
         </Button>

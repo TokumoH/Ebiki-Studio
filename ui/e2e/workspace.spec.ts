@@ -73,7 +73,7 @@ test("transporte por teclado e metrônomo", async ({ page }) => {
 
 test("gravar sem faixa armada mostra erro claro", async ({ page }) => {
   await newProject(page, "Gravar");
-  await page.getByRole("button", { name: "Gravar" }).click();
+  await page.getByRole("button", { name: "Gravar", exact: true }).click();
   await expect(page.getByText("Arme ao menos uma faixa")).toBeVisible();
 });
 

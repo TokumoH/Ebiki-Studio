@@ -24,7 +24,11 @@ describe("contrato IPC Rust ↔ UI", () => {
   });
   it("TransportView e MetersView", () => {
     expect(S.TransportView.parse(transport).state).toBe("playing");
-    expect(S.MetersView.parse(meters).tracks.length).toBeGreaterThan(0);
+    const m = S.MetersView.parse(meters);
+    expect(m.tracks).toHaveLength(1);
+    expect(m.tracks[0]?.id).toBe("00000000-0000-7000-8000-000000000001");
+    expect(m.buses).toHaveLength(1);
+    expect(m.xruns).toBe(0);
   });
   it("StripEdit e StripTarget que a UI envia são os que o Rust produz", () => {
     expect(S.StripEdit.array().parse(edits)).toHaveLength(6);
@@ -39,7 +43,7 @@ describe("contrato IPC — música (Fases 6–8)", () => {
   it("SessionView com letra sincronizada, partituras, afinação e PitchCorrector", () => {
     const v = S.SessionView.parse(musicSession);
     const syl = v.lyrics.lines.flatMap((l) => l.words.flatMap((w) => w.syllables));
-    expect(syl.length).toBeGreaterThan(0);
+    expect(syl.map((x) => x.text)).toEqual(["Can-", "to", "a-", "qui", "ou-", "tra", "li-", "nha"]);
     expect(syl.some((s) => s.span !== null)).toBe(true);
     expect(syl.some((s) => s.span === null)).toBe(true);
     expect(v.scores[0]).toMatchObject({ title: "Estudo", parts: ["Voz", "Violão"], measures: 2 });

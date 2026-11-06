@@ -11,6 +11,7 @@
 .track-header[aria-selected="true"] { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
 .track-header .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: text; }
 .track-header .row { display: flex; gap: var(--space-1); align-items: center; }
+.track-header .track-order { width: 20px; font-size: 10px; }
 .lanes { position: relative; overflow: auto; }
 .lanes-inner { position: relative; }
 .lane { position: relative; height: var(--track-h); border-bottom: 1px solid var(--line); }

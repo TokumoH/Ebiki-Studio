@@ -42,12 +42,12 @@ export function AdvisorPanel() {
         </Button>
       </div>
       {!report ? (
-        <EmptyState title="Análise de mixagem">A mixagem é renderizada e medida (pico, true peak, LUFS, correlação). Os conselhos seguem regras de produção profissional.</EmptyState>
+        <EmptyState title="Análise de mixagem">A mixagem é renderizada e medida (pico, pico real/true peak, LUFS, correlação). Os conselhos seguem regras de produção profissional.</EmptyState>
       ) : (
         <>
           <div className="advisor-stats">
             <div className="stat"><span>Loudness integrado</span><strong>{fmt(m?.integratedLufs, "LUFS")}</strong></div>
-            <div className="stat"><span>True peak</span><strong>{fmt(m?.truePeakDb, "dBTP")}</strong></div>
+            <div className="stat"><span>Pico real (true peak)</span><strong>{fmt(m?.truePeakDb, "dBTP")}</strong></div>
             <div className="stat"><span>Pico</span><strong>{fmt(m?.peakDb, "dBFS")}</strong></div>
             <div className="stat"><span>RMS</span><strong>{fmt(m?.rmsDb, "dB")}</strong></div>
             <div className="stat"><span>Correlação</span><strong>{m ? m.correlation.toFixed(2) : "—"}</strong></div>

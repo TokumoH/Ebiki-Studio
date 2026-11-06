@@ -1,5 +1,5 @@
 // Composição: cada painel encaixável junta componentes de um ou mais contextos.
-// Novos painéis entram aqui (único ponto de registro).
+// Novo painel: metadados em `catalog.ts` + componente em `COMPONENTS` (o teste do registro cobra os dois).
 import type { ComponentType } from "react";
 import { Timeline } from "../contexts/project/Timeline";
 import { TempoPanel } from "../contexts/project/TempoPanel";
@@ -9,34 +9,30 @@ import { RecordingPanel } from "../contexts/recording/RecordingPanel";
 import { ScorePanel } from "../contexts/notation/ScorePanel";
 import { LyricsPanel } from "../contexts/sync/LyricsPanel";
 import { TuningPanel } from "../contexts/tuning/TuningPanel";
+import { HarmonyPanel } from "../contexts/harmony/HarmonyPanel";
+import { BasesPanel } from "../contexts/library/BasesPanel";
+import { PANEL_CATALOG, type PanelMeta } from "./catalog";
 
-export type PanelArea = "main" | "bottom" | "side";
+export type { PanelArea } from "./catalog";
 
-export interface PanelDef {
-  id: string;
-  title: string;
-  area: PanelArea;
+export interface PanelDef extends PanelMeta {
   component: ComponentType;
 }
 
-export const PANELS: PanelDef[] = [
-  { id: "timeline", title: "Arranjo", area: "main", component: Timeline },
-  { id: "mixer", title: "Mixer", area: "bottom", component: MixerPanel },
-  { id: "recording", title: "Gravação", area: "bottom", component: RecordingPanel },
-  { id: "tempo", title: "Mapa de tempo", area: "bottom", component: TempoPanel },
-  { id: "advisor", title: "Análise da mixagem", area: "bottom", component: AdvisorPanel },
-  // Fases 6–8 (música)
-  { id: "score", title: "Partitura", area: "bottom", component: ScorePanel },
-  { id: "lyrics", title: "Letra", area: "bottom", component: LyricsPanel },
-  { id: "tuning", title: "Afinação", area: "bottom", component: TuningPanel },
-];
+export const COMPONENTS: Record<string, ComponentType> = {
+  timeline: Timeline,
+  mixer: MixerPanel,
+  recording: RecordingPanel,
+  tempo: TempoPanel,
+  advisor: AdvisorPanel,
+  score: ScorePanel,
+  lyrics: LyricsPanel,
+  tuning: TuningPanel,
+  harmony: HarmonyPanel,
+  bases: BasesPanel,
+};
 
-// ---- Harmonia e bases (Fases 4–5) ----
-// (imports no fim de propósito: seção só acrescentada, para facilitar o merge)
-import { HarmonyPanel } from "../contexts/harmony/HarmonyPanel";
-import { BasesPanel } from "../contexts/library/BasesPanel";
-
-PANELS.push(
-  { id: "harmony", title: "Harmonia", area: "bottom", component: HarmonyPanel },
-  { id: "bases", title: "Bases", area: "bottom", component: BasesPanel },
-);
+export const PANELS: PanelDef[] = PANEL_CATALOG.flatMap((p) => {
+  const component = COMPONENTS[p.id];
+  return component ? [{ ...p, component }] : [];
+});
