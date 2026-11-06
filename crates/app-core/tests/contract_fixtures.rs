@@ -29,7 +29,16 @@ fn normalize(mut v: serde_json::Value) -> serde_json::Value {
                 }
             }
             serde_json::Value::Array(a) => a.iter_mut().for_each(|x| walk(x, ids)),
-            serde_json::Value::Object(o) => o.values_mut().for_each(|x| walk(x, ids)),
+            serde_json::Value::Object(o) => {
+                // chaves também podem ser ids (ex.: edições por nota no mapa de afinação)
+                let entries = std::mem::take(o);
+                for (k, mut x) in entries {
+                    let mut key = serde_json::Value::String(k);
+                    walk(&mut key, ids);
+                    walk(&mut x, ids);
+                    o.insert(key.as_str().unwrap_or_default().to_owned(), x);
+                }
+            }
             _ => {}
         }
     }
@@ -178,9 +187,264 @@ fn write_ipc_fixtures() {
     write("error.json", err);
 }
 
-// ---- Harmonia e bases (Fases 4–5) ----
+fn write_fixture(name: &str, v: serde_json::Value) {
+    let out =
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../ui/src/ipc/__fixtures__");
+    std::fs::create_dir_all(&out).unwrap();
+    std::fs::write(
+        out.join(name),
+        serde_json::to_string_pretty(&normalize(v)).unwrap() + "\n",
+    )
+    .unwrap();
+}
 
-/// Caminhos dependentes da máquina/execução viram marcadores estáveis.
+/// Fixtures das Fases 6–8 (letra, partituras, afinação, afinador, PitchCorrector) para os
+/// esquemas zod dos painéis Partitura/Letra/Afinação.
+#[test]
+fn write_music_ipc_fixtures() {
+    use app_core::lyrics_service::LyricsFileFormat;
+    use app_core::notation_service::{InstrumentKind, InstrumentTemplate, ScoreTemplate};
+    use app_core::tuning_service::TunerReadingView;
+    use ctx_notation::commands::{ScoreEdit, VoiceEdit};
+    use ctx_notation::transpose::TransposeScope;
+    use ctx_notation::{
+        Articulation, Duration, Dynamic, Event, KeySignature, Meter, Mode, NoteValue, Pitch, Step,
+        TabPosition, VoiceLoc,
+    };
+    use ctx_sync::{Granularity, LyricUnit, SyllableRef};
+    use ctx_tuning::{NoteEdit, ScaleCorrection};
+    use shared_kernel::music::{MidiNote, PitchClass};
+
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    st.create_project(dir.path(), "Demo", AudioFormat::default())
+        .unwrap();
+    // áudio (Lá desafinado, 452 Hz) → mapa de afinação com nota detectada e uma edição
+    let v = st
+        .import_audio(
+            &[sine_wav(dir.path(), "voz.wav", 452.0, 48_000)],
+            None,
+            Tick(0),
+        )
+        .unwrap();
+    let source = v.sources[0].id;
+    let tid: shared_kernel::id::TrackId = v.tracks[0].id.parse().unwrap();
+    st.tuning_analyze(source).unwrap();
+    let note = st.tuning_get(source).unwrap().notes()[0];
+    st.tuning_edit_note(source, note.id, NoteEdit::to_target(MidiNote(69)), None)
+        .unwrap();
+    let c = PitchClass::new(0).unwrap();
+    st.tuning_set_scale(source, ScaleCorrection::major(c))
+        .unwrap();
+    // insert de correção de afinação no canal
+    st.execute(
+        on_mixer(EditStrip::new(
+            StripTarget::Track(tid),
+            StripEdit::AddEffect {
+                slot: EffectSlot::new(Effect::PitchCorrector(PitchCorrectorParams::major(7))),
+                index: None,
+            },
+        )),
+        None,
+    )
+    .unwrap();
+    // letra: duas linhas; a primeira sincronizada por toque (palavras), a segunda sem tempo
+    st.lyrics_set_text("Can-to a-qui\nou-tra li-nha").unwrap();
+    st.lyrics_apply_tap_sync(Granularity::Word, 0, &[Tick(0), Tick(960)], Tick(1920))
+        .unwrap();
+    // partitura: melodia + violão (pauta + tablatura) com notas, articulação e dinâmica
+    let (sid, _) = st
+        .score_create(&ScoreTemplate {
+            title: "Estudo".into(),
+            composer: "Eu".into(),
+            bpm: 100.0,
+            meter_numerator: 4,
+            meter_denominator: 4,
+            key_fifths: 1,
+            key_mode: Mode::Major,
+            measures: 2,
+            instruments: vec![
+                InstrumentTemplate {
+                    kind: InstrumentKind::Lead,
+                    name: Some("Voz".into()),
+                },
+                InstrumentTemplate {
+                    kind: InstrumentKind::Guitar,
+                    name: None,
+                },
+            ],
+        })
+        .unwrap();
+    let q = Duration::new(NoteValue::Quarter);
+    let g4 = Pitch::new(Step::G, 0, 4).unwrap();
+    let voice_edits = vec![
+        VoiceEdit::Replace {
+            index: 0,
+            event: Event::note(q, g4),
+        },
+        VoiceEdit::AddArticulation {
+            index: 0,
+            articulation: Articulation::Staccato,
+        },
+        VoiceEdit::SetDynamic {
+            index: 0,
+            dynamic: Some(Dynamic::Mf),
+        },
+    ];
+    for e in &voice_edits {
+        st.score_edit_voice(sid, VoiceLoc::new(0, 0, 0), e.clone(), None)
+            .unwrap();
+    }
+    // Fá natural em Sol maior: fora da escala da armadura
+    st.score_edit_voice(
+        sid,
+        VoiceLoc::new(0, 1, 0),
+        VoiceEdit::Replace {
+            index: 0,
+            event: Event::note(
+                Duration::new(NoteValue::Whole),
+                Pitch::new(Step::F, 0, 4).unwrap(),
+            ),
+        },
+        None,
+    )
+    .unwrap();
+    st.score_edit_voice(
+        sid,
+        VoiceLoc::new(1, 0, 0),
+        VoiceEdit::Replace {
+            index: 0,
+            event: Event::note(
+                Duration::new(NoteValue::Whole),
+                Pitch::new(Step::E, 0, 3).unwrap(),
+            ),
+        },
+        None,
+    )
+    .unwrap();
+    st.score_edit_voice(
+        sid,
+        VoiceLoc::new(1, 0, 0),
+        VoiceEdit::SetTab {
+            index: 0,
+            note: 0,
+            tab: Some(TabPosition { string: 4, fret: 2 }),
+        },
+        None,
+    )
+    .unwrap();
+    let report = st.score_validate(sid, None).unwrap();
+    assert!(!report.measure_issues.is_empty() && !report.out_of_scale.is_empty());
+
+    write_fixture(
+        "music-session.json",
+        serde_json::to_value(st.view().unwrap()).unwrap(),
+    );
+    write_fixture(
+        "score.json",
+        serde_json::to_value(st.score_get(sid).unwrap()).unwrap(),
+    );
+    write_fixture("score-report.json", serde_json::to_value(report).unwrap());
+    write_fixture(
+        "tuning-map.json",
+        serde_json::to_value(st.tuning_get(source).unwrap()).unwrap(),
+    );
+    write_fixture(
+        "tuner-reading.json",
+        serde_json::to_value(TunerReadingView {
+            note: 69,
+            name: "A",
+            octave: 4,
+            cents: 23.4,
+            frequency_hz: 446.0,
+            confidence: 0.97,
+        })
+        .unwrap(),
+    );
+    // o que a UI envia (requisições) — mesmas formas que o Rust desserializa
+    let mut all_voice = voice_edits;
+    all_voice.extend([
+        VoiceEdit::Insert {
+            index: 1,
+            event: Event::rest(Duration::new(NoteValue::Eighth)),
+        },
+        VoiceEdit::Delete { index: 1 },
+        VoiceEdit::SetDuration {
+            index: 0,
+            duration: Duration::new(NoteValue::Half),
+        },
+        VoiceEdit::SetPitch {
+            index: 0,
+            note: 0,
+            pitch: Pitch::new(Step::F, 1, 4).unwrap(),
+        },
+        VoiceEdit::SetTie {
+            index: 0,
+            note: 0,
+            tie: true,
+        },
+        VoiceEdit::SetTab {
+            index: 0,
+            note: 0,
+            tab: None,
+        },
+        VoiceEdit::SetDynamic {
+            index: 0,
+            dynamic: None,
+        },
+        VoiceEdit::FillRests,
+    ]);
+    write_fixture(
+        "voice-edits.json",
+        serde_json::to_value(&all_voice).unwrap(),
+    );
+    let score_edits = vec![
+        ScoreEdit::AddMeasure { index: 2 },
+        ScoreEdit::RemoveMeasure { index: 1 },
+        ScoreEdit::SetKey {
+            measure: 0,
+            key: KeySignature::new(-2, Mode::Minor).unwrap(),
+        },
+        ScoreEdit::SetMeter {
+            measure: 1,
+            meter: Some(Meter::new(3, 4).unwrap()),
+        },
+        ScoreEdit::Transpose {
+            scope: TransposeScope::Score,
+            semitones: 2,
+        },
+        ScoreEdit::Transpose {
+            scope: TransposeScope::Part(1),
+            semitones: -12,
+        },
+        ScoreEdit::SetHeader {
+            title: "Novo".into(),
+            composer: String::new(),
+        },
+    ];
+    write_fixture(
+        "score-edits.json",
+        serde_json::to_value(&score_edits).unwrap(),
+    );
+    write_fixture(
+        "lyrics-requests.json",
+        serde_json::json!({
+            "units": [
+                LyricUnit::Syllable(SyllableRef::new(0, 1, 0)),
+                LyricUnit::Word(ctx_sync::WordRef { line: 0, word: 1 }),
+                LyricUnit::Line { line: 1 },
+            ],
+            "formats": [
+                LyricsFileFormat::Lrc { granularity: Granularity::Line },
+                LyricsFileFormat::Lrc { granularity: Granularity::Syllable },
+                LyricsFileFormat::Srt,
+            ],
+            "noteEdit": NoteEdit { flatten: 0.5, ..NoteEdit::to_target(MidiNote(70)) },
+            "scale": ScaleCorrection::major(PitchClass::new(9).unwrap()),
+        }),
+    );
+}
+
 fn normalize_composition(v: serde_json::Value) -> serde_json::Value {
     fn walk(v: &mut serde_json::Value) {
         match v {

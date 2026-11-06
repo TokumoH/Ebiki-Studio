@@ -1,0 +1,105 @@
+[
+  {
+    "event": {
+      "articulations": [],
+      "duration": {
+        "dots": 0,
+        "tuplet": null,
+        "value": "quarter"
+      },
+      "dynamic": null,
+      "grace": null,
+      "id": 0,
+      "kind": {
+        "notes": [
+          {
+            "pitch": {
+              "alter": 0,
+              "octave": 4,
+              "step": "G"
+            },
+            "tab": null,
+            "techniques": [],
+            "tie": false
+          }
+        ],
+        "type": "chord"
+      },
+      "lyric": null
+    },
+    "index": 0,
+    "kind": "replace"
+  },
+  {
+    "articulation": "staccato",
+    "index": 0,
+    "kind": "addArticulation"
+  },
+  {
+    "dynamic": "mf",
+    "index": 0,
+    "kind": "setDynamic"
+  },
+  {
+    "event": {
+      "articulations": [],
+      "duration": {
+        "dots": 0,
+        "tuplet": null,
+        "value": "eighth"
+      },
+      "dynamic": null,
+      "grace": null,
+      "id": 0,
+      "kind": {
+        "type": "rest"
+      },
+      "lyric": null
+    },
+    "index": 1,
+    "kind": "insert"
+  },
+  {
+    "index": 1,
+    "kind": "delete"
+  },
+  {
+    "duration": {
+      "dots": 0,
+      "tuplet": null,
+      "value": "half"
+    },
+    "index": 0,
+    "kind": "setDuration"
+  },
+  {
+    "index": 0,
+    "kind": "setPitch",
+    "note": 0,
+    "pitch": {
+      "alter": 1,
+      "octave": 4,
+      "step": "F"
+    }
+  },
+  {
+    "index": 0,
+    "kind": "setTie",
+    "note": 0,
+    "tie": true
+  },
+  {
+    "index": 0,
+    "kind": "setTab",
+    "note": 0,
+    "tab": null
+  },
+  {
+    "dynamic": null,
+    "index": 0,
+    "kind": "setDynamic"
+  },
+  {
+    "kind": "fillRests"
+  }
+]

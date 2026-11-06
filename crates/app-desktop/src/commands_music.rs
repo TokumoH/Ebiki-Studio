@@ -141,6 +141,34 @@ pub fn score_import(state: State<AppState>, path: String) -> Res<ScoreImportResu
     lock(&state.studio).score_import(&p)
 }
 
+/// Importação a partir de bytes lidos na UI (GP3–GP6 já convertidos para GP7 pelo alphaTab,
+/// ADR-0020; também aceita MusicXML/MXL/MIDI/GP7 — detecção pelo conteúdo).
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ScoreImportBytesReq {
+    /// Nome do arquivo (título padrão).
+    pub name: String,
+    pub bytes: Vec<u8>,
+}
+
+#[tauri::command]
+pub fn score_import_bytes(
+    state: State<AppState>,
+    req: ScoreImportBytesReq,
+) -> Res<ScoreImportResult> {
+    let stem = req
+        .name
+        .rsplit_once('.')
+        .map_or(req.name.as_str(), |(s, _)| s);
+    lock(&state.studio).score_import_bytes(&req.bytes, stem)
+}
+
+/// MusicXML da partitura (texto) para o renderizador alphaTab da UI.
+#[tauri::command]
+pub fn score_musicxml(state: State<AppState>, score_id: String) -> Res<String> {
+    lock(&state.studio).score_musicxml(id(&score_id)?)
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ScoreExportReq {
@@ -421,6 +449,9 @@ mod tests {
             serde_json::from_str(r#"{"kind":"transpose","scope":{"scope":"score"},"semitones":2}"#)
                 .unwrap();
         assert!(matches!(e, ScoreEdit::Transpose { semitones: 2, .. }));
+        let r: ScoreImportBytesReq =
+            serde_json::from_str(r#"{"name":"riff.gp","bytes":[80,75,3,4]}"#).unwrap();
+        assert_eq!(r.bytes, b"PK\x03\x04");
     }
 
     #[test]

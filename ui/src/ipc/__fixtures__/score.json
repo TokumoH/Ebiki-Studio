@@ -1,0 +1,228 @@
+{
+  "composer": "Eu",
+  "nextEventId": 5,
+  "parts": [
+    {
+      "measures": [
+        {
+          "key": {
+            "fifths": 1,
+            "mode": "major"
+          },
+          "meter": null,
+          "repeatEnd": null,
+          "repeatStart": false,
+          "voices": [
+            {
+              "events": [
+                {
+                  "articulations": [
+                    "staccato"
+                  ],
+                  "duration": {
+                    "dots": 0,
+                    "tuplet": null,
+                    "value": "quarter"
+                  },
+                  "dynamic": "mf",
+                  "grace": null,
+                  "id": 1,
+                  "kind": {
+                    "notes": [
+                      {
+                        "pitch": {
+                          "alter": 0,
+                          "octave": 4,
+                          "step": "G"
+                        },
+                        "tab": null,
+                        "techniques": [],
+                        "tie": false
+                      }
+                    ],
+                    "type": "chord"
+                  },
+                  "lyric": null
+                }
+              ],
+              "staff": 0
+            }
+          ]
+        },
+        {
+          "key": {
+            "fifths": 1,
+            "mode": "major"
+          },
+          "meter": null,
+          "repeatEnd": null,
+          "repeatStart": false,
+          "voices": [
+            {
+              "events": [
+                {
+                  "articulations": [],
+                  "duration": {
+                    "dots": 0,
+                    "tuplet": null,
+                    "value": "whole"
+                  },
+                  "dynamic": null,
+                  "grace": null,
+                  "id": 2,
+                  "kind": {
+                    "notes": [
+                      {
+                        "pitch": {
+                          "alter": 0,
+                          "octave": 4,
+                          "step": "F"
+                        },
+                        "tab": null,
+                        "techniques": [],
+                        "tie": false
+                      }
+                    ],
+                    "type": "chord"
+                  },
+                  "lyric": null
+                }
+              ],
+              "staff": 0
+            }
+          ]
+        }
+      ],
+      "name": "Voz",
+      "percussion": false,
+      "program": 52,
+      "spanners": [],
+      "staves": [
+        {
+          "clef": "treble",
+          "standard": true,
+          "tab": null
+        }
+      ]
+    },
+    {
+      "measures": [
+        {
+          "key": {
+            "fifths": 1,
+            "mode": "major"
+          },
+          "meter": null,
+          "repeatEnd": null,
+          "repeatStart": false,
+          "voices": [
+            {
+              "events": [
+                {
+                  "articulations": [],
+                  "duration": {
+                    "dots": 0,
+                    "tuplet": null,
+                    "value": "whole"
+                  },
+                  "dynamic": null,
+                  "grace": null,
+                  "id": 3,
+                  "kind": {
+                    "notes": [
+                      {
+                        "pitch": {
+                          "alter": 0,
+                          "octave": 3,
+                          "step": "E"
+                        },
+                        "tab": {
+                          "fret": 2,
+                          "string": 4
+                        },
+                        "techniques": [],
+                        "tie": false
+                      }
+                    ],
+                    "type": "chord"
+                  },
+                  "lyric": null
+                }
+              ],
+              "staff": 0
+            }
+          ]
+        },
+        {
+          "key": {
+            "fifths": 1,
+            "mode": "major"
+          },
+          "meter": null,
+          "repeatEnd": null,
+          "repeatStart": false,
+          "voices": [
+            {
+              "events": [
+                {
+                  "articulations": [],
+                  "duration": {
+                    "dots": 0,
+                    "tuplet": null,
+                    "value": "whole"
+                  },
+                  "dynamic": null,
+                  "grace": null,
+                  "id": 4,
+                  "kind": {
+                    "type": "rest"
+                  },
+                  "lyric": null
+                }
+              ],
+              "staff": 0
+            }
+          ]
+        }
+      ],
+      "name": "Violão",
+      "percussion": false,
+      "program": 24,
+      "spanners": [],
+      "staves": [
+        {
+          "clef": "treble8vb",
+          "standard": true,
+          "tab": {
+            "capo": 0,
+            "frets": 24,
+            "tuning": [
+              64,
+              59,
+              55,
+              50,
+              45,
+              40
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "tempo": {
+    "meters": [
+      {
+        "denominator": 4,
+        "numerator": 4,
+        "tick": 0
+      }
+    ],
+    "tempos": [
+      {
+        "bpm": 100.0,
+        "tick": 0
+      }
+    ]
+  },
+  "title": "Estudo"
+}

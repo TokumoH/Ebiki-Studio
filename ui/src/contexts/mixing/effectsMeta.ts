@@ -20,6 +20,7 @@ export const EFFECT_LABELS: Record<string, string> = {
   saturation: "Saturação",
   chorus: "Chorus",
   deEsser: "De-esser",
+  pitchCorrector: "Correção de afinação",
 };
 
 export const PARAMS: Record<string, ParamMeta[]> = {
@@ -71,6 +72,11 @@ export const PARAMS: Record<string, ParamMeta[]> = {
     { key: "thresholdDb", label: "Limiar", min: -60, max: 0, step: 0.5, unit: "dB" },
     { key: "reductionDb", label: "Redução máx.", min: -24, max: 0, step: 0.5, unit: "dB" },
   ],
+  pitchCorrector: [
+    { key: "retuneMs", label: "Velocidade (retune)", min: 0, max: 1000, step: 1, unit: "ms" },
+    { key: "humanize", label: "Humanizar", min: 0, max: 1, step: 0.01, unit: "" },
+    { key: "a4Hz", label: "Lá4", min: 415, max: 466, step: 0.5, unit: "Hz" },
+  ],
 };
 
 export function defaultEffect(type: string): Effect {
@@ -101,7 +107,33 @@ export function defaultEffect(type: string): Effect {
       return { type, params: { driveDb: 6, tone: 0.5, mix: 1 } };
     case "chorus":
       return { type, params: { rateHz: 0.8, depthMs: 3, mix: 0.4 } };
+    case "pitchCorrector":
+      return { type, params: { enabled: true, keyRoot: 0, scaleMask: scaleMask(0, "chromatic"), retuneMs: 20, humanize: 0, a4Hz: 440 } };
     default:
       return { type: "deEsser", params: { freqHz: 6500, thresholdDb: -28, reductionDb: -8 } };
   }
+}
+
+// --- correção de afinação (máscara de 12 bits: bit n = classe de altura n permitida; 0 = Dó)
+
+export const PITCH_CLASS_NAMES = ["Dó", "Dó♯", "Ré", "Ré♯", "Mi", "Fá", "Fá♯", "Sol", "Sol♯", "Lá", "Lá♯", "Si"];
+const SCALE_STEPS = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10], chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] };
+
+export function scaleMask(root: number, kind: keyof typeof SCALE_STEPS): number {
+  return SCALE_STEPS[kind].reduce((m, i) => m | (1 << ((root + i) % 12)), 0);
+}
+
+/** Liga/desliga uma classe; a tônica fica sempre incluída (mesma regra do núcleo). */
+export function toggleMaskBit(mask: number, pc: number, root: number): number {
+  if (pc === root) return mask | (1 << root);
+  return (mask ^ (1 << pc)) & 0x0fff;
+}
+
+export function maskIncludes(mask: number, pc: number): boolean {
+  return (mask & (1 << pc)) !== 0;
+}
+
+export function maskPreset(mask: number, root: number): "major" | "minor" | "chromatic" | null {
+  for (const k of ["major", "minor", "chromatic"] as const) if (scaleMask(root, k) === (mask & 0x0fff)) return k;
+  return null;
 }

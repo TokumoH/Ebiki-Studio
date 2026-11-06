@@ -1,0 +1,20 @@
+.lyrics { display: grid; grid-template-columns: minmax(240px, 320px) minmax(0, 1fr); gap: var(--space-3); padding: var(--space-3); height: 100%; overflow: auto; }
+.lyrics section { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.lyrics .row { display: flex; gap: var(--space-2); align-items: end; flex-wrap: wrap; }
+.lyrics .hint { color: var(--fg-muted); font-size: var(--text-xs); }
+.lyrics-area { height: auto; min-height: 120px; padding: var(--space-2); resize: vertical; font-family: var(--font-ui); line-height: 1.5; width: 100%; }
+.lyric-lines { list-style: none; margin: 0; padding: var(--space-2); display: flex; flex-direction: column; gap: var(--space-1); background: var(--bg-sunken); border-radius: var(--radius-sm); max-height: 160px; overflow-y: auto; }
+.lyric-lines li { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; }
+.line-no { width: 22px; flex: none; color: var(--fg-faint); font-size: var(--text-xs); text-align: right; padding-right: 4px; }
+.lyric-unit { display: inline-flex; flex-direction: column; align-items: flex-start; background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--fg); padding: 1px 6px; cursor: pointer; min-width: 0; max-width: 100%; }
+.lyric-unit span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.lyric-unit small { font-size: 10px; color: var(--fg-muted); }
+.lyric-unit[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.lyric-unit[data-active] { box-shadow: inset 0 -2px 0 var(--ok); }
+.lyric-unit[data-next] { border-style: dashed; border-color: var(--accent); }
+.lyrics-forms { display: flex; flex-direction: column; gap: var(--space-2); }
+.lyrics .input.num { width: 76px; }
+.sel-text { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; align-self: center; }
+.tap-box { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: var(--space-2); outline: none; }
+.tap-box--on { border: 1px solid var(--accent); background: var(--accent-soft); }
+@media (max-width: 1000px) { .lyrics { grid-template-columns: minmax(0, 1fr); } }

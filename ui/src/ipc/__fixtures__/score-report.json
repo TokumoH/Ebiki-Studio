@@ -1,0 +1,36 @@
+{
+  "measureIssues": [
+    {
+      "issue": {
+        "kind": "underfilled",
+        "missing": {
+          "den": 4,
+          "num": 3
+        }
+      },
+      "loc": {
+        "measure": 0,
+        "part": 0,
+        "voice": 0
+      }
+    }
+  ],
+  "outOfScale": [
+    {
+      "event": {
+        "index": 0,
+        "voice": {
+          "measure": 1,
+          "part": 0,
+          "voice": 0
+        }
+      },
+      "noteIndex": 0,
+      "pitch": {
+        "alter": 0,
+        "octave": 4,
+        "step": "F"
+      }
+    }
+  ]
+}

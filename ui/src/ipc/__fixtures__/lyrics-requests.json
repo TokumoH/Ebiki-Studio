@@ -1,0 +1,53 @@
+{
+  "formats": [
+    {
+      "format": "lrc",
+      "granularity": "line"
+    },
+    {
+      "format": "lrc",
+      "granularity": "syllable"
+    },
+    {
+      "format": "srt"
+    }
+  ],
+  "noteEdit": {
+    "centsOffset": 0.0,
+    "flatten": 0.5,
+    "formantSemitones": 0.0,
+    "target": 70
+  },
+  "scale": {
+    "allowed": [
+      1,
+      2,
+      4,
+      6,
+      8,
+      9,
+      11
+    ],
+    "enabled": false,
+    "humanize": 0.0,
+    "key": 9,
+    "retuneSpeedMs": 50.0
+  },
+  "units": [
+    {
+      "kind": "syllable",
+      "line": 0,
+      "syllable": 0,
+      "word": 1
+    },
+    {
+      "kind": "word",
+      "line": 0,
+      "word": 1
+    },
+    {
+      "kind": "line",
+      "line": 1
+    }
+  ]
+}

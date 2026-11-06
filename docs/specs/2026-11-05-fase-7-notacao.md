@@ -330,6 +330,8 @@ Erros: `{code, message}` (`notation.*`, `notation_io.*`, `app.*`, `api.invalid_a
 | `score_edit_voice` | `req: {scoreId, loc: {part, measure, voice}, edit: VoiceEdit, gesture?}` — `VoiceEdit` = `{kind: "insert"\|"delete"\|"replace"\|"setDuration"\|"setPitch"\|"addNote"\|"removeNote"\|"addArticulation"\|"removeArticulation"\|"setDynamic"\|"setTie"\|"setTab"\|"addTechnique"\|"removeTechnique"\|"setLyric"\|"setGrace"\|"fillRests", ...campos da seção 4 em camelCase}` | `SessionView` |
 | `score_edit` | `req: {scoreId, edit: ScoreEdit}` — `{kind: "addMeasure"\|"removeMeasure"\|"setKey"\|"setMeter"\|"setRepeat"\|"addPart"\|"removePart"\|"addSpanner"\|"removeSpanner"\|"transpose"\|"setHeader"\|"setTempo", ...}`; `transpose.scope` = `{scope: "score"}` \| `{scope: "part", target: n}` \| `{scope: "events", target: [ids]}` | `SessionView` |
 | `score_import` | `path` (absoluto; `.musicxml/.xml/.mxl/.mid/.gp/.gpif`, detecção pelo conteúdo) | `{scoreId, warnings: string[], view}` |
+| `score_import_bytes` | `req: {name, bytes: number[]}` (bytes lidos na UI; GP3–GP6 já convertidos para GP7 pelo alphaTab — ADR-0020; ≤ 32 MiB) | `{scoreId, warnings: string[], view}` |
+| `score_musicxml` | `scoreId` | `string` (MusicXML partwise para o alphaTab da UI e a impressão/PDF) |
 | `score_export` | `req: {scoreId, path, format: "musicXml"\|"mxl"\|"midi"}` | `null` |
 | `score_audition` | `scoreId` | bytes crus de WAV float 32 (`ArrayBuffer`) |
 | `score_render_to_track` | `req: {scoreId, trackId?, atTick?}` | `SessionView` |
@@ -375,4 +377,7 @@ desserializar o corpo.
   clipe não acompanha a grade do projeto.
 - `score_audition` renderiza a partitura inteira (sem trecho/loop); arquivos de render que deixam de
   ser usados após desfazer ficam em `audio/rendered/` até uma limpeza futura (ADR-0029).
-- Importação GP3–GP6 continua dependendo da conversão na UI (ADR-0020).
+- Importação GP3–GP6 continua dependendo da conversão na UI (ADR-0020) — implementada no painel
+  Partitura (`contexts/notation/alphaTab.ts`: `ScoreLoader` → `Gp7Exporter` → `score_import_bytes`).
+- PDF: `window.print()` com folha de estilo que isola a partitura; depende do suporte de impressão do
+  webview (WebKitGTK/WebView2 abrem o diálogo; o WKWebView do macOS pode ignorar `window.print()`).

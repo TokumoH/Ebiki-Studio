@@ -1,0 +1,232 @@
+{
+  "buses": [],
+  "contentEndFrame": 48000,
+  "history": {
+    "canRedo": false,
+    "canUndo": true,
+    "dirty": true,
+    "redoLabel": null,
+    "undoLabel": "Posição na tablatura"
+  },
+  "lyrics": {
+    "id": "00000000-0000-7000-8000-000000000000",
+    "lines": [
+      {
+        "words": [
+          {
+            "syllables": [
+              {
+                "span": {
+                  "end": 640,
+                  "start": 0
+                },
+                "text": "Can-"
+              },
+              {
+                "span": {
+                  "end": 960,
+                  "start": 640
+                },
+                "text": "to"
+              }
+            ]
+          },
+          {
+            "syllables": [
+              {
+                "span": {
+                  "end": 1344,
+                  "start": 960
+                },
+                "text": "a-"
+              },
+              {
+                "span": {
+                  "end": 1920,
+                  "start": 1344
+                },
+                "text": "qui"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "words": [
+          {
+            "syllables": [
+              {
+                "span": null,
+                "text": "ou-"
+              },
+              {
+                "span": null,
+                "text": "tra"
+              }
+            ]
+          },
+          {
+            "syllables": [
+              {
+                "span": null,
+                "text": "li-"
+              },
+              {
+                "span": null,
+                "text": "nha"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "master": {
+    "inserts": [],
+    "mute": false,
+    "output": {
+      "kind": "master"
+    },
+    "pan": 0.0,
+    "sends": [],
+    "solo": false,
+    "volume": 0.0
+  },
+  "project": {
+    "bitDepth": 24,
+    "id": "00000000-0000-7000-8000-000000000001",
+    "name": "Demo",
+    "root": "/home/usuario/Musica/Demo.amproj",
+    "sampleRate": 48000
+  },
+  "recording": {
+    "latencyCompensationFrames": 0,
+    "loopRange": null,
+    "metronome": {
+      "accentFirstBeat": true,
+      "countInBars": 1,
+      "enabled": false,
+      "subdivision": 1,
+      "volume": 0.6000000238418579
+    },
+    "punch": null
+  },
+  "scores": [
+    {
+      "composer": "Eu",
+      "id": "00000000-0000-7000-8000-000000000002",
+      "measures": 2,
+      "parts": [
+        "Voz",
+        "Violão"
+      ],
+      "title": "Estudo"
+    }
+  ],
+  "sources": [
+    {
+      "channels": 1,
+      "contentHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "id": "00000000-0000-7000-8000-000000000003",
+      "lengthFrames": 48000,
+      "originalName": "voz.wav",
+      "relPath": "audio/imported/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.wav"
+    }
+  ],
+  "tempo": {
+    "meters": [
+      {
+        "denominator": 4,
+        "numerator": 4,
+        "tick": 0
+      }
+    ],
+    "tempos": [
+      {
+        "bpm": 120.0,
+        "tick": 0
+      }
+    ]
+  },
+  "tracks": [
+    {
+      "audible": true,
+      "clips": [
+        {
+          "endTick": 1920,
+          "gain": 0.0,
+          "id": "00000000-0000-7000-8000-000000000004",
+          "lengthFrames": 48000,
+          "offsetFrames": 0,
+          "sourceId": "00000000-0000-7000-8000-000000000003",
+          "sourceName": "voz.wav",
+          "start": 0,
+          "startFrame": 0
+        }
+      ],
+      "id": "00000000-0000-7000-8000-000000000005",
+      "meterSlot": 0,
+      "name": "voz",
+      "recording": {
+        "activeTake": null,
+        "armed": false,
+        "input": null,
+        "monitor": "off",
+        "takes": []
+      },
+      "strip": {
+        "inserts": [
+          {
+            "bypass": false,
+            "effect": {
+              "params": {
+                "a4Hz": 440.0,
+                "enabled": true,
+                "humanize": 0.0,
+                "keyRoot": 7,
+                "retuneMs": 20.0,
+                "scaleMask": 2773
+              },
+              "type": "pitchCorrector"
+            },
+            "id": "00000000-0000-7000-8000-000000000006"
+          }
+        ],
+        "mute": false,
+        "output": {
+          "kind": "master"
+        },
+        "pan": 0.0,
+        "sends": [],
+        "solo": false,
+        "volume": 0.0
+      }
+    }
+  ],
+  "tuning": {
+    "a4Hz": 440.0,
+    "maps": [
+      {
+        "editCount": 1,
+        "mapId": "00000000-0000-7000-8000-000000000007",
+        "noteCount": 1,
+        "scale": {
+          "allowed": [
+            0,
+            2,
+            4,
+            5,
+            7,
+            9,
+            11
+          ],
+          "enabled": false,
+          "humanize": 0.0,
+          "key": 0,
+          "retuneSpeedMs": 50.0
+        },
+        "sourceId": "00000000-0000-7000-8000-000000000003"
+      }
+    ]
+  }
+}

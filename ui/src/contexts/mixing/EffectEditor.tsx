@@ -2,7 +2,7 @@ import { useRef } from "react";
 import type { Effect, EffectSlot, EqBand, StripTarget } from "../../ipc/types";
 import { api } from "../../ipc/api";
 import { run, newGesture, endGesture } from "../../core/session";
-import { EFFECT_LABELS, PARAMS } from "./effectsMeta";
+import { EFFECT_LABELS, PARAMS, PITCH_CLASS_NAMES, maskIncludes, maskPreset, scaleMask, toggleMaskBit } from "./effectsMeta";
 import { Button, Toggle } from "../../shared/components";
 
 const EQ_KINDS: { value: EqBand["kind"]; label: string }[] = [
@@ -74,12 +74,13 @@ export function EffectEditor({ target, slot, onClose }: { target: StripTarget; s
               min={p.min}
               max={p.max}
               step={p.step}
-              log={p.unit === "Hz" || p.unit === "ms"}
+              log={(p.unit === "Hz" || p.unit === "ms") && p.min > 0}
               value={Number((e.params as Record<string, unknown>)[p.key] ?? p.min)}
               onChange={(v) => send({ ...e, params: { ...e.params, [p.key]: v } } as Effect)}
               onEnd={finish}
             />
           ))}
+          {e.type === "pitchCorrector" ? <PitchCorrectorFields params={e.params as PcParams} onChange={(params) => send({ type: "pitchCorrector", params } as Effect)} /> : null}
           {e.type === "delay" && "pingPong" in e.params ? (
             <Toggle pressed={Boolean(e.params.pingPong)} onChange={(v) => send({ ...e, params: { ...e.params, pingPong: v } } as Effect)}>
               Ping-pong
@@ -106,6 +107,51 @@ function Slider({ label, unit, min, max, step, value, log, onChange, onEnd }: { 
         </span>
       </label>
       <input type="range" min={0} max={1} step={0.001} value={toPos(value)} aria-label={label} onChange={(e) => onChange(fromPos(Number(e.target.value)))} onPointerUp={onEnd} onKeyUp={onEnd} />
+    </div>
+  );
+}
+
+type PcParams = { enabled: boolean; keyRoot: number; scaleMask: number; retuneMs: number; humanize: number; a4Hz: number };
+
+/** Tônica, escala (atalhos maior/menor/cromática + 12 classes) e liga/desliga do PitchCorrector. */
+function PitchCorrectorFields({ params, onChange }: { params: PcParams; onChange: (p: PcParams) => void }) {
+  const preset = maskPreset(params.scaleMask, params.keyRoot);
+  const setPreset = (kind: "major" | "minor" | "chromatic") => onChange({ ...params, scaleMask: scaleMask(params.keyRoot, kind) });
+  return (
+    <div className="pc-fields">
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <Toggle pressed={params.enabled} onChange={(v) => onChange({ ...params, enabled: v })} aria-label="Correção ativa">
+          Ativa
+        </Toggle>
+        <select
+          className="select"
+          style={{ width: "auto" }}
+          aria-label="Tônica"
+          value={params.keyRoot}
+          onChange={(ev) => {
+            const root = Number(ev.target.value);
+            onChange({ ...params, keyRoot: root, scaleMask: scaleMask(root, preset ?? "major") });
+          }}
+        >
+          {PITCH_CLASS_NAMES.map((n, i) => (
+            <option key={n} value={i}>
+              {n}
+            </option>
+          ))}
+        </select>
+        {(["major", "minor", "chromatic"] as const).map((k) => (
+          <Toggle key={k} pressed={preset === k} onChange={() => setPreset(k)}>
+            {k === "major" ? "Maior" : k === "minor" ? "Menor" : "Cromática"}
+          </Toggle>
+        ))}
+      </div>
+      <div className="pc-classes" role="group" aria-label="Notas permitidas">
+        {PITCH_CLASS_NAMES.map((n, pc) => (
+          <Toggle key={n} pressed={maskIncludes(params.scaleMask, pc)} onChange={() => onChange({ ...params, scaleMask: toggleMaskBit(params.scaleMask, pc, params.keyRoot) })} aria-label={`Permitir ${n}`}>
+            {n}
+          </Toggle>
+        ))}
+      </div>
     </div>
   );
 }

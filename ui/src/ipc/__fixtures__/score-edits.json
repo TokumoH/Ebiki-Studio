@@ -1,0 +1,46 @@
+[
+  {
+    "index": 2,
+    "kind": "addMeasure"
+  },
+  {
+    "index": 1,
+    "kind": "removeMeasure"
+  },
+  {
+    "key": {
+      "fifths": -2,
+      "mode": "minor"
+    },
+    "kind": "setKey",
+    "measure": 0
+  },
+  {
+    "kind": "setMeter",
+    "measure": 1,
+    "meter": {
+      "denominator": 4,
+      "numerator": 3
+    }
+  },
+  {
+    "kind": "transpose",
+    "scope": {
+      "scope": "score"
+    },
+    "semitones": 2
+  },
+  {
+    "kind": "transpose",
+    "scope": {
+      "scope": "part",
+      "target": 1
+    },
+    "semitones": -12
+  },
+  {
+    "composer": "",
+    "kind": "setHeader",
+    "title": "Novo"
+  }
+]

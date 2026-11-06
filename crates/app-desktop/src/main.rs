@@ -120,6 +120,8 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
         commands_music::score_edit_voice,
         commands_music::score_edit,
         commands_music::score_import,
+        commands_music::score_import_bytes,
+        commands_music::score_musicxml,
         commands_music::score_export,
         commands_music::score_audition,
         commands_music::score_render_to_track,

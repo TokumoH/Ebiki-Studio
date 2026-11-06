@@ -28,3 +28,5 @@
 .advice[data-severity="critical"] { border-left-color: var(--crit); }
 .advice[data-severity="warning"] { border-left-color: var(--warn); }
 .advice[data-severity="info"] { border-left-color: var(--mute); }
+.pc-fields { grid-column: 1 / -1; display: flex; flex-direction: column; gap: var(--space-2); }
+.pc-classes { display: flex; flex-wrap: wrap; gap: 2px; }
