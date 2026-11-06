@@ -6,6 +6,7 @@
 //! Ordem de travas: `composer` → `studio` (nenhum outro comando trava nessa ordem inversa).
 //! Áudio de audição volta como `tauri::ipc::Response` (bytes WAV PCM 16 bits → `ArrayBuffer`).
 
+use crate::ipc_args::{bad, user_path, Res};
 use crate::state::{lock, AppState};
 use app_core::composition::ctx_harmony::{Genre, Key};
 use app_core::composition::ctx_library::{Base, BaseId, BaseKey, BaseQuery, MismatchReport};
@@ -20,14 +21,8 @@ use std::path::{Path, PathBuf};
 use std::sync::MutexGuard;
 use tauri::{AppHandle, Manager, State};
 
-type Res<T> = Result<T, AppError>;
-
 /// Manifesto das bases CC0 empacotadas (embutido no binário).
 const BUNDLED_MANIFEST: &str = include_str!("../../../assets/bases/manifest.json");
-
-fn bad(msg: &str) -> AppError {
-    AppError::new("api.invalid_argument", msg)
-}
 
 fn base_id(s: &str) -> Res<BaseId> {
     s.parse().map_err(|_| bad("identificador de base inválido"))
@@ -47,15 +42,6 @@ fn tick(t: i64) -> Res<Tick> {
         return Err(bad("posição negativa"));
     }
     Ok(Tick(t))
-}
-
-/// Caminho absoluto vindo da UI (diálogo nativo). Rejeita relativos e caracteres de controle.
-fn user_path(p: &str) -> Res<PathBuf> {
-    let path = PathBuf::from(p);
-    if p.is_empty() || p.chars().any(char::is_control) || !path.is_absolute() {
-        return Err(bad("caminho inválido"));
-    }
-    Ok(path)
 }
 
 /// Abre a biblioteca de composição em `data_dir` e semeia catálogo, CC0 e bases iniciais.

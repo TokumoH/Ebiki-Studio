@@ -4,6 +4,36 @@ import { run, useSession } from "../../core/session";
 import { Button, Field } from "../../shared/components";
 import { PPQ } from "./grid";
 
+/** Tabela de eventos do mapa de tempo (o evento do início não pode ser removido). */
+function EventTable<T extends { tick: number }>({ rows, valueLabel, value, what, fmtBar, onRemove }: { rows: T[]; valueLabel: string; value: (r: T) => string; what: string; fmtBar: (tick: number) => string; onRemove: (tick: number) => void }) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Compasso</th>
+          <th>{valueLabel}</th>
+          <th />
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.tick}>
+            <td className="mono">{fmtBar(r.tick)}</td>
+            <td className="mono">{value(r)}</td>
+            <td>
+              {r.tick > 0 ? (
+                <Button size="sm" variant="ghost" aria-label={`Remover ${what} no compasso ${fmtBar(r.tick)}`} onClick={() => onRemove(r.tick)}>
+                  ✕
+                </Button>
+              ) : null}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 /** Editor do mapa de tempo: mudanças de andamento e de fórmula de compasso (por compasso). */
 export function TempoPanel() {
   const session = useSession((s) => s.session);
@@ -46,24 +76,14 @@ export function TempoPanel() {
     <div className="tempo-panel">
       <section>
         <h3>Andamento</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Compasso</th>
-              <th>BPM</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {session.tempo.tempos.map((t) => (
-              <tr key={t.tick}>
-                <td className="mono">{fmtBar(t.tick)}</td>
-                <td className="mono">{t.bpm.toFixed(2)}</td>
-                <td>{t.tick > 0 ? <Button size="sm" variant="ghost" aria-label={`Remover andamento no compasso ${fmtBar(t.tick)}`} onClick={() => void run(() => api.tempoRemove(t.tick))}>✕</Button> : null}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <EventTable
+          rows={session.tempo.tempos}
+          valueLabel="BPM"
+          value={(t) => t.bpm.toFixed(2)}
+          what="andamento"
+          fmtBar={fmtBar}
+          onRemove={(tick) => void run(() => api.tempoRemove(tick))}
+        />
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -81,26 +101,14 @@ export function TempoPanel() {
       </section>
       <section>
         <h3>Fórmula de compasso</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Compasso</th>
-              <th>Fórmula</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {meters.map((m) => (
-              <tr key={m.tick}>
-                <td className="mono">{fmtBar(m.tick)}</td>
-                <td className="mono">
-                  {m.numerator}/{m.denominator}
-                </td>
-                <td>{m.tick > 0 ? <Button size="sm" variant="ghost" aria-label={`Remover fórmula no compasso ${fmtBar(m.tick)}`} onClick={() => void run(() => api.meterRemove(m.tick))}>✕</Button> : null}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <EventTable
+          rows={meters}
+          valueLabel="Fórmula"
+          value={(m) => `${m.numerator}/${m.denominator}`}
+          what="fórmula"
+          fmtBar={fmtBar}
+          onRemove={(tick) => void run(() => api.meterRemove(tick))}
+        />
         <form
           onSubmit={(e) => {
             e.preventDefault();

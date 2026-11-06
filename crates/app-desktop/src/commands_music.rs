@@ -3,13 +3,14 @@
 //! `docs/specs/2026-11-05-fase-7-notacao.md` e `…-fase-6-8-sincronizacao-e-afinacao.md`
 //! (seções "Integração (volta 2)").
 
+use crate::ipc_args::{bad, id, user_path, Res};
 use crate::state::{lock, AppState};
 use app_core::lyrics_service::LyricsFileFormat;
 use app_core::notation_service::{
     ScoreExportFormat, ScoreImportResult, ScoreReport, ScoreTemplate,
 };
 use app_core::tuning_service::TunerReadingView;
-use app_core::{AppError, ScoreSummary, SessionView};
+use app_core::{ScoreSummary, SessionView};
 use ctx_notation::arrange::ChordSlot;
 use ctx_notation::commands::{ScoreEdit, VoiceEdit};
 use ctx_notation::{KeySignature, Meter, Mode, Score, ScoreId, VoiceLoc};
@@ -19,27 +20,7 @@ use ctx_tuning::{DetectedNoteId, NoteEdit, PitchCorrectionMap, ScaleCorrection};
 use serde::{Deserialize, Serialize};
 use shared_kernel::id::{AudioSourceId, TrackId};
 use shared_kernel::Tick;
-use std::path::PathBuf;
 use tauri::State;
-
-type Res<T> = Result<T, AppError>;
-
-fn bad(msg: &str) -> AppError {
-    AppError::new("api.invalid_argument", msg)
-}
-
-fn id<T: std::str::FromStr>(s: &str) -> Res<T> {
-    s.parse().map_err(|_| bad("identificador inválido"))
-}
-
-/// Caminho absoluto vindo da UI (diálogo nativo). Rejeita relativos e caracteres de controle.
-fn user_path(p: &str) -> Res<PathBuf> {
-    let path = PathBuf::from(p);
-    if p.is_empty() || p.chars().any(char::is_control) || !path.is_absolute() {
-        return Err(bad("caminho inválido"));
-    }
-    Ok(path)
-}
 
 /// Resposta de criação de partitura.
 #[derive(Debug, Serialize)]

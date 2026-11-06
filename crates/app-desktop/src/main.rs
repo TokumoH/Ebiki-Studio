@@ -4,6 +4,7 @@
 mod audio;
 mod commands;
 mod commands_composition;
+mod ipc_args;
 #[cfg(test)]
 mod ipc_tests;
 mod state;

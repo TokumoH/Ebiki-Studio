@@ -1,6 +1,7 @@
 //! Comandos IPC (adaptador de entrada). Finos: validam/convertem DTOs e delegam ao `Studio`.
 
 use crate::audio::{AudioRuntime, AudioStatus};
+use crate::ipc_args::{bad, id, user_path, Res};
 use crate::state::{lock, AppState};
 use app_core::ports::{ExportFormatKind, ExportSettings};
 use app_core::*;
@@ -18,27 +19,8 @@ use serde::{Deserialize, Serialize};
 use shared_kernel::command::{Command, Composite};
 use shared_kernel::id::{AudioSourceId, TrackId};
 use shared_kernel::{AudioFormat, BitDepth, Db, SampleRate, Tick};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use tauri::State;
-
-type Res<T> = Result<T, AppError>;
-
-fn bad(msg: &str) -> AppError {
-    AppError::new("api.invalid_argument", msg)
-}
-
-fn id<T: std::str::FromStr>(s: &str) -> Res<T> {
-    s.parse().map_err(|_| bad("identificador inválido"))
-}
-
-/// Caminho absoluto vindo da UI (diálogo nativo). Rejeita relativos e caracteres de controle.
-fn user_path(p: &str) -> Res<PathBuf> {
-    let path = PathBuf::from(p);
-    if p.is_empty() || p.chars().any(char::is_control) || !path.is_absolute() {
-        return Err(bad("caminho inválido"));
-    }
-    Ok(path)
-}
 
 fn now() -> i64 {
     std::time::SystemTime::now()
@@ -588,19 +570,6 @@ pub async fn export_stems(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn user_paths_must_be_absolute_and_clean() {
-        assert!(user_path("relativo/x.wav").is_err());
-        assert!(user_path("").is_err());
-        assert!(user_path("/tmp/a\u{0}b").is_err());
-        let abs = if cfg!(windows) {
-            "C:\\x\\y.wav"
-        } else {
-            "/x/y.wav"
-        };
-        assert!(user_path(abs).is_ok());
-    }
 
     #[test]
     fn double_option_distinguishes_missing_from_null() {
