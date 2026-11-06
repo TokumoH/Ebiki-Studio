@@ -13,7 +13,7 @@ codificados no canal alfa (preenchimento ≈ 75 %, traços 100 %). Qualquer text
 | `bordas-suavizadas-comparacao.png` | Original × suavização leve × média (adotada) |
 | `opcoes-cores.png` | 8 opções de cor sólida sobre a marca suavizada (papel, noite e ícone) |
 
-- Na UI a marca é uma **máscara CSS**; a cor vem do tema (`--brand-fill`): tinta papel `#eee7f2` no escuro, tinta `#1d2430` no claro.
+- **Cor (decisão do autor, 2026-11-06):** sem cor — tinta papel `#eee7f2` no tema escuro e tinta sumi `#111014` no claro. Na UI a marca é uma **máscara CSS** com a cor em `--brand-fill`.
 - **Suavização das bordas** (`scripts/brand_smooth_edges.py ebiki-mark.png saida.png 4.5`, requer numpy/scipy/Pillow): cada conjunto de nível `{alfa ≥ t}` (128 níveis) é
   suavizado (gaussiana σ = 4,5 px em 8×) e re-limiarizado. Tons planos, degradês e pontos internos ficam
   idênticos (diferença máxima no interior < 1 %); só os contornos em escada viram curvas de pincel.

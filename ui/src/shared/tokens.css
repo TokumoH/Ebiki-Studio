@@ -77,7 +77,7 @@
   --clip-bg: #cfe5f0;
   --clip-fg: #1d4b62;
   --clip-sel: #ab4e25;
-  --brand-fill: #1d2430;
+  --brand-fill: #111014; /* tinta sumi da marca */
   --shadow: 0 8px 24px rgba(29, 36, 48, 0.15);
   color-scheme: light;
 }
