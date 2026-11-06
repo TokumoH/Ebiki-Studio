@@ -48,11 +48,11 @@ sudo apt install -y build-essential curl libwebkit2gtk-4.1-dev libgtk-3-dev liba
 ## 2. Baixar o código
 
 ```bash
-git clone --branch branchTrabalho https://github.com/TokumoH/AppMusica.git
+git clone --branch branchTrabalho https://github.com/TokumoH/Ebiki-Studio.git
 ```
 
 ```bash
-cd AppMusica
+cd Ebiki-Studio
 ```
 
 ```bash

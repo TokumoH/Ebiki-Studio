@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/TokumoH/Hibiki-Studio/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/TokumoH/Hibiki-Studio/actions/workflows/ci.yml/badge.svg?branch=branchTrabalho"></a>
+  <a href="https://github.com/TokumoH/Ebiki-Studio/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/TokumoH/Ebiki-Studio/actions/workflows/ci.yml/badge.svg?branch=branchTrabalho"></a>
   <a href="LICENSE"><img alt="Licença: GPL-3.0" src="https://img.shields.io/badge/licen%C3%A7a-GPL--3.0-blue"></a>
   <img alt="Windows · macOS · Linux" src="https://img.shields.io/badge/plataformas-Windows%20%C2%B7%20macOS%20%C2%B7%20Linux-555">
 </p>
@@ -43,11 +43,11 @@ teste e problemas comuns): **[docs/manual/guia-instalacao-local.md](docs/manual/
 Resumo, com Node 22 e Rust ([rustup](https://rustup.rs)) instalados:
 
 ```bash
-git clone --branch branchTrabalho https://github.com/TokumoH/Hibiki-Studio.git
+git clone --branch branchTrabalho https://github.com/TokumoH/Ebiki-Studio.git
 ```
 
 ```bash
-cd Hibiki-Studio
+cd Ebiki-Studio
 ```
 
 ```bash
