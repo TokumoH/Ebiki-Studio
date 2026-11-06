@@ -5,6 +5,13 @@ mod audio;
 mod commands;
 mod commands_composition;
 mod ipc_args;
+/// Contexto do app (configuração, ícones, Info.plist). Expandido **uma única vez** no binário:
+/// no macOS cada `generate_context!()` embute o símbolo `_EMBED_INFO_PLIST`, e duas expansões
+/// (app + testes de IPC) não linkam.
+pub fn app_context<R: tauri::Runtime>() -> tauri::Context<R> {
+    tauri::generate_context!()
+}
+
 #[cfg(test)]
 mod ipc_tests;
 mod state;
@@ -56,7 +63,7 @@ fn main() {
             spawn_autosave(app.handle().clone());
             Ok(())
         })
-        .run(tauri::generate_context!())
+        .run(app_context())
         .expect("falha ao iniciar o Ebiki Studio");
 }
 

@@ -183,3 +183,23 @@ proptest! {
         prop_assert_eq!(g.current(), target);
     }
 }
+
+/// Regressão (achada pelo proptest na CI): o erro acumulado da rampa ultrapassava o alvo e o
+/// último passo recuava. Valores exatos (bits) de um caso que falhava no código antigo.
+#[test]
+fn gain_smoother_regression_float_overshoot() {
+    let (start, target) = (f32::from_bits(0x4092_eb58), f32::from_bits(0x4094_fa46));
+    let mut g = GainSmoother::new(start);
+    g.prepare(SR, 64);
+    g.set_target(target);
+    let mut prev = start;
+    for _ in 0..2_000 {
+        let v = g.next_value();
+        assert!(
+            (v - prev) * (target - start) >= -1e-6,
+            "recuou: {prev} → {v}"
+        );
+        prev = v;
+    }
+    assert_eq!(g.current(), target);
+}

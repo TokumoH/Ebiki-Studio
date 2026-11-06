@@ -11,7 +11,7 @@ use tauri::WebviewWindow;
 fn app() -> (tauri::App<MockRuntime>, WebviewWindow<MockRuntime>) {
     let app = crate::with_commands(mock_builder())
         .manage(AppState::new(None))
-        .build(tauri::generate_context!())
+        .build(crate::app_context())
         .expect("app");
     let w = tauri::WebviewWindowBuilder::new(&app, "main", Default::default())
         .build()

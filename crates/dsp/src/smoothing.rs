@@ -87,6 +87,13 @@ impl GainSmoother {
                 self.current = self.target;
             } else {
                 self.current += self.step;
+                // o erro acumulado de ponto flutuante não pode ultrapassar o alvo
+                // (senão o salto final andaria para trás e a rampa deixaria de ser monotônica)
+                if (self.step > 0.0 && self.current > self.target)
+                    || (self.step < 0.0 && self.current < self.target)
+                {
+                    self.current = self.target;
+                }
             }
         }
         self.current
