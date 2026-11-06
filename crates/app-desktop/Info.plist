@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- macOS exige a justificativa para liberar o microfone/entradas de áudio (gravação e afinador) -->
+  <key>NSMicrophoneUsageDescription</key>
+  <string>O Ebiki Studio usa a entrada de áudio para gravar faixas e para o afinador.</string>
+</dict>
+</plist>

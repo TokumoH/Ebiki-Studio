@@ -9,6 +9,9 @@ bases, partitura, letra sincronizada e afinação.
 Baixe o instalador da página de *Releases* do repositório (gerado pela CI em cada versão `v*`).
 
 ### A partir do código
+Passo a passo completo (Windows, macOS, Linux, roteiro de teste e problemas comuns):
+[`guia-instalacao-local.md`](guia-instalacao-local.md).
+
 Pré-requisitos: Rust 1.97 (fixado em `rust-toolchain.toml`), Node 22, e no Linux as bibliotecas do
 WebKitGTK/ALSA (`libwebkit2gtk-4.1-dev libgtk-3-dev libasound2-dev libsoup-3.0-dev librsvg2-dev`).
 
