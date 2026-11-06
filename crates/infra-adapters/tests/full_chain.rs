@@ -48,8 +48,7 @@ fn tone_file(
 fn import_resampled_mix_export_and_analyze() {
     let dir = tempfile::tempdir().unwrap();
     let mut st = studio();
-    let v = st
-        .create_project(dir.path(), "Integração", AudioFormat::default())
+    st.create_project(dir.path(), "Integração", AudioFormat::default())
         .unwrap();
     // arquivo a 44,1 kHz: deve ser convertido para 48 kHz do projeto
     let f = tone_file(dir.path(), "voz.wav", 44_100, 2.0, 440.0, 0.5);
