@@ -117,14 +117,38 @@ fn imports_hand_written_sample() {
 fn malformed_inputs_are_errors_not_panics() {
     let cases: [&[u8]; 6] = [
         b"<score-partwise><part-list></score-partwise>",
-        b"<score-partwise><part id=\"P1\"><measure><note><pitch><step>Z</step></pitch></note></measure></part></score-partwise>",
+        b"<score-partwise><part id=\"P1\"><measure><note><pitch><step>Z</step></pitch><duration>4</duration></note></measure></part></score-partwise>",
         b"<?xml version=\"1.0\"?><!DOCTYPE lol [<!ENTITY a \"aaaa\">]><score-partwise>&a;</score-partwise>",
         b"\xff\xfe\x00<",
         b"<score-partwise><part><measure><attributes><divisions>0</divisions><time><beats>99</beats><beat-type>3</beat-type></time></attributes><note><duration>-5</duration></note></measure></part></score-partwise>",
         b"<score-partwise><part><measure><note><rest/><duration>99999999999</duration><voice>1</voice></note></measure></part></score-partwise>",
     ];
-    for c in cases {
-        let _ = import_musicxml(c);
+    // estruturalmente inválidos / não-XML / entidades proibidas: erro tipado
+    for i in [0, 2, 3] {
+        assert!(
+            import_musicxml(cases[i]).is_err(),
+            "caso {i} deveria ser erro"
+        );
+    }
+    // nota com altura inválida: importação tolerante, nota descartada com aviso
+    let w = import_musicxml(cases[1]).unwrap().warnings;
+    assert!(w.iter().any(|m| m.contains("altura inválida")), "{w:?}");
+    // valores absurdos em XML válido: importa saneado ou falha, mas nunca entra em pânico
+    // e, se importar, a partitura resultante é consistente
+    for c in &cases[4..] {
+        if let Ok(imported) = import_musicxml(c) {
+            for part in &imported.score.parts {
+                assert!(part.validate_header().is_ok());
+                for e in part
+                    .measures
+                    .iter()
+                    .flat_map(|m| &m.voices)
+                    .flat_map(|v| &v.events)
+                {
+                    assert!(e.validate().is_ok(), "evento inválido importado: {e:?}");
+                }
+            }
+        }
     }
 }
 

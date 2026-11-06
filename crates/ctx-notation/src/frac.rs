@@ -36,13 +36,31 @@ impl Frac {
         let g = gcd(num, den).max(1);
         let s = if den < 0 { -1 } else { 1 };
         let (mut n, mut d) = (s * num / g, s * den / g);
-        while d > i64::MAX as i128 || n.abs() > i64::MAX as i128 {
+        const M: i128 = i64::MAX as i128;
+        // denominador grande: reduz os dois (valor quase inalterado, perda relativa ~2⁻⁶³)
+        while d > M {
             n /= 2;
-            d = (d / 2).max(1);
+            d /= 2;
+        }
+        if n.abs() > M {
+            // |valor| > 1: melhor aproximação com denominador D que ainda cabe em 64 bits
+            let sign = n.signum();
+            let (q, r) = (n.abs() / d, n.abs() % d);
+            if q >= M {
+                n = sign * M; // além do i64: satura
+                d = 1;
+            } else {
+                let den = (M / (q + 1)).clamp(1, d);
+                let frac = (r * den + d / 2) / d; // r·den < 2¹²⁶: sem overflow
+                n = sign * (q * den + frac);
+                d = den;
+                let g = gcd(n, d).max(1);
+                (n, d) = (n / g, d / g);
+            }
         }
         Self {
             num: n as i64,
-            den: d as i64,
+            den: d.max(1) as i64,
         }
     }
 
@@ -148,14 +166,36 @@ mod tests {
 
     #[test]
     fn extreme_values_saturate_without_panic() {
+        let as_f = |f: Frac| f.num() as f64 / f.den() as f64;
+        let close = |got: f64, want: f64| ((got - want) / want).abs() < 1e-6;
         let big = Frac::new(i64::MAX, 3);
-        let _ = big + big;
-        let _ = big.mul(i64::MAX, 1);
-        let _ = Frac::new(i64::MIN + 1, -1) - big;
-        let _ = big.to_ticks();
+        // além do i64: a fração é aproximada, mas mantém sinal, denominador válido e valor
+        let s = big + big;
+        assert!(s.den() > 0 && s.is_positive());
+        assert!(close(as_f(s), 2.0 * i64::MAX as f64 / 3.0), "{s:?}");
+        let m = big.mul(i64::MAX, 1);
+        assert!(m.den() > 0 && m.is_positive(), "{m:?}");
+        let d = Frac::new(i64::MIN + 1, -1) - big;
+        assert!(close(as_f(d), 2.0 * i64::MAX as f64 / 3.0), "{d:?}");
+        // ticks além do i64 saturam no limite
+        assert_eq!(big.to_ticks(), i64::MAX);
+        assert_eq!(Frac::new(-i64::MAX, 3).to_ticks(), i64::MIN);
     }
 
     proptest! {
+        /// Somas que estouram 64 bits continuam com erro relativo desprezível.
+        #[test]
+        fn huge_sums_keep_relative_precision(a in (i64::MAX / 4)..i64::MAX, b in 1i64..1000, c in (i64::MAX / 4)..i64::MAX, d in 1i64..1000) {
+            let exact = a as f64 / b as f64 + c as f64 / d as f64;
+            let got = Frac::new(a, b) + Frac::new(c, d);
+            let gotf = got.num() as f64 / got.den() as f64;
+            if exact < i64::MAX as f64 {
+                prop_assert!(((gotf - exact) / exact).abs() < 1e-9, "{got:?} vs {exact}");
+            } else {
+                prop_assert_eq!(got, Frac::new(i64::MAX, 1));
+            }
+        }
+
         #[test]
         fn add_sub_roundtrip(a in -1000i64..1000, b in 1i64..256, c in -1000i64..1000, d in 1i64..256) {
             let x = Frac::new(a, b);

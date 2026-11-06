@@ -213,9 +213,11 @@ mod tests {
         let mut m = PitchCorrectionMap::new(AudioSourceId::new());
         let mut s = ScaleCorrection::major(PitchClass::parse("G").unwrap());
         s.enabled = true;
-        roundtrip(&mut m, Box::new(SetScaleCorrection::new(s)));
+        roundtrip(&mut m, Box::new(SetScaleCorrection::new(s.clone())));
+        assert_eq!(m.scale(), &s, "estado após refazer = escala aplicada");
         let mut t = TunerSettings::default();
         roundtrip(&mut t, Box::new(SetTunerReference::new(442.0)));
+        assert!((t.a4_hz() - 442.0).abs() < 1e-9);
     }
 
     #[test]

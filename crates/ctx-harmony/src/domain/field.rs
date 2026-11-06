@@ -114,12 +114,40 @@ mod tests {
 
     #[test]
     fn every_mode_degree_has_known_quality() {
+        use ChordQuality::*;
         for m in Mode::ALL {
             for step in 1..=7 {
-                let _ = diatonic_quality(m, step, false);
-                let _ = diatonic_quality(m, step, true);
+                let triad = diatonic_quality(m, step, false);
+                assert!(
+                    matches!(triad, Major | Minor | Diminished | Augmented),
+                    "{m:?} grau {step}: tríade {triad:?}"
+                );
+                let seventh = diatonic_quality(m, step, true);
+                assert!(
+                    matches!(
+                        seventh,
+                        Major7
+                            | Dominant7
+                            | Minor7
+                            | HalfDiminished7
+                            | Diminished7
+                            | MinorMajor7
+                            | AugmentedMajor7
+                    ),
+                    "{m:?} grau {step}: tétrade {seventh:?}"
+                );
             }
         }
+        // campo maior: I IV V maiores, ii iii vi menores, vii diminuto; V7 dominante
+        let ionian: Vec<_> = (1..=7)
+            .map(|s| diatonic_quality(Mode::Ionian, s, false))
+            .collect();
+        assert_eq!(
+            ionian,
+            [Major, Minor, Minor, Major, Major, Minor, Diminished]
+        );
+        assert_eq!(diatonic_quality(Mode::Ionian, 5, true), Dominant7);
+        assert_eq!(diatonic_quality(Mode::Ionian, 7, true), HalfDiminished7);
     }
 
     #[test]

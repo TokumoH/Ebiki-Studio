@@ -117,11 +117,12 @@ fn import_resampled_mix_export_and_analyze() {
     // duas faixas somando ~0,5 de pico cada podem passar de 0 dBFS → alerta de clipping/true peak
     let codes: Vec<_> = advice.iter().map(|a| a.code.as_str()).collect();
     assert!(
-        !codes.is_empty(),
-        "uma mix quente gera ao menos um conselho: {:?}",
+        codes
+            .iter()
+            .any(|c| c.contains("clip") || c.contains("peak")),
+        "uma mix quente gera alerta de clipping/pico: {codes:?} {:?}",
         analysis.master
     );
-    let _ = v;
 }
 
 #[test]

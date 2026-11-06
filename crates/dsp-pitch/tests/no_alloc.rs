@@ -33,7 +33,18 @@ fn tuner_processor_does_not_allocate() {
         }
         tuner.set_a4(442.0);
     });
-    assert!(tuner.reading().is_some());
+    let r = tuner.reading().expect("leitura do afinador");
+    assert_eq!(r.note.0, 69, "Lá 440 Hz é A4 (MIDI 69)");
+    assert!(
+        (r.frequency_hz - 440.0).abs() < 1.0,
+        "{} Hz",
+        r.frequency_hz
+    );
+    assert!(
+        r.cents.abs() < 5.0,
+        "afinado em relação a 440: {} cents",
+        r.cents
+    );
 }
 
 #[test]
