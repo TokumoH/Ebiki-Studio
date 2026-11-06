@@ -106,8 +106,8 @@ smoke test do app desktop sob Xvfb ok (`img/2026-11-06-smoke-desktop.png`).
 ## 6. CI e minutos do GitHub Actions
 
 Os minutos do Actions da conta acabaram (execuções 30 e 31 falharam sem iniciar runner). Medidas:
-- `push` roda só Linux e ignora mudanças de documentação; Windows/macOS rodam em pull request ou
-  manualmente ("Run workflow").
+- O repositório foi tornado público (minutos gratuitos nos runners padrão): a CI voltou a rodar nos
+  3 sistemas a cada push; mudanças só de documentação não a disparam.
 - `scripts/ci-local.sh` reproduz todas as etapas da CI localmente. Execução final aqui (Linux):
   fmt, clippy, 630 testes Rust, desempenho DSP em release, contrato IPC, tsc, 141 testes de UI,
   build e 24 E2E — **tudo verde**. Pendente: confirmação em Windows/macOS reais quando houver minutos
