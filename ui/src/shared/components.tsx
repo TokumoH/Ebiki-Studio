@@ -133,6 +133,28 @@ export function InlineRename({ value, onCommit, label, inputLabel, className = "
   );
 }
 
+/** Estado mínimo de um histórico de desfazer (sessão, biblioteca…), sem depender do IPC. */
+export interface UndoState {
+  canUndo: boolean;
+  canRedo: boolean;
+  undoLabel?: string | null;
+  redoLabel?: string | null;
+}
+
+/** Par de botões Desfazer/Refazer para um histórico; `scope` entra no rótulo acessível. */
+export function UndoRedoButtons({ history, onUndo, onRedo, scope }: { history: UndoState | null; onUndo: () => void; onRedo: () => void; scope: string }) {
+  return (
+    <>
+      <Button size="sm" disabled={!history?.canUndo} title={history?.undoLabel ?? undefined} onClick={onUndo} aria-label={`Desfazer ${scope}`}>
+        ↶ {history?.undoLabel ? `Desfazer: ${history.undoLabel}` : "Desfazer"}
+      </Button>
+      <Button size="sm" disabled={!history?.canRedo} title={history?.redoLabel ?? undefined} onClick={onRedo} aria-label={`Refazer ${scope}`}>
+        ↷ Refazer
+      </Button>
+    </>
+  );
+}
+
 export function EmptyState({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="empty">

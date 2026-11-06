@@ -51,9 +51,11 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
       - name: Testes (unitários, integração, simulação, não-alocação)
         run: cargo test --workspace
-      - name: Testes de desempenho DSP (release)
+      - name: Desempenho em release (DSP + simulação de sessão com 32 faixas)
         if: runner.os == 'Linux'
-        run: cargo test --release -p dsp --test performance
+        run: |
+          cargo test --release -p dsp --test performance
+          cargo test --release -p infra-adapters --test simulation -- --nocapture
       - name: Contrato IPC atualizado
         if: runner.os == 'Linux'
         run: |

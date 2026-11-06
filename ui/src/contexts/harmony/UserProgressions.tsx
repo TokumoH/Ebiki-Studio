@@ -3,7 +3,7 @@ import { compositionApi } from "../../ipc/api";
 import type { HarmonyKey, HarmonyKeysCatalog, LibraryHistory, ProgressionView, UserProgressionInput } from "../../ipc/types";
 import { errorMessage } from "../../core/session";
 import { notify } from "../../core/toasts";
-import { Button, Dialog, EmptyState, Field } from "../../shared/components";
+import { Button, Dialog, EmptyState, Field, UndoRedoButtons } from "../../shared/components";
 import type { InsertTarget } from "./actions";
 import type { Notation } from "./sequence";
 import { ProgressionCard } from "./ProgressionCard";
@@ -127,12 +127,7 @@ export function UserProgressions({ harmonyKey, catalog, notation, target }: { ha
         <Button size="sm" variant="primary" onClick={() => setDraft(EMPTY(harmonyKey.mode))}>
           + Nova progressão
         </Button>
-        <Button size="sm" disabled={!history?.canUndo} title={history?.undoLabel ?? undefined} onClick={() => void act(compositionApi.libraryUndo)} aria-label="Desfazer na biblioteca">
-          ↶ {history?.undoLabel ? `Desfazer: ${history.undoLabel}` : "Desfazer"}
-        </Button>
-        <Button size="sm" disabled={!history?.canRedo} title={history?.redoLabel ?? undefined} onClick={() => void act(compositionApi.libraryRedo)} aria-label="Refazer na biblioteca">
-          ↷ Refazer
-        </Button>
+        <UndoRedoButtons history={history} scope="na biblioteca" onUndo={() => void act(compositionApi.libraryUndo)} onRedo={() => void act(compositionApi.libraryRedo)} />
       </div>
       {list.length === 0 ? (
         <EmptyState title="Nenhuma progressão sua ainda.">Cadastre progressões em graus romanos; elas aparecem nas sugestões dos gêneros escolhidos.</EmptyState>

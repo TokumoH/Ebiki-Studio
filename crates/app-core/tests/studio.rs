@@ -32,6 +32,25 @@ fn wait_recorded(st: &Studio, frames: u64) {
     }
 }
 
+/// Cria a faixa "Voz" armada na entrada 0 (mono), sem monitoração.
+fn arm_new_track(st: &mut Studio) {
+    let (tid, _) = st.create_track("Voz", None).unwrap();
+    let rec = TrackRecording {
+        armed: true,
+        input: Some(InputAssignment {
+            left: 0,
+            right: None,
+        }),
+        monitor: MonitorMode::Off,
+        ..Default::default()
+    };
+    st.execute(
+        on_recording(SetTrackRecording::new(tid, rec, "Armar")),
+        None,
+    )
+    .unwrap();
+}
+
 #[test]
 fn create_import_play_is_sample_accurate() {
     let dir = tempfile::tempdir().unwrap();
@@ -256,21 +275,7 @@ fn records_from_simulated_device_into_take_and_clip() {
     let dev = audio_engine::null_device::NullDevice::start(core, 256, 2, Some(gen));
     st.attach_engine(h, 2).unwrap();
     new_project(&mut st, dir.path());
-    let (tid, _) = st.create_track("Voz", None).unwrap();
-    let rec = TrackRecording {
-        armed: true,
-        input: Some(InputAssignment {
-            left: 0,
-            right: None,
-        }),
-        monitor: MonitorMode::Off,
-        ..Default::default()
-    };
-    st.execute(
-        on_recording(SetTrackRecording::new(tid, rec, "Armar")),
-        None,
-    )
-    .unwrap();
+    arm_new_track(&mut st);
     st.start_recording(Tick(960), false).unwrap();
     wait_recorded(&st, 19_200); // 0,4 s
     let v = st.stop_recording().unwrap();
@@ -366,21 +371,7 @@ fn swapping_engine_while_recording_keeps_the_take() {
     };
     let dev1 = start_dev(&mut st);
     new_project(&mut st, dir.path());
-    let (tid, _) = st.create_track("Voz", None).unwrap();
-    let rec = TrackRecording {
-        armed: true,
-        input: Some(InputAssignment {
-            left: 0,
-            right: None,
-        }),
-        monitor: MonitorMode::Off,
-        ..Default::default()
-    };
-    st.execute(
-        on_recording(SetTrackRecording::new(tid, rec, "Armar")),
-        None,
-    )
-    .unwrap();
+    arm_new_track(&mut st);
     st.start_recording(Tick(0), false).unwrap();
     wait_recorded(&st, 14_400); // 0,3 s
                                 // troca de dispositivo no meio do take

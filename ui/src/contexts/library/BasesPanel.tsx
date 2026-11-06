@@ -4,7 +4,7 @@ import type { BaseOptions, HarmonyKeysCatalog, LibraryBase, LibraryHistory } fro
 import { audition, stopAudition, useAudition } from "../../core/audition";
 import { errorMessage, useSession } from "../../core/session";
 import { notify } from "../../core/toasts";
-import { Button, EmptyState } from "../../shared/components";
+import { Button, EmptyState, UndoRedoButtons } from "../../shared/components";
 import { EMPTY_FILTERS, encodeKey, filtersToQuery, type BaseFilters } from "./filters";
 import { allBaseKeys, KIND_LABEL, keyLabel } from "./labels";
 import { InsertBaseDialog } from "./InsertBaseDialog";
@@ -163,12 +163,7 @@ export function BasesPanel() {
           SoundFont…
         </Button>
         <span className="grow" />
-        <Button size="sm" disabled={!history?.canUndo} title={history?.undoLabel ?? undefined} onClick={() => void act(compositionApi.libraryUndo)} aria-label="Desfazer na biblioteca">
-          ↶ {history?.undoLabel ? `Desfazer: ${history.undoLabel}` : "Desfazer"}
-        </Button>
-        <Button size="sm" disabled={!history?.canRedo} title={history?.redoLabel ?? undefined} onClick={() => void act(compositionApi.libraryRedo)} aria-label="Refazer na biblioteca">
-          ↷ Refazer
-        </Button>
+        <UndoRedoButtons history={history} scope="na biblioteca" onUndo={() => void act(compositionApi.libraryUndo)} onRedo={() => void act(compositionApi.libraryRedo)} />
       </div>
       <div className="bases-list">
         {list && list.length === 0 ? (

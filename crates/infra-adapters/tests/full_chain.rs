@@ -1,24 +1,13 @@
 //! Simulação com as implementações reais: codecs + DSP + SQLite + engine.
-use app_core::ports::{ExportFormatKind, ExportSettings, SystemClock};
+mod common;
+use app_core::ports::{ExportFormatKind, ExportSettings};
 use app_core::*;
+use common::studio;
 use ctx_mixing::commands::EditStrip;
 use ctx_mixing::presets::InstrumentPreset;
 use ctx_mixing::{StripEdit, StripTarget};
-use infra_adapters::{CodecsMedia, DspProcessorFactory};
 use infra_codecs::{EncodeOptions, Encoder, ExportFormat, SampleDepth};
 use shared_kernel::{AudioFormat, Tick};
-use std::sync::Arc;
-
-fn studio() -> Studio {
-    Studio::new(StudioDeps {
-        repo: Arc::new(infra_persistence::SqliteSessionRepository),
-        media: Arc::new(CodecsMedia),
-        factory: Arc::new(DspProcessorFactory),
-        clock: Arc::new(SystemClock),
-        synth: Arc::new(infra_adapters::SynthRenderer),
-        notation: Arc::new(infra_adapters::NotationIoFormats),
-    })
-}
 
 fn tone_file(
     dir: &std::path::Path,

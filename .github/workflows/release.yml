@@ -81,7 +81,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          projectPath: crates/app-desktop
+          # roda da raiz (como `npm run build` local): o beforeBuildCommand `npm --prefix ui …`
+          # resolve a partir daqui e o CLI encontra crates/app-desktop/tauri.conf.json sozinho
+          projectPath: .
+          tauriScript: npm run tauri
           tagName: ${{ env.TAG }}
           releaseName: "Ebiki Studio ${{ env.TAG }}"
           releaseCommitish: ${{ github.sha }}

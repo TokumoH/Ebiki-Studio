@@ -17,6 +17,7 @@ if [[ "$what" == all || "$what" == rust ]]; then
   step "Clippy";                cargo clippy --workspace --all-targets -- -D warnings
   step "Testes Rust";           cargo test --workspace
   step "Desempenho DSP (release)"; cargo test --release -p dsp --test performance
+  step "Simulação de sessão (release)"; cargo test --release -p infra-adapters --test simulation -- --nocapture
   step "Contrato IPC";          cargo test -p app-core --test contract_fixtures
   git diff --exit-code -- ui/src/ipc/__fixtures__ \
     || { echo "Fixtures do contrato mudaram: revise e faça commit."; exit 1; }
