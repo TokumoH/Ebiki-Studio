@@ -1,7 +1,7 @@
 // Transporte simulado: um núcleo em memória para rodar a UI no navegador (desenvolvimento e E2E).
 // Simula as regras visíveis (histórico, mixer, transporte, medidores); não processa áudio.
 import type { Transport } from "./transport";
-import type { ChannelStrip, SessionView, StripEdit, StripTarget, Track, TransportView, MetersView } from "./types";
+import type { AudioStatus, ChannelStrip, SessionView, StripEdit, StripTarget, Track, TransportView, MetersView } from "./types";
 import { emptyMusicView, musicHandlers } from "./mockMusic";
 import { clipEditDefaults, editHandlers } from "./mockEdit";
 
@@ -44,10 +44,12 @@ interface State {
   frame: number;
   lastGesture: number | null;
   recent: { path: string; name: string; openedAt: number }[];
+  audio: AudioStatus;
 }
 
 export function createMockTransport(): Transport {
-  const st: State = { session: null, undo: [], redo: [], savedAt: 0, revision: 0, playing: "stopped", frame: 0, lastGesture: null, recent: [] };
+  const st: State = { session: null, undo: [], redo: [], savedAt: 0, revision: 0, playing: "stopped", frame: 0, lastGesture: null, recent: [],
+    audio: { mode: "null", outputName: "Saída simulada", inputName: null, outputId: null, inputId: null, sampleRate: SR_DEFAULT, bufferSize: 256, inputChannels: 2, estimatedLatencyMs: 10.7, error: null } };
   const listeners = new Map<string, Set<(p: unknown) => void>>();
   const emit = (ev: string, p: unknown) => listeners.get(ev)?.forEach((cb) => cb(p));
 
@@ -196,8 +198,12 @@ export function createMockTransport(): Transport {
 
   const handlers: Record<string, (a: Record<string, any>) => unknown> = {
     audio_devices: () => ({ host: "Simulado", outputs: [{ id: "sim-out", name: "Saída simulada", isDefault: true }], inputs: [{ id: "sim-in", name: "Entrada simulada", isDefault: true }] }),
-    audio_status: () => ({ mode: "null", outputName: "Saída simulada", inputName: null, sampleRate: sr(), bufferSize: 256, inputChannels: 2, estimatedLatencyMs: 10.7, error: null }),
-    audio_configure: (a) => ({ mode: "null", outputName: "Saída simulada", inputName: a.req.inputId ? "Entrada simulada" : null, sampleRate: sr(), bufferSize: a.req.bufferSize ?? 256, inputChannels: 2, estimatedLatencyMs: ((a.req.bufferSize ?? 256) * 2000) / sr(), error: null }),
+    audio_status: () => ({ ...st.audio, sampleRate: sr() }),
+    audio_configure: (a) => {
+      const bufferSize = a.req.bufferSize ?? 256;
+      st.audio = { mode: "null", outputName: "Saída simulada", inputName: a.req.inputId ? "Entrada simulada" : null, outputId: a.req.outputId ?? null, inputId: a.req.inputId ?? null, sampleRate: sr(), bufferSize, inputChannels: 2, estimatedLatencyMs: (bufferSize * 2000) / sr(), error: null };
+      return st.audio;
+    },
     project_create: (a) => {
       const name = validName(a.req.name);
       const root = `${a.req.dir}/${name}.ebiki`;

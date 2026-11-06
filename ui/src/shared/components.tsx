@@ -53,6 +53,11 @@ export function Tabs<T extends string>({ value, tabs, onChange, label }: { value
 export function Dialog({ title, open, onClose, children, footer, size }: { title: string; open: boolean; onClose: () => void; children: ReactNode; footer?: ReactNode; size?: "lg" }) {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
+  // o onClose mais recente fica num ref: quem usa o diálogo costuma passar uma função nova a cada
+  // render (e o Workspace re-renderiza a cada medidor, ~30x/s). Se ele fosse dependência do efeito,
+  // o foco voltaria ao primeiro campo a cada render, fechando seletores abertos.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
     if (!open) return;
     const prev = document.activeElement as HTMLElement | null;
@@ -60,7 +65,7 @@ export function Dialog({ title, open, onClose, children, footer, size }: { title
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
-        onClose();
+        closeRef.current();
       }
     };
     window.addEventListener("keydown", onKey, true);
@@ -72,7 +77,7 @@ export function Dialog({ title, open, onClose, children, footer, size }: { title
       const unclaimed = !active || active === document.body || (dialogEl?.contains(active) ?? false);
       if (unclaimed) prev?.focus();
     };
-  }, [open, onClose]);
+  }, [open]);
   if (!open) return null;
   return (
     <div className="dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>

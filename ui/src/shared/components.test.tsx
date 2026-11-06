@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { dbToFader, faderToDb, Fader, Segmented, Dialog, InlineRename } from "./components";
 
@@ -92,6 +93,36 @@ describe("Dialog e foco", () => {
       </Dialog>,
     );
     expect(document.activeElement).toBe(opener);
+  });
+
+  it("re-render com um onClose novo (ex.: telemetria) não move o foco nem fecha nada", () => {
+    const { rerender } = render(
+      <Dialog title="Z" open onClose={() => undefined}>
+        <select aria-label="primeiro" />
+        <select aria-label="segundo" />
+      </Dialog>,
+    );
+    const segundo = screen.getByLabelText("segundo");
+    segundo.focus();
+    for (let i = 0; i < 3; i++) {
+      rerender(
+        <Dialog title="Z" open onClose={() => undefined}>
+          <select aria-label="primeiro" />
+          <select aria-label="segundo" />
+        </Dialog>,
+      );
+    }
+    expect(document.activeElement).toBe(segundo);
+  });
+
+  it("Esc chama o onClose mais recente", () => {
+    const first = vi.fn();
+    const latest = vi.fn();
+    const { rerender } = render(<Dialog title="W" open onClose={first}><input aria-label="w" /></Dialog>);
+    rerender(<Dialog title="W" open onClose={latest}><input aria-label="w" /></Dialog>);
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(latest).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
   });
 });
 

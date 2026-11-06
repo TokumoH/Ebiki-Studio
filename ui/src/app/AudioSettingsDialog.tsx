@@ -5,18 +5,29 @@ import { errorMessage } from "../core/session";
 import { notify } from "../core/toasts";
 import { Button, Dialog, Field } from "../shared/components";
 
+/** Opção para um dispositivo configurado que não está mais conectado (o seletor não perde a escolha). */
+function missing(list: { id: string }[] | undefined, id: string) {
+  if (!id || !list || list.some((d) => d.id === id)) return null;
+  return <option value={id}>{id} (desconectado)</option>;
+}
+
 export function AudioSettingsDialog({ open, onClose, onChanged }: { open: boolean; onClose: () => void; onChanged: (s: AudioStatus) => void }) {
   const [devices, setDevices] = useState<DeviceList | null>(null);
   const [out, setOut] = useState<string>("");
   const [inp, setInp] = useState<string>("");
   const [buffer, setBuffer] = useState<number>(256);
   const [busy, setBusy] = useState(false);
+  // ao abrir: lista os dispositivos e mostra a configuração ATUAL ("" = padrão do sistema / nenhuma)
   useEffect(() => {
     if (!open) return;
-    void api.audioDevices().then((d) => {
-      setDevices(d);
-      setOut((o) => o || d.outputs.find((x) => x.isDefault)?.id || "");
-    }).catch((e) => notify.error(errorMessage(e)));
+    void Promise.all([api.audioDevices(), api.audioStatus()])
+      .then(([d, s]) => {
+        setDevices(d);
+        setOut(s.outputId ?? "");
+        setInp(s.inputId ?? "");
+        if (s.bufferSize) setBuffer(s.bufferSize);
+      })
+      .catch((e) => notify.error(errorMessage(e)));
   }, [open]);
   const apply = async () => {
     setBusy(true);
@@ -51,6 +62,7 @@ export function AudioSettingsDialog({ open, onClose, onChanged }: { open: boolea
       <Field label="Saída">
         <select className="select" value={out} onChange={(e) => setOut(e.target.value)} aria-label="Dispositivo de saída">
           <option value="">Padrão do sistema</option>
+          {missing(devices?.outputs, out)}
           {devices?.outputs.map((d) => (
             <option key={d.id} value={d.id}>
               {d.name}
@@ -62,6 +74,7 @@ export function AudioSettingsDialog({ open, onClose, onChanged }: { open: boolea
       <Field label="Entrada (gravação)">
         <select className="select" value={inp} onChange={(e) => setInp(e.target.value)} aria-label="Dispositivo de entrada">
           <option value="">Nenhuma</option>
+          {missing(devices?.inputs, inp)}
           {devices?.inputs.map((d) => (
             <option key={d.id} value={d.id}>
               {d.name}

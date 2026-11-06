@@ -12,6 +12,9 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
   alterações feitas desde o último autosave podiam se perder. Se salvar falhar, nada é instalado.
   *Quem atualizar a partir da 0.2.0 ainda usa o fluxo antigo: salve o projeto antes de instalar.*
 - Mostrador de andamento não quebra mais em duas linhas em janelas estreitas.
+- **Configurações de áudio**: não era possível escolher saída nem entrada — a cada atualização dos
+  medidores (~30 por segundo) o diálogo devolvia o foco ao primeiro campo e fechava a lista aberta.
+  Afetava todos os diálogos. O diálogo também passa a abrir com os dispositivos e o buffer atuais.
 
 ## [0.2.0] - 2026-11-06
 

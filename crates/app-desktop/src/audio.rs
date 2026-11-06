@@ -13,6 +13,10 @@ pub struct AudioStatus {
     pub mode: String,
     pub output_name: Option<String>,
     pub input_name: Option<String>,
+    /// Dispositivos **pedidos** (ids de `audio_devices`); `None` = padrão do sistema / sem entrada.
+    /// A UI usa para mostrar a escolha atual nos seletores.
+    pub output_id: Option<String>,
+    pub input_id: Option<String>,
     pub sample_rate: u32,
     pub buffer_size: Option<u32>,
     pub input_channels: u16,
@@ -56,6 +60,8 @@ impl AudioRuntime {
                     mode: "device".into(),
                     output_name: Some(info.output_name.clone()),
                     input_name: info.input_name.clone(),
+                    output_id: request.output_id.clone(),
+                    input_id: request.input_id.clone(),
                     sample_rate: info.sample_rate,
                     buffer_size: info.buffer_size,
                     input_channels: info.in_channels,
@@ -74,6 +80,8 @@ impl AudioRuntime {
                 let null = NullDevice::start(core, 512, 0, None);
                 self.status = AudioStatus {
                     mode: "null".into(),
+                    output_id: request.output_id.clone(),
+                    input_id: request.input_id.clone(),
                     sample_rate: request.sample_rate,
                     buffer_size: Some(512),
                     error: Some(e.to_string()),

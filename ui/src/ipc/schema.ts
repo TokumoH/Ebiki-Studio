@@ -193,6 +193,8 @@ export const AudioStatus = z.object({
   mode: z.string(),
   outputName: z.string().nullable(),
   inputName: z.string().nullable(),
+  outputId: z.string().nullable().default(null),
+  inputId: z.string().nullable().default(null),
   sampleRate: z.number().int(),
   bufferSize: z.number().int().nullable(),
   inputChannels: z.number().int(),
