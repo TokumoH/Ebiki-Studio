@@ -17,7 +17,8 @@
         "height": 900,
         "minWidth": 1024,
         "minHeight": 640,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "backgroundColor": "#14121d"
       }
     ],
     "security": {
@@ -42,6 +43,43 @@
     "copyright": "© 2026 TokumoH — código sob GPL-3.0-or-later; nome e logo reservados",
     "license": "GPL-3.0-or-later",
     "licenseFile": "../../LICENSE",
-    "homepage": "https://github.com/TokumoH/Ebiki-Studio"
+    "homepage": "https://github.com/TokumoH/Ebiki-Studio",
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "headerImage": "installer/nsis-header.bmp",
+        "sidebarImage": "installer/nsis-sidebar.bmp",
+        "languages": [
+          "PortugueseBR",
+          "English"
+        ],
+        "displayLanguageSelector": false
+      },
+      "wix": {
+        "language": [
+          "pt-BR",
+          "en-US"
+        ],
+        "bannerPath": "installer/wix-banner.bmp",
+        "dialogImagePath": "installer/wix-dialog.bmp"
+      }
+    },
+    "macOS": {
+      "dmg": {
+        "background": "installer/dmg-background.png",
+        "windowSize": {
+          "width": 660,
+          "height": 400
+        },
+        "appPosition": {
+          "x": 180,
+          "y": 185
+        },
+        "applicationFolderPosition": {
+          "x": 480,
+          "y": 185
+        }
+      }
+    }
   }
 }
