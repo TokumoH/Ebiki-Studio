@@ -37,9 +37,27 @@ npm test
 
 ## 2. Primeiros passos
 
+Ao abrir, a **tela de carregamento** mostra a marca Ebiki e o progresso. No primeiro projeto, um
+**tutorial de início** (7 passos, pulável com Esc) destaca as áreas principais; refaça-o em
+*Ajuda › Tutorial de início*.
+
+### Menu principal e ajuda
+
+O menu fixo no topo reúne todas as ações: **Arquivo, Editar, Exibir, Transporte, Faixa, Clipe,
+Ferramentas, Janela e Ajuda**. Os atalhos aparecem ao lado de cada item.
+
+- **Alt** ou **F10** levam o teclado ao menu; ←/→ trocam de menu, ↑/↓ percorrem, Enter ativa, Esc fecha.
+- **Exibir**: tema escuro/claro, zoom da linha do tempo (Ctrl+= / Ctrl+- / Ctrl+0), painéis,
+  espectrograma da faixa, barra de status, tela cheia (F11) e *Restaurar layout padrão*.
+- **Janela**: abre, fecha ou traz qualquer painel para a frente. **Ferramentas**: atalhos para os painéis
+  de análise, afinação, harmonia, bases, partitura, letra e tempo.
+- **F1** abre a **Central de ajuda**: busca sem acentos por tópicos, lista de atalhos e o botão
+  *Mostrar no app*, que leva o tutorial até a área do tópico.
+
+
 1. **Tela inicial** → *Novo projeto*: escolha nome, pasta, taxa de amostragem (padrão 48 kHz) e
    resolução (padrão 24 bits). O projeto é uma pasta `Nome.ebiki` com tudo dentro (portátil).
-2. **Configurações de áudio** (⚙ na barra superior): escolha saída, entrada e buffer.
+2. **Configurações de áudio** (*Arquivo › Configurações de áudio…*): escolha saída, entrada e buffer.
    - Buffers de 64–128 amostras dão a menor latência (gravação); 512+ para mixagens pesadas.
    - Sem dispositivo disponível, o app continua funcionando em modo silencioso (barra de status avisa).
 3. **Importar áudio** (*Importar* ou Ctrl+I, ou arraste arquivos para a janela): WAV, AIFF, FLAC,
@@ -142,7 +160,7 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
   projeto você pode **recuperar** o autosave mais novo ou abrir a versão salva.
 - Desfazer/refazer ilimitado durante a sessão (Ctrl+Z / Ctrl+Shift+Z).
 
-## 11. Atalhos (editáveis em ⌨)
+## 11. Atalhos (editáveis em *Editar › Atalhos de teclado…*, Ctrl+/)
 
 | Ação | Atalho |
 |---|---|
@@ -159,6 +177,11 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 | Início | Home |
 | Dividir clipe no cursor | S |
 | Menu do clipe selecionado | Menu ou Shift+F10 |
+| Central de ajuda | F1 |
+| Atalhos de teclado | Ctrl+/ |
+| Aproximar / afastar / zoom padrão | Ctrl+= / Ctrl+- / Ctrl+0 |
+| Tela cheia | F11 |
+| Menu principal | Alt ou F10 |
 
 ## 12. Limitações conhecidas
 

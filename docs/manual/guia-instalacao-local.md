@@ -107,7 +107,7 @@ Os instaladores **não são assinados**:
 ## 5. Roteiro de teste (15 minutos)
 
 1. **Novo projeto** → nome, pasta, 48 kHz / 24 bits → *Criar projeto*.
-2. **⚙ Áudio** (barra superior): escolha saída, entrada e buffer (128 para gravar).
+2. **Arquivo › Configurações de áudio…**: escolha saída, entrada e buffer (128 para gravar).
 3. **Importar** (Ctrl+I ou arrastar arquivos) um WAV/MP3 → aparece uma faixa com a forma de onda.
 4. **Espaço** toca/para. Clique na régua para posicionar. **≋** na faixa alterna para espectrograma.
 5. **Mixer**: mova o fader e o pan; *+ efeito* → Compressor/EQ/Reverb; crie um **Bus** e um envio.
@@ -161,9 +161,9 @@ npm --prefix ui run e2e
 | `error: linker 'link.exe' not found` (Windows) | Instale o C++ Build Tools (seção 1) e abra um terminal novo |
 | `webkit2gtk-4.1 not found` (Linux) | Instale os pacotes da seção 1 |
 | Porta 5173 ocupada | Feche o outro `npm run dev/ui` ou rode `npx kill-port 5173` |
-| "Sem dispositivo de áudio" | Conecte e selecione a interface em ⚙ Áudio; no Linux verifique PipeWire/ALSA (`aplay -l`) |
+| "Sem dispositivo de áudio" | Conecte e selecione a interface em *Arquivo › Configurações de áudio*; no Linux verifique PipeWire/ALSA (`aplay -l`) |
 | Gravação muda/silenciosa no macOS | Ajustes do Sistema → Privacidade → **Microfone** → ative o Ebiki Studio |
-| Estalos no áudio | Aumente o buffer em ⚙ Áudio (256–512) |
+| Estalos no áudio | Aumente o buffer em *Arquivo › Configurações de áudio* (256–512) |
 | Compilação lenta/sem espaço | Normal na 1ª vez; `cargo clean` libera espaço depois |
 
 ## 8. Onde ficam os dados

@@ -34,5 +34,6 @@ Gerado por `scripts/adr_index.py`.
 | [0030](0030-nome-do-produto-ebiki-studio.md) | Nome do produto — Ebiki Studio | Aceita |
 | [0031](0031-edicao-nao-destrutiva-de-clipes.md) | Edição de clipes não destrutiva (janela + processamento na engine) e espectrograma como fabricação pura | Aceita |
 | [0032](0032-compensacao-de-latencia-por-leitura-antecipada.md) | Compensação de latência de efeitos por leitura antecipada dos clipes | Aceita |
+| [0033](0033-menu-fixo-ajuda-tutorial-e-identidade-dos-instaladores.md) | Menu fixo, central de ajuda, tutorial e identidade visual dos instaladores | Aceita |
 
 Números não usados: 0015, 0024 (reservados durante o desenvolvimento em paralelo e nunca publicados).

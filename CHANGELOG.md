@@ -3,6 +3,32 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [0.2.0] - 2026-11-06
+
+Identidade Ebiki em todo o app e nos instaladores, com navegação e ajuda novas.
+
+### Novidades
+
+- **Menu fixo no topo** (estilo Photoshop / VS Code): Arquivo, Editar, Exibir, Transporte, Faixa,
+  Clipe, Ferramentas, Janela e Ajuda, com atalhos visíveis e navegação completa por teclado (Alt ou F10).
+- **Central de ajuda (F1)**: tópicos práticos com busca, lista de atalhos e *Mostrar no app*.
+- **Tutorial de início** pulável em 7 passos, que destaca as áreas reais da interface; refaça em
+  *Ajuda › Tutorial de início*.
+- **Tela de carregamento** com a marca Ebiki e diálogo *Sobre*.
+- **Exibir**: zoom da linha do tempo (Ctrl+= / Ctrl+- / Ctrl+0), tela cheia (F11), barra de status
+  alternável, espectrograma da faixa e *Restaurar layout padrão*.
+- **Instaladores com a cara do Ebiki**: telas próprias no instalador do Windows (NSIS e MSI), em
+  português e inglês, e fundo personalizado no DMG do macOS.
+
+### Downloads
+
+Mesmos formatos da 0.1.0 (Windows `.exe`/`.msi`, macOS `.dmg` universal, Linux `.deb`/`.rpm`/`.AppImage`),
+com `SHA256SUMS.txt`. Instaladores não assinados: veja as instruções da
+[0.1.0](https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.1.0).
+
+Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
+Licença: GPL-3.0-or-later (nome e logo reservados).
+
 ## [0.1.0] - 2026-11-06
 
 Primeira versão pública. Estúdio musical completo para Windows, macOS e Linux — **offline, sem
@@ -55,7 +81,8 @@ Confira a integridade com `SHA256SUMS.txt` (ex.: `sha256sum -c SHA256SUMS.txt --
 - Exportação AAC indisponível; sem plugins VST3/CLAP e sem automação (arquitetura preparada).
 - Nenhuma base de áudio CC0 empacotada ainda.
 
-Manual: [docs/manual/README.md](docs/manual/README.md) · Privacidade: [PRIVACY.md](PRIVACY.md) ·
+Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
 Licença: GPL-3.0-or-later (nome e logo reservados).
 
+[0.2.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.1.0
