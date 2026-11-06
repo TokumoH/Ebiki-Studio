@@ -127,6 +127,15 @@ Os instaladores **não são assinados**:
 
 ## 6. Testes automatizados
 
+Tudo o que a CI do GitHub verifica, rodando no seu computador (útil sem minutos do Actions):
+
+```bash
+scripts/ci-local.sh
+```
+
+(`scripts/ci-local.sh rust` ou `scripts/ci-local.sh ui` para só uma parte; no Windows use o Git Bash.)
+Ou, mais rápido:
+
 ```bash
 npm test
 ```

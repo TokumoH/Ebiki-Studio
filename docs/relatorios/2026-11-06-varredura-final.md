@@ -102,3 +102,14 @@ smoke test do app desktop sob Xvfb ok (`img/2026-11-06-smoke-desktop.png`).
 - Áudio decodificado em memória (≈ 1 h estéreo por 8 GB).
 - AAC indisponível na exportação; sem VST3/CLAP e automação (arquitetura preparada).
 - Logo: a fonte é um PNG de 98×210 px; uma exportação vetorial do autor daria ícones mais nítidos.
+
+## 6. CI e minutos do GitHub Actions
+
+Os minutos do Actions da conta acabaram (execuções 30 e 31 falharam sem iniciar runner). Medidas:
+- `push` roda só Linux e ignora mudanças de documentação; Windows/macOS rodam em pull request ou
+  manualmente ("Run workflow").
+- `scripts/ci-local.sh` reproduz todas as etapas da CI localmente. Execução final aqui (Linux):
+  fmt, clippy, 630 testes Rust, desempenho DSP em release, contrato IPC, tsc, 141 testes de UI,
+  build e 24 E2E — **tudo verde**. Pendente: confirmação em Windows/macOS reais quando houver minutos
+  (a última execução nesses sistemas, a 29, teve Windows verde; o macOS só falhou no teste de
+  gravação dependente de relógio, já corrigido).

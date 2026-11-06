@@ -1,9 +1,14 @@
 name: CI
 
+# Economia de minutos (Actions): push roda só Linux e ignora mudanças de documentação;
+# Windows/macOS (macOS conta 10×, Windows 2×) rodam em pull request ou manualmente
+# ("Run workflow" na aba Actions). Verificação local equivalente: scripts/ci-local.sh
 on:
   push:
     branches: [branchTrabalho, main]
+    paths-ignore: ["docs/**", "**/*.md", "assets/brand/**"]
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -19,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: ${{ fromJSON(github.event_name == 'push' && '["ubuntu-latest"]' || '["ubuntu-latest","windows-latest","macos-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
