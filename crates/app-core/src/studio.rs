@@ -102,6 +102,8 @@ pub struct Studio {
     recording: Option<ActiveRecording>,
     /// Afinador de entrada ativo (Fase 8).
     pub(crate) tuner: Option<crate::tuning_service::TunerSession>,
+    /// "Ouvir entrada" (configuração do dispositivo, não do projeto).
+    pub(crate) device_monitor: Option<crate::device_monitor::DeviceMonitorView>,
 }
 
 /// Nome de pasta seguro a partir do nome do projeto.
@@ -139,6 +141,7 @@ impl Studio {
             meters: MeterMap::default(),
             recording: None,
             tuner: None,
+            device_monitor: None,
         }
     }
 
@@ -153,6 +156,7 @@ impl Studio {
         // a derivação do afinador pertencia à engine anterior
         self.tuner = None;
         self.sent_effects.clear();
+        self.reapply_device_monitor();
         self.sync()
     }
 
@@ -742,6 +746,7 @@ impl Studio {
                     peak: get(*s),
                 })
                 .collect(),
+            inputs: snap.input_peaks.clone(),
             xruns: snap.xruns,
             record_overflow: snap.record_overflow,
         }

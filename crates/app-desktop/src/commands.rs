@@ -55,6 +55,23 @@ pub struct AudioConfigReq {
     pub buffer_size: Option<u32>,
 }
 
+/// "Ouvir entrada": configuração atual (`null` = desligado).
+#[tauri::command]
+pub fn audio_monitor_get(
+    state: State<AppState>,
+) -> Option<app_core::device_monitor::DeviceMonitorView> {
+    lock(&state.studio).device_monitor()
+}
+
+/// Liga (rota + ganho em dB) ou desliga (`null`) o "Ouvir entrada".
+#[tauri::command]
+pub fn audio_monitor_set(
+    state: State<AppState>,
+    req: Option<app_core::device_monitor::DeviceMonitorView>,
+) -> Res<Option<app_core::device_monitor::DeviceMonitorView>> {
+    lock(&state.studio).set_device_monitor(req)
+}
+
 #[tauri::command]
 pub fn audio_configure(state: State<AppState>, req: AudioConfigReq) -> Res<AudioStatus> {
     if let Some(b) = req.buffer_size {

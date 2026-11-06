@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { api } from "../../ipc/api";
-import type { AudioStatus, Track } from "../../ipc/types";
+import type { Track } from "../../ipc/types";
+import { refreshAudio, useAudio } from "../../core/audio";
+import { InputSection } from "./InputSection";
+import { parseRouteKey, routeKey, routeOptions } from "./inputRoutes";
 import { run, useSession } from "../../core/session";
 import { Button, Field, Toggle } from "../../shared/components";
 import "./recording.css";
@@ -8,24 +11,16 @@ import "./recording.css";
 const BAR = 960 * 4;
 
 function InputSelect({ track, channels }: { track: Track; channels: number }) {
-  const input = track.recording.input;
-  const value = input ? `${input.left}:${input.right ?? ""}` : "";
-  const options: { v: string; label: string }[] = [{ v: "", label: "Sem entrada" }];
-  for (let c = 0; c < Math.max(channels, 2); c++) options.push({ v: `${c}:`, label: `Entrada ${c + 1} (mono)` });
-  for (let c = 0; c + 1 < Math.max(channels, 2); c += 2) options.push({ v: `${c}:${c + 1}`, label: `Entradas ${c + 1}/${c + 2} (estéreo)` });
   return (
     <select
       className="select"
       aria-label={`Entrada de ${track.name}`}
-      value={value}
-      onChange={(e) => {
-        const [l, r] = e.target.value.split(":");
-        const inp = e.target.value ? { left: Number(l), right: r ? Number(r) : null } : null;
-        void run(() => api.recordingTrack({ trackId: track.id, input: inp }));
-      }}
+      value={routeKey(track.recording.input)}
+      onChange={(e) => void run(() => api.recordingTrack({ trackId: track.id, input: parseRouteKey(e.target.value) }))}
     >
-      {options.map((o) => (
-        <option key={o.v} value={o.v}>
+      <option value="">Sem entrada</option>
+      {routeOptions(channels).map((o) => (
+        <option key={o.value} value={o.value}>
           {o.label}
         </option>
       ))}
@@ -36,19 +31,21 @@ function InputSelect({ track, channels }: { track: Track; channels: number }) {
 /** Configuração de gravação: entradas, monitoração, takes, metrônomo, punch e latência. */
 export function RecordingPanel() {
   const session = useSession((s) => s.session);
-  const [audio, setAudio] = useState<AudioStatus | null>(null);
+  const audio = useAudio((a) => a.status);
   const [punch, setPunch] = useState<[number, number]>([1, 2]);
   useEffect(() => {
-    void api.audioStatus().then(setAudio).catch(() => undefined);
+    void refreshAudio().catch(() => undefined);
   }, []);
   if (!session) return null;
   const rec = session.recording;
-  const channels = audio?.inputChannels ?? 0;
+  const channels = audio?.inputName ? (audio.inputChannels ?? 0) : 0;
   return (
     <div className="recording">
+      <div className="recording-main">
+      <InputSection />
       <section>
         <h3>Faixas</h3>
-        {channels === 0 ? <p className="hint">Nenhuma entrada de áudio ativa. Escolha um dispositivo de entrada em Configurações de áudio.</p> : null}
+        {channels === 0 ? <p className="hint">Nenhuma entrada de áudio ativa: escolha o dispositivo em Entrada de áudio, acima.</p> : null}
         <table>
           <thead>
             <tr>
@@ -96,6 +93,7 @@ export function RecordingPanel() {
           </tbody>
         </table>
       </section>
+      </div>
       <section className="recording-side">
         <h3>Metrônomo</h3>
         <div className="row">

@@ -59,6 +59,13 @@ fn process_does_not_allocate() {
     h.play().unwrap();
     // derivação de entrada do afinador ligada (fila menor que o total: exercita o descarte)
     let mut tap = h.attach_input_tap(1, 48_000).unwrap();
+    // "Ouvir entrada" ligado e medidores de entrada: também sem alocar
+    h.set_device_monitor(Some(DeviceMonitor {
+        left: 0,
+        right: Some(1),
+        gain: 0.5,
+    }))
+    .unwrap();
     let mut out = vec![0.0f32; 2048 * 2];
     let input = vec![0.1f32; 2048 * 2];
     // a primeira chamada troca o grafo: o grafo antigo vai para a fila de lixo, sem liberar
@@ -78,6 +85,7 @@ fn process_does_not_allocate() {
     assert!(tapped.iter().all(|x| (*x - 0.1).abs() < 1e-9));
     // troca/desliga a derivação também sem alocar no núcleo
     h.detach_input_tap().unwrap();
+    h.set_device_monitor(None).unwrap();
     reset_violation_count();
     assert_no_alloc(|| {
         core.process(&mut out, 2, &input, 2);

@@ -1,7 +1,7 @@
 //! Lado de controle da engine.
 
 use crate::core::{EngineCore, Garbage, Message};
-use crate::graph::RenderGraph;
+use crate::graph::{DeviceMonitor, RenderGraph};
 use crate::input_tap::{input_tap, InputTapReader};
 use crate::recorder::RecorderRt;
 use crate::telemetry::{Telemetry, TelemetrySnapshot};
@@ -120,6 +120,11 @@ impl EngineHandle {
 
     pub fn detach_input_tap(&mut self) -> Result<(), EngineError> {
         self.send(Message::DetachInputTap)
+    }
+
+    /// Liga/desliga o "Ouvir entrada" (monitor direto do dispositivo, fora do master).
+    pub fn set_device_monitor(&mut self, m: Option<DeviceMonitor>) -> Result<(), EngineError> {
+        self.send(Message::SetDeviceMonitor(m))
     }
 
     /// Libera objetos devolvidos pelo núcleo. Retorna quantos foram liberados.

@@ -13,7 +13,14 @@ pub struct Telemetry {
     record_overflow: AtomicU64,
     /// Picos por canal (L, R) como bits de f32 positivos (ordem de u32 = ordem de f32 ≥ 0).
     peaks: Vec<[AtomicU32; 2]>,
+    /// Picos por canal de **entrada** do dispositivo (mesma codificação).
+    input_peaks: [AtomicU32; MAX_INPUT_METERS],
+    /// Canais de entrada do último callback (até `MAX_INPUT_METERS`).
+    input_channels: AtomicU8,
 }
+
+/// Canais de entrada com medidor.
+pub const MAX_INPUT_METERS: usize = 8;
 
 /// Cópia dos valores para a UI.
 #[derive(Debug, Clone, PartialEq)]
@@ -25,6 +32,8 @@ pub struct TelemetrySnapshot {
     pub record_overflow: u64,
     /// Picos desde a última leitura, indexados pelo `meter_slot` (0 = master).
     pub peaks: Vec<[f32; 2]>,
+    /// Picos por canal de entrada desde a última leitura (vazio sem dispositivo de entrada).
+    pub input_peaks: Vec<f32>,
 }
 
 impl Default for Telemetry {
@@ -38,6 +47,8 @@ impl Default for Telemetry {
             peaks: (0..MAX_STRIPS)
                 .map(|_| [AtomicU32::new(0), AtomicU32::new(0)])
                 .collect(),
+            input_peaks: std::array::from_fn(|_| AtomicU32::new(0)),
+            input_channels: AtomicU8::new(0),
         }
     }
 }
@@ -72,6 +83,18 @@ impl Telemetry {
         }
     }
 
+    /// Registra o pico do canal de entrada `ch` (ignora canais além de `MAX_INPUT_METERS`).
+    pub(crate) fn push_input_peak(&self, ch: usize, v: f32) {
+        if let Some(p) = self.input_peaks.get(ch) {
+            p.fetch_max(v.abs().min(f32::MAX).to_bits(), Ordering::Relaxed);
+        }
+    }
+
+    pub(crate) fn set_input_channels(&self, n: usize) {
+        self.input_channels
+            .store(n.min(MAX_INPUT_METERS) as u8, Ordering::Relaxed);
+    }
+
     pub fn position(&self) -> u64 {
         self.position.load(Ordering::Relaxed)
     }
@@ -97,6 +120,11 @@ impl Telemetry {
                 ]
             })
             .collect();
+        let in_n = self.input_channels.load(Ordering::Relaxed) as usize;
+        let input_peaks = self.input_peaks[..in_n]
+            .iter()
+            .map(|p| f32::from_bits(p.swap(0, Ordering::Relaxed)))
+            .collect();
         let rs = self.record_start.load(Ordering::Acquire);
         TelemetrySnapshot {
             position: self.position(),
@@ -105,6 +133,7 @@ impl Telemetry {
             xruns: self.xruns.load(Ordering::Relaxed),
             record_overflow: self.record_overflow.load(Ordering::Relaxed),
             peaks,
+            input_peaks,
         }
     }
 }

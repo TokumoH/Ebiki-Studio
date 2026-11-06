@@ -5,6 +5,12 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 
 ## [Não lançado]
 
+### Novidades
+
+- **Entrada de áudio no painel Gravação**: escolha do dispositivo de entrada, medidores de nível por
+  canal e **🎧 Ouvir entrada** (ouve o dispositivo direto na saída, com volume próprio, sem armar
+  faixa; não entra na gravação nem na exportação).
+
 ### Corrigido
 
 - **Atualização no Windows**: o projeto agora é salvo (e a reprodução ou gravação é parada) **antes**

@@ -158,6 +158,8 @@ export const MetersView = z.object({
   master: z.tuple([z.number(), z.number()]),
   tracks: z.array(z.object({ id: Id, peak: z.tuple([z.number(), z.number()]) })),
   buses: z.array(z.object({ id: Id, peak: z.tuple([z.number(), z.number()]) })),
+  /** Picos por canal de entrada do dispositivo (vazio sem entrada). */
+  inputs: z.array(z.number()).default([]),
   xruns: z.number().int(),
   recordOverflow: z.number().int(),
 });
@@ -201,6 +203,8 @@ export const AudioStatus = z.object({
   estimatedLatencyMs: z.number().nullable(),
   error: z.string().nullable(),
 });
+/** "Ouvir entrada": canal (0-based) ou par estéreo, ganho em dB. */
+export const DeviceMonitor = z.object({ left: z.number().int().min(0), right: z.number().int().min(0).nullable(), gainDb: z.number() });
 export const ExportFormat = z.enum(["wav", "aiff", "flac", "mp3", "ogg", "aac"]);
 export const ExportSettings = z.object({
   format: ExportFormat,

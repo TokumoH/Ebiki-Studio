@@ -99,12 +99,18 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
 
 ## 4. Gravação
 
-1. No painel **Gravação**, escolha a entrada de cada faixa (mono ou par estéreo) e a monitoração.
-2. Arme a faixa (⏺) e pressione **R** (ou o botão de gravar).
-3. **Metrônomo**: liga/desliga (C), volume, subdivisão, contagem (0, 1, 2 ou 4 compassos).
-4. **Punch in/out**: defina os compassos; só o trecho entre eles é gravado.
-5. **Takes**: cada passada vira um take; escolha o take ativo na lista da faixa.
-6. **Compensação de latência**: use a estimativa (buffer de entrada + saída) ou meça e ajuste.
+1. No painel **Gravação**, bloco **Entrada de áudio**: escolha o dispositivo de entrada (a saída e o
+   buffer continuam em *Arquivo › Configurações de áudio*). Os medidores mostram o nível de cada canal.
+   - **🎧 Ouvir entrada** toca o dispositivo direto na saída, com volume próprio e sem armar faixa —
+     útil para testar o microfone e ajustar o ganho da interface. Não entra na gravação nem na
+     exportação. Começa desligado a cada abertura do app; use fones para evitar microfonia.
+2. Escolha a entrada de cada faixa (mono ou par estéreo) e a monitoração da faixa
+   (desligada, quando armada ou sempre).
+3. Arme a faixa (⏺) e pressione **R** (ou o botão de gravar).
+4. **Metrônomo**: liga/desliga (C), volume, subdivisão, contagem (0, 1, 2 ou 4 compassos).
+5. **Punch in/out**: defina os compassos; só o trecho entre eles é gravado.
+6. **Takes**: cada passada vira um take; escolha o take ativo na lista da faixa.
+7. **Compensação de latência**: use a estimativa (buffer de entrada + saída) ou meça e ajuste.
 
 ## 5. Mixagem
 

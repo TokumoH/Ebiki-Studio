@@ -2,7 +2,7 @@
 import { z } from "zod";
 import * as S from "./schema";
 import { transport } from "./transport";
-import type { ExportSettings, StripEdit, StripTarget, InputAssignment, MonitorMode, Metronome } from "./types";
+import type { DeviceMonitor, ExportSettings, StripEdit, StripTarget, InputAssignment, MonitorMode, Metronome } from "./types";
 import type { Granularity, LyricUnit, LyricsFileFormat, NoteEdit, ScaleCorrection, ScoreEdit, ScoreExportFormat, ScoreTemplate, SyllableRef, VoiceEdit, VoiceLoc } from "./types";
 
 export class ApiFailure extends Error {
@@ -39,6 +39,8 @@ export const api = {
   // áudio
   audioDevices: () => call(S.DeviceList, "audio_devices"),
   audioStatus: () => call(S.AudioStatus, "audio_status"),
+  audioMonitorGet: () => call(S.DeviceMonitor.nullable(), "audio_monitor_get"),
+  audioMonitorSet: (req: DeviceMonitor | null) => call(S.DeviceMonitor.nullable(), "audio_monitor_set", { req }),
   audioConfigure: (req: { outputId: string | null; inputId: string | null; bufferSize: number | null }) => call(S.AudioStatus, "audio_configure", { req }),
   // projeto
   projectCreate: (req: { dir: string; name: string; sampleRate: number; bitDepth: number }) => call(Session, "project_create", { req }),

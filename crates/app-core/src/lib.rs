@@ -23,3 +23,5 @@ pub mod tuning_service;
 pub mod composition;
 // Fase 3 — edição/pós-produção (cortar, dividir, fades, normalizar, espectrograma).
 pub mod edit_service;
+// Entrada ao vivo: "Ouvir entrada" (monitor direto do dispositivo).
+pub mod device_monitor;

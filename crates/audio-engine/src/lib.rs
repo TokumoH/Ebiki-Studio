@@ -28,7 +28,7 @@ pub mod device;
 pub use crate::core::EngineCore;
 pub use graph::*;
 pub use handle::{create_engine, EngineConfig, EngineHandle};
-pub use telemetry::{Telemetry, TelemetrySnapshot};
+pub use telemetry::{Telemetry, TelemetrySnapshot, MAX_INPUT_METERS};
 pub use transport::TransportState;
 
 /// Maior bloco processado de uma vez (callbacks maiores são divididos).

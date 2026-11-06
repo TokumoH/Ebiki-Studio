@@ -283,6 +283,8 @@ pub struct MetersView {
     pub master: [f32; 2],
     pub tracks: Vec<MeterView>,
     pub buses: Vec<MeterView>,
+    /// Picos por canal de entrada do dispositivo (vazio sem entrada).
+    pub inputs: Vec<f32>,
     pub xruns: u64,
     pub record_overflow: u64,
 }

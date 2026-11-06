@@ -29,6 +29,8 @@ pub enum Message {
     /// Liga a derivação de entrada (afinador). Substitui a anterior.
     AttachInputTap(Box<InputTapRt>),
     DetachInputTap,
+    /// "Ouvir entrada"; `None` desliga (com rampa até o silêncio).
+    SetDeviceMonitor(Option<DeviceMonitor>),
 }
 
 /// Objetos devolvidos para liberação fora do tempo real.
@@ -56,6 +58,9 @@ pub struct EngineCore {
     recorder: Option<Box<RecorderRt>>,
     recording_started: bool,
     input_tap: Option<Box<InputTapRt>>,
+    /// Rota do monitor de dispositivo e ganho atual (rampa por amostra até `monitor.gain`).
+    monitor: Option<DeviceMonitor>,
+    monitor_gain: f32,
     master_l: Vec<f32>,
     master_r: Vec<f32>,
     click_l: Vec<f32>,
@@ -89,6 +94,8 @@ impl EngineCore {
             recorder: None,
             recording_started: false,
             input_tap: None,
+            monitor: None,
+            monitor_gain: 0.0,
             master_l: vec![0.0; MAX_BLOCK],
             master_r: vec![0.0; MAX_BLOCK],
             click_l: vec![0.0; MAX_BLOCK],
@@ -227,6 +234,15 @@ impl EngineCore {
                         self.discard(Garbage::InputTap(old));
                     }
                 }
+                Message::SetDeviceMonitor(m) => match m {
+                    Some(m) => self.monitor = Some(m),
+                    // mantém a rota para a rampa de saída chegar a zero sem estalo
+                    None => {
+                        if let Some(cur) = self.monitor.as_mut() {
+                            cur.gain = 0.0;
+                        }
+                    }
+                },
             }
         }
     }
@@ -269,6 +285,7 @@ impl EngineCore {
                 tap.capture(input, in_channels, input.len() / in_channels);
             }
         }
+        self.meter_input(input, in_channels);
         if out_channels == 0 {
             return;
         }
@@ -299,7 +316,79 @@ impl EngineCore {
             }
             done += n;
         }
+        self.add_device_monitor(output, out_channels, input, in_channels);
         self.telemetry.set_position(self.position);
+    }
+
+    /// Picos por canal de entrada (até `MAX_INPUT_METERS`). Sem alocação.
+    fn meter_input(&self, input: &[f32], in_channels: usize) {
+        self.telemetry.set_input_channels(in_channels);
+        if in_channels == 0 {
+            return;
+        }
+        let metered = in_channels.min(crate::telemetry::MAX_INPUT_METERS);
+        for ch in 0..metered {
+            let mut peak = 0.0f32;
+            for frame in input.chunks_exact(in_channels) {
+                let v = frame[ch];
+                if v.is_finite() {
+                    peak = peak.max(v.abs());
+                }
+            }
+            self.telemetry.push_input_peak(ch, peak);
+        }
+    }
+
+    /// Soma a entrada roteada direto na saída do dispositivo (depois do master: fora da mixagem,
+    /// da gravação e da exportação). Ganho em rampa por amostra para não estalar.
+    fn add_device_monitor(
+        &mut self,
+        output: &mut [f32],
+        out_channels: usize,
+        input: &[f32],
+        in_channels: usize,
+    ) {
+        let Some(m) = self.monitor else {
+            return;
+        };
+        let target = if m.gain.is_finite() {
+            m.gain.clamp(0.0, 4.0)
+        } else {
+            0.0
+        };
+        if self.monitor_gain == 0.0 && target == 0.0 {
+            self.monitor = None; // rampa de saída concluída
+            return;
+        }
+        let right = m.right.unwrap_or(m.left);
+        if in_channels == 0 || m.left >= in_channels || right >= in_channels {
+            return; // rota inválida para este dispositivo: silêncio
+        }
+        // ~5 ms para ir de 0 a 1 a 48 kHz
+        let step = 1.0 / 240.0;
+        let frames = (output.len() / out_channels).min(input.len() / in_channels);
+        for f in 0..frames {
+            let g = self.monitor_gain;
+            self.monitor_gain = if g < target {
+                (g + step).min(target)
+            } else {
+                (g - step).max(target)
+            };
+            let g = self.monitor_gain;
+            let src = &input[f * in_channels..(f + 1) * in_channels];
+            let (l, r) = (src[m.left], src[right]);
+            let (l, r) = (
+                if l.is_finite() { l } else { 0.0 },
+                if r.is_finite() { r } else { 0.0 },
+            );
+            let o = &mut output[f * out_channels..(f + 1) * out_channels];
+            if out_channels == 1 {
+                o[0] += 0.5 * (l + r) * g;
+            } else {
+                o[0] += l * g;
+                o[1] += r * g;
+            }
+        }
     }
 
     /// Processa até MAX_BLOCK quadros para `master_l/r` (inclui o clique).

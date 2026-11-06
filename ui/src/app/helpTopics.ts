@@ -32,7 +32,8 @@ export const HELP_TOPICS: HelpTopic[] = [
     keywords: "gravar take punch metrônomo contagem entrada microfone latência monitorar armar",
     intro: "Cada gravação vira um take novo; nada é sobrescrito.",
     steps: [
-      "Arme a faixa no botão ● do cabeçalho e escolha a entrada no painel Gravação (mono ou estéreo).",
+      "No painel Gravação, escolha o dispositivo em Entrada de áudio e confira o nível nos medidores; 🎧 Ouvir entrada toca o microfone direto na saída (sem gravar).",
+      "Arme a faixa no botão ● do cabeçalho e escolha a entrada dela (mono ou estéreo).",
       "Ligue o metrônomo (C) e, se quiser, a contagem prévia e o punch-in/out no painel Gravação.",
       "Pressione R para gravar e Espaço para parar. Buffer de 64 a 128 amostras dá a menor latência.",
       "Para trocar de take, use a lista de takes da faixa no painel Gravação.",

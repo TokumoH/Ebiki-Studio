@@ -1,7 +1,7 @@
 // Transporte simulado: um núcleo em memória para rodar a UI no navegador (desenvolvimento e E2E).
 // Simula as regras visíveis (histórico, mixer, transporte, medidores); não processa áudio.
 import type { Transport } from "./transport";
-import type { AudioStatus, ChannelStrip, SessionView, StripEdit, StripTarget, Track, TransportView, MetersView } from "./types";
+import type { AudioStatus, ChannelStrip, DeviceMonitor, SessionView, StripEdit, StripTarget, Track, TransportView, MetersView } from "./types";
 import { emptyMusicView, musicHandlers } from "./mockMusic";
 import { clipEditDefaults, editHandlers } from "./mockEdit";
 
@@ -45,11 +45,12 @@ interface State {
   lastGesture: number | null;
   recent: { path: string; name: string; openedAt: number }[];
   audio: AudioStatus;
+  monitor: DeviceMonitor | null;
 }
 
 export function createMockTransport(): Transport {
   const st: State = { session: null, undo: [], redo: [], savedAt: 0, revision: 0, playing: "stopped", frame: 0, lastGesture: null, recent: [],
-    audio: { mode: "null", outputName: "Saída simulada", inputName: null, outputId: null, inputId: null, sampleRate: SR_DEFAULT, bufferSize: 256, inputChannels: 2, estimatedLatencyMs: 10.7, error: null } };
+    audio: { mode: "null", outputName: "Saída simulada", inputName: null, outputId: null, inputId: null, sampleRate: SR_DEFAULT, bufferSize: 256, inputChannels: 2, estimatedLatencyMs: 10.7, error: null }, monitor: null };
   const listeners = new Map<string, Set<(p: unknown) => void>>();
   const emit = (ev: string, p: unknown) => listeners.get(ev)?.forEach((cb) => cb(p));
 
@@ -192,15 +193,26 @@ export function createMockTransport(): Transport {
     };
     const tracks = st.session.tracks.map((t) => ({ id: t.id, peak: [level(t), level(t)] as [number, number] }));
     const m = tracks.reduce((a, t) => Math.max(a, t.peak[0]), 0);
-    const meters: MetersView = { master: [m, m], tracks, buses: st.session.buses.map((b) => ({ id: b.id, peak: [0, 0] })), xruns: 0, recordOverflow: 0 };
+    // entrada simulada: um sinal fraco oscilando no canal 1 quando há dispositivo de entrada
+    const inputs = st.audio.inputId ? [0.2 + 0.15 * Math.abs(Math.sin(Date.now() / 300)), 0.01] : [];
+    const meters: MetersView = { master: [m, m], tracks, buses: st.session.buses.map((b) => ({ id: b.id, peak: [0, 0] })), inputs, xruns: 0, recordOverflow: 0 };
     emit("meters", meters);
   }, 33);
 
   const handlers: Record<string, (a: Record<string, any>) => unknown> = {
     audio_devices: () => ({ host: "Simulado", outputs: [{ id: "sim-out", name: "Saída simulada", isDefault: true }], inputs: [{ id: "sim-in", name: "Entrada simulada", isDefault: true }] }),
     audio_status: () => ({ ...st.audio, sampleRate: sr() }),
+    audio_monitor_get: () => st.monitor,
+    audio_monitor_set: (a) => {
+      const req = a.req as DeviceMonitor | null;
+      const channels = st.audio.inputId ? st.audio.inputChannels : 0;
+      if (req && (req.left >= channels || (req.right !== null && req.right >= channels))) fail("app.input_unavailable", "A entrada escolhida não existe no dispositivo de áudio atual.");
+      st.monitor = req ? { ...req, gainDb: Math.max(-60, Math.min(6, req.gainDb)) } : null;
+      return st.monitor;
+    },
     audio_configure: (a) => {
       const bufferSize = a.req.bufferSize ?? 256;
+      if (!a.req.inputId) st.monitor = null;
       st.audio = { mode: "null", outputName: "Saída simulada", inputName: a.req.inputId ? "Entrada simulada" : null, outputId: a.req.outputId ?? null, inputId: a.req.inputId ?? null, sampleRate: sr(), bufferSize, inputChannels: 2, estimatedLatencyMs: (bufferSize * 2000) / sr(), error: null };
       return st.audio;
     },

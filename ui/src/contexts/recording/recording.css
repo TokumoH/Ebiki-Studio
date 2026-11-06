@@ -5,3 +5,23 @@
 .recording h3 { margin: var(--space-2) 0; font-size: var(--text-md); }
 .recording .hint { color: var(--fg-muted); font-size: var(--text-sm); }
 @media (max-width: 1100px) { .recording { grid-template-columns: minmax(0, 1fr); } }
+.recording-main { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.input-section { border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-3); background: var(--bg-raised); }
+.input-head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
+.input-head h3 { margin-top: 0; }
+.input-section .field { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-sm); color: var(--fg-muted); }
+.input-section .field .select { min-width: 260px; color: var(--fg); }
+.input-body { display: flex; gap: var(--space-5, 24px); flex-wrap: wrap; align-items: flex-start; margin-top: var(--space-2); }
+.input-meters { display: flex; flex-direction: column; gap: 8px; flex: 1 1 300px; min-width: 240px; }
+.input-meter-row { display: grid; grid-template-columns: 76px 1fr 56px; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.input-meter { height: 10px; background: var(--bg-sunken); border-radius: 3px; overflow: hidden; }
+.input-meter-fill { height: 100%; background: var(--meter-low); transition: width 60ms linear; }
+.input-meter-fill.warm { background: var(--meter-mid); }
+.input-meter-fill.hot { background: var(--meter-high); }
+.input-meter-db { color: var(--fg-muted); font-size: var(--text-xs); text-align: right; }
+.input-monitor { flex: 1 1 300px; border-left: 1px solid var(--line); padding-left: var(--space-4); }
+.input-monitor .row { align-items: center; }
+.input-gain { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--fg-muted); margin-bottom: var(--space-2); }
+.input-gain input { width: 160px; accent-color: var(--accent); }
+.input-monitor .hint { max-width: 420px; line-height: 1.5; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .input-meter-fill { transition: none; } }

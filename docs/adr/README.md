@@ -36,5 +36,6 @@ Gerado por `scripts/adr_index.py`.
 | [0032](0032-compensacao-de-latencia-por-leitura-antecipada.md) | Compensação de latência de efeitos por leitura antecipada dos clipes | Aceita |
 | [0033](0033-menu-fixo-ajuda-tutorial-e-identidade-dos-instaladores.md) | Menu fixo, central de ajuda, tutorial e identidade visual dos instaladores | Aceita |
 | [0034](0034-atualizacao-do-app-sob-demanda-e-assinada.md) | Atualização do app sob demanda e assinada | Aceita (revê o item "Auto-update" de *Fora do escopo* nos requisitos) |
+| [0035](0035-ouvir-entrada-fora-do-master.md) | "Ouvir entrada" somado fora do master, com estado de dispositivo na aplicação | Aceita |
 
 Números não usados: 0015, 0024 (reservados durante o desenvolvimento em paralelo e nunca publicados).

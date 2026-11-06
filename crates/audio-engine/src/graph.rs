@@ -245,6 +245,17 @@ pub fn balance_right(pan: f32) -> f32 {
     }
 }
 
+/// "Ouvir entrada": canais do dispositivo tocados direto na saída (sem faixa armada). Fica **fora** do
+/// master: não entra na mixagem, na gravação nem na exportação.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DeviceMonitor {
+    /// Canal de entrada (0-based) do lado esquerdo; `right: None` = mono nos dois lados.
+    pub left: usize,
+    pub right: Option<usize>,
+    /// Ganho linear (0 = mudo).
+    pub gain: f32,
+}
+
 /// Monitoração de entrada numa faixa (canais da entrada; `right` None = mono duplicado).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct InputMonitor {

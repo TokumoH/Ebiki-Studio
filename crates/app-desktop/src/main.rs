@@ -78,6 +78,8 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
         commands::audio_devices,
         commands::audio_status,
         commands::audio_configure,
+        commands::audio_monitor_get,
+        commands::audio_monitor_set,
         commands::project_create,
         commands::project_open,
         commands::project_view,

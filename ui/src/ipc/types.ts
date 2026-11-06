@@ -23,6 +23,7 @@ export type ApiError = z.infer<typeof S.ApiError>;
 export type RecentProject = z.infer<typeof S.RecentProject>;
 export type DeviceList = z.infer<typeof S.DeviceList>;
 export type AudioStatus = z.infer<typeof S.AudioStatus>;
+export type DeviceMonitor = z.infer<typeof S.DeviceMonitor>;
 export type ExportFormat = z.infer<typeof S.ExportFormat>;
 export type ExportSettings = z.infer<typeof S.ExportSettings>;
 export type MixReport = z.infer<typeof S.MixReport>;

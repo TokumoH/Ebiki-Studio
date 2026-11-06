@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../ipc/api";
 import { transport } from "../ipc/transport";
-import type { AudioStatus } from "../ipc/types";
+import { refreshAudio, useAudio } from "../core/audio";
 import { run, useSession } from "../core/session";
 import { useLive } from "../core/live";
 import { useTheme } from "../core/theme";
@@ -61,7 +61,7 @@ export function Workspace() {
   const selectedClipId = useSession((s) => s.selectedClipId);
   const openPanels = useDockState((s) => s.open);
   const spectrum = useClipViewMode((s) => s.spectrum);
-  const [audio, setAudio] = useState<AudioStatus | null>(null);
+  const audio = useAudio((a) => a.status);
   const [dialog, setDialog] = useState<"audio" | "export" | "shortcuts" | "close" | "help" | "about" | null>(null);
   const [statusBar, setStatusBar] = useState(true);
   const [shortcutList, setShortcutList] = useState<Shortcut[]>(loadShortcuts);
@@ -70,7 +70,7 @@ export function Workspace() {
   const startTour = useTour((s) => s.start);
 
   useEffect(() => {
-    void api.audioStatus().then(setAudio).catch(() => undefined);
+    void refreshAudio().catch(() => undefined);
   }, []);
 
   // primeira vez: o tutorial abre sozinho (pulável; "não mostrar ao abrir" fica lembrado)
@@ -281,7 +281,7 @@ export function Workspace() {
         <span>{h.dirty ? "Alterações não salvas (autosave a cada 2 min)" : "Salvo"}</span>
       </footer>
       ) : <span />}
-      <AudioSettingsDialog open={dialog === "audio"} onClose={() => setDialog(null)} onChanged={setAudio} />
+      <AudioSettingsDialog open={dialog === "audio"} onClose={() => setDialog(null)} onChanged={useAudio.getState().setStatus} />
       <ExportDialog open={dialog === "export"} onClose={() => setDialog(null)} />
       <ShortcutsDialog open={dialog === "shortcuts"} onClose={() => setDialog(null)} onChanged={setShortcutList} />
       <HelpCenter
