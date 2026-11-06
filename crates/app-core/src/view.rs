@@ -3,7 +3,7 @@
 use crate::compile::MeterMap;
 use crate::session::Session;
 use ctx_mixing::{Bus, ChannelStrip, StripTarget};
-use ctx_project::AudioSource;
+use ctx_project::{AudioSource, ClipEdit};
 use ctx_recording::{MetronomeConfig, TrackRecording};
 use ctx_sync::LyricTrack;
 use ctx_tuning::ScaleCorrection;
@@ -32,6 +32,11 @@ pub struct ClipView {
     pub length_frames: u64,
     pub end_tick: Tick,
     pub gain: Db,
+    /// Duração total da fonte (limite para cortar/estender as bordas).
+    pub source_frames: u64,
+    /// Fades, polaridade e reverso (Fase 3).
+    #[serde(flatten)]
+    pub edit: ClipEdit,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
@@ -191,8 +196,14 @@ pub fn session_view(
                         start_frame,
                         offset_frames: c.offset_frames,
                         length_frames: c.length_frames,
-                        end_tick: tempo.frame_to_tick(start_frame + c.length_frames, sr),
+                        end_tick: tempo
+                            .frame_to_tick(start_frame.saturating_add(c.length_frames), sr),
                         gain: c.gain,
+                        source_frames: p
+                            .source(c.source_id)
+                            .map(|s| s.length_frames)
+                            .unwrap_or(c.length_frames),
+                        edit: c.edit,
                     }
                 })
                 .collect(),

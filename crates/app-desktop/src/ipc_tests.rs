@@ -220,3 +220,121 @@ fn commands_accept_the_ui_payloads() {
     let v = ok(&w, "project_open", json!({ "path": root }));
     assert_eq!(v["tracks"][0]["name"], "Voz principal");
 }
+
+fn raw(w: &WebviewWindow<MockRuntime>, cmd: &str, args: Value) -> Vec<u8> {
+    let r = get_ipc_response(
+        w,
+        InvokeRequest {
+            cmd: cmd.into(),
+            callback: CallbackFn(0),
+            error: CallbackFn(1),
+            url: origin(),
+            body: InvokeBody::Json(args),
+            headers: Default::default(),
+            invoke_key: INVOKE_KEY.to_string(),
+        },
+    )
+    .unwrap_or_else(|e| panic!("{cmd} falhou: {e:?}"));
+    match r {
+        tauri::ipc::InvokeResponseBody::Raw(bytes) => bytes,
+        other => panic!("esperado binário, veio {other:?}"),
+    }
+}
+
+/// Fase 3: os comandos de edição aceitam o MESMO JSON de `ui/src/ipc/api.ts`.
+#[test]
+fn edit_commands_accept_the_ui_payloads() {
+    let dir = tempfile::tempdir().unwrap();
+    let (_app, w) = app();
+    let d = dir.path().to_string_lossy().to_string();
+    ok(
+        &w,
+        "project_create",
+        json!({ "req": { "dir": d, "name": "Edição", "sampleRate": 48000, "bitDepth": 24 } }),
+    );
+    let wav = dir.path().join("tom.wav");
+    tone(&wav);
+    let v = ok(
+        &w,
+        "audio_import",
+        json!({ "paths": [wav.to_string_lossy()], "trackId": null, "atTick": 0 }),
+    );
+    let clip = v["tracks"][0]["clips"][0]["id"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let src = v["sources"][0]["id"].as_str().unwrap().to_owned();
+    assert_eq!(v["tracks"][0]["clips"][0]["sourceFrames"], 24_000);
+    assert_eq!(v["tracks"][0]["clips"][0]["fadeInShape"], "linear");
+
+    let v = ok(
+        &w,
+        "clip_trim",
+        json!({ "clipId": clip, "start": 0, "lengthFrames": 20000, "gesture": 3 }),
+    );
+    assert_eq!(v["tracks"][0]["clips"][0]["lengthFrames"], 20_000);
+    let v = ok(
+        &w,
+        "clip_set_fades",
+        json!({ "clipId": clip, "fades": { "fadeInFrames": 480, "fadeOutFrames": 960, "fadeInShape": "equalPower", "fadeOutShape": "linear" }, "gesture": null }),
+    );
+    assert_eq!(v["tracks"][0]["clips"][0]["fadeOutFrames"], 960);
+    assert_eq!(v["tracks"][0]["clips"][0]["fadeInShape"], "equalPower");
+    let v = ok(
+        &w,
+        "clip_set_polarity",
+        json!({ "clipId": clip, "inverted": true }),
+    );
+    assert_eq!(v["tracks"][0]["clips"][0]["polarityInverted"], true);
+    let v = ok(
+        &w,
+        "clip_set_reversed",
+        json!({ "clipId": clip, "reversed": true }),
+    );
+    assert_eq!(v["tracks"][0]["clips"][0]["reversed"], true);
+    let v = ok(
+        &w,
+        "clip_normalize",
+        json!({ "clipId": clip, "targetDbfs": -1.0 }),
+    );
+    assert!(v["tracks"][0]["clips"][0]["gain"].as_f64().unwrap() > 5.0);
+    // 0,2 s = 192 ticks a 120 BPM
+    let v = ok(&w, "clip_split", json!({ "clipId": clip, "atTick": 192 }));
+    let clips = v["tracks"][0]["clips"].as_array().unwrap();
+    assert_eq!(clips.len(), 2);
+    let second = clips[1]["id"].as_str().unwrap().to_owned();
+    let err = call(
+        &w,
+        "clip_crossfade",
+        json!({ "aId": clip, "bId": second, "shape": "equalPower" }),
+    )
+    .unwrap_err();
+    assert_eq!(
+        err["code"], "project.clips_do_not_overlap",
+        "contíguos, sem sobreposição"
+    );
+    let err = call(
+        &w,
+        "clip_trim",
+        json!({ "clipId": clip, "start": -1, "lengthFrames": 10, "gesture": null }),
+    )
+    .unwrap_err();
+    assert_eq!(err["code"], "api.invalid_argument");
+
+    let bytes = raw(
+        &w,
+        "source_spectrogram",
+        json!({ "sourceId": src, "params": { "fftSize": 1024, "hop": 256, "bins": 64 } }),
+    );
+    assert_eq!(&bytes[0..4], b"AMSG");
+    assert_eq!(bytes.len(), 40 + 24_000usize.div_ceil(256) * 64);
+    let bytes = raw(
+        &w,
+        "source_spectrogram",
+        json!({ "sourceId": src, "params": null }),
+    );
+    assert_eq!(bytes.len(), 40 + 24_000usize.div_ceil(512) * 128);
+
+    let v = ok(&w, "history_undo", json!({}));
+    assert_eq!(v["tracks"][0]["clips"].as_array().unwrap().len(), 1);
+}

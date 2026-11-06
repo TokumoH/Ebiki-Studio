@@ -21,3 +21,5 @@ pub mod notation_service;
 pub mod tuning_service;
 // Fase 4/5 — composição (harmonia + bases); módulo próprio para merge trivial.
 pub mod composition;
+// Fase 3 — edição/pós-produção (cortar, dividir, fades, normalizar, espectrograma).
+pub mod edit_service;

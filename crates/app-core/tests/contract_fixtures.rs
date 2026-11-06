@@ -633,3 +633,40 @@ fn write_composition_ipc_fixtures() {
         .unwrap();
     }
 }
+
+/// Fase 3 (edição): sessão com clipes divididos, fades, polaridade e reverso + pedidos da UI.
+#[test]
+fn write_edit_ipc_fixtures() {
+    use app_core::edit_service::FadeRequest;
+    use app_core::ports::SpectrogramRequest;
+    use ctx_project::FadeShape;
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    st.create_project(dir.path(), "Demo", AudioFormat::default())
+        .unwrap();
+    let v = st
+        .import_audio(&[dc_wav(dir.path(), "voz.wav", 0.3, 48_000)], None, Tick(0))
+        .unwrap();
+    let id: ctx_project::ClipId = v.tracks[0].clips[0].id.parse().unwrap();
+    let fades = FadeRequest {
+        fade_in_frames: 480,
+        fade_out_frames: 960,
+        fade_in_shape: FadeShape::EqualPower,
+        fade_out_shape: FadeShape::Linear,
+    };
+    st.clip_set_fades(id, fades, None).unwrap();
+    st.clip_set_polarity(id, true).unwrap();
+    let v = st.clip_split(id, Tick(960)).unwrap();
+    let second: ctx_project::ClipId = v.tracks[0].clips[1].id.parse().unwrap();
+    st.clip_set_reversed(second, true).unwrap();
+    st.clip_normalize(id, -1.0).unwrap();
+    write_fixture("edit-session.json", to_json(&st.view().unwrap()));
+    write_fixture(
+        "edit-requests.json",
+        serde_json::json!({
+            "fades": fades,
+            "shapes": [FadeShape::Linear, FadeShape::EqualPower],
+            "spectrogram": SpectrogramRequest::default(),
+        }),
+    );
+}

@@ -117,10 +117,17 @@
       "clips": [
         {
           "endTick": 1920,
+          "fadeInFrames": 0,
+          "fadeInShape": "linear",
+          "fadeOutFrames": 0,
+          "fadeOutShape": "linear",
           "gain": 0.0,
           "id": "00000000-0000-7000-8000-000000000005",
           "lengthFrames": 48000,
           "offsetFrames": 0,
+          "polarityInverted": false,
+          "reversed": false,
+          "sourceFrames": 48000,
           "sourceId": "00000000-0000-7000-8000-000000000004",
           "sourceName": "voz.wav",
           "start": 0,

@@ -62,6 +62,40 @@ pub trait MediaPort: Send + Sync {
     ) -> Result<(), PortError>;
     /// Formatos que este build consegue exportar.
     fn available_formats(&self) -> Vec<ExportFormatKind>;
+    /// Espectrograma (Fase 3, RF-3.5) de um áudio decodificado, no formato binário `AMSG`
+    /// documentado em `infra_codecs::spectrogram`. `cache` = (raiz do projeto, hash do conteúdo)
+    /// para reaproveitar o cache regenerável em `cache/spectrogram/`.
+    fn spectrogram(
+        &self,
+        _audio: &SourceBuffer,
+        _sample_rate: u32,
+        _params: SpectrogramRequest,
+        _cache: Option<(&Path, &str)>,
+    ) -> Result<Vec<u8>, PortError> {
+        Err(PortError::new(
+            "media.unsupported",
+            "Espectrograma indisponível neste build.",
+        ))
+    }
+}
+
+/// Parâmetros do espectrograma pedidos pela UI (validados pela implementação).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SpectrogramRequest {
+    pub fft_size: u32,
+    pub hop: u32,
+    pub bins: u16,
+}
+
+impl Default for SpectrogramRequest {
+    fn default() -> Self {
+        Self {
+            fft_size: 2048,
+            hop: 512,
+            bins: 128,
+        }
+    }
 }
 
 /// Formato de exportação (independente da biblioteca de codecs).

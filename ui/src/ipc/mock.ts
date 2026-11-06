@@ -3,6 +3,7 @@
 import type { Transport } from "./transport";
 import type { ChannelStrip, SessionView, StripEdit, StripTarget, Track, TransportView, MetersView } from "./types";
 import { emptyMusicView, musicHandlers } from "./mockMusic";
+import { clipEditDefaults, editHandlers } from "./mockEdit";
 
 const PPQ = 960;
 const SR_DEFAULT = 48_000;
@@ -282,7 +283,7 @@ export function createMockTransport(): Transport {
         v.sources.push({ id: srcId, contentHash: "a".repeat(64), relPath: `audio/imported/${srcId}.wav`, originalName: name, channels: 2, lengthFrames: len });
         const track = a.trackId ? v.tracks.find((t) => t.id === a.trackId) : addTrack(v, name.replace(/\.[^.]+$/, ""));
         if (!track) fail("project.track_not_found", "faixa não encontrada");
-        track.clips.push({ id: uuid(), sourceId: srcId, sourceName: name, start: a.atTick, startFrame: 0, offsetFrames: 0, lengthFrames: len, endTick: 0, gain: 0 });
+        track.clips.push({ id: uuid(), sourceId: srcId, sourceName: name, start: a.atTick, startFrame: 0, offsetFrames: 0, lengthFrames: len, endTick: 0, gain: 0, ...clipEditDefaults(len) });
       }
     }),
     clip_move: (a) => mutate("Mover clipe", a.gesture, (v) => {
@@ -380,6 +381,9 @@ export function createMockTransport(): Transport {
   // Fases 6–8 (partituras, letra, afinação): ver mockMusic.ts
   const music = musicHandlers({ s, mutate, view, fail, sr, uuid });
   Object.assign(handlers, music.handlers);
+  // Fase 3 (edição): ver mockEdit.ts
+  const edit = editHandlers({ s, mutate, fail, sr, uuid, tickToFrame, frameToTick });
+  Object.assign(handlers, edit.handlers);
 
   function labelOf(e: StripEdit): string {
     const labels: Record<string, string> = { volume: "Volume", pan: "Pan", mute: "Mute", solo: "Solo", addEffect: "Adicionar efeito", removeEffect: "Remover efeito", moveEffect: "Reordenar efeito", setEffect: "Ajustar efeito", bypass: "Bypass de efeito", output: "Saída do canal", addSend: "Adicionar envio", removeSend: "Remover envio", sendLevel: "Nível do envio" };
@@ -395,7 +399,7 @@ export function createMockTransport(): Transport {
       return h(args) as T;
     },
     async invokeBinary(cmd, args = {}) {
-      const mb = music.binary(cmd, args);
+      const mb = music.binary(cmd, args) ?? edit.binary(cmd, args);
       if (mb) return mb;
       if (cmd !== "waveform_peaks") throw { code: "ui.unknown_command", message: cmd };
       const src = s().sources.find((x) => x.id === args.sourceId) ?? fail("app.source_unavailable", "Áudio indisponível.");

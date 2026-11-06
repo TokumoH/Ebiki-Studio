@@ -10,6 +10,8 @@ mod ipc_tests;
 mod state;
 // Fases 6–8 (partituras, letra, afinação)
 mod commands_music;
+// Fase 3 (edição / pós-produção)
+mod commands_edit;
 
 use audio_engine::device::DeviceRequest;
 use state::{lock, AppState};
@@ -110,6 +112,14 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
         commands::transport_record,
         commands::transport_state,
         commands::waveform_peaks,
+        commands_edit::clip_trim,
+        commands_edit::clip_split,
+        commands_edit::clip_set_fades,
+        commands_edit::clip_set_polarity,
+        commands_edit::clip_set_reversed,
+        commands_edit::clip_crossfade,
+        commands_edit::clip_normalize,
+        commands_edit::source_spectrogram,
         commands::export_formats,
         commands::export_mix,
         commands::export_stems,
