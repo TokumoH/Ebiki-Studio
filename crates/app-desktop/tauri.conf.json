@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Ebiki Studio",
   "version": "0.1.0",
-  "identifier": "com.ebikistudio.app",
+  "identifier": "com.ebikistudio.studio",
   "build": {
     "frontendDist": "../../ui/dist",
     "devUrl": "http://localhost:5173",
@@ -31,6 +31,17 @@
     "category": "Music",
     "shortDescription": "Estúdio musical pessoal",
     "longDescription": "Gravação, mixagem, edição, harmonia, notação e afinação.",
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"]
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "TokumoH",
+    "copyright": "© 2026 TokumoH — código sob GPL-3.0-or-later; nome e logo reservados",
+    "license": "GPL-3.0-or-later",
+    "licenseFile": "../../LICENSE",
+    "homepage": "https://github.com/TokumoH/Ebiki-Studio"
   }
 }

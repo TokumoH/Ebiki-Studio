@@ -37,6 +37,11 @@ Interface em português do Brasil, tema escuro "Odoriko" e claro "Agridoce".
 
 ## Começar
 
+**Instaladores prontos** (Windows, macOS e Linux): página de
+[Releases](https://github.com/TokumoH/Ebiki-Studio/releases/latest) — veja as notas da versão para
+abrir um app não assinado.
+
+Para compilar a partir do código:
 Guia passo a passo para Windows, macOS e Linux (pré-requisitos, execução, instaladores, roteiro de
 teste e problemas comuns): **[docs/manual/guia-instalacao-local.md](docs/manual/guia-instalacao-local.md)**.
 

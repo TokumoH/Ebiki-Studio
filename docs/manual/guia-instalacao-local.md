@@ -98,7 +98,9 @@ Os instaladores ficam em `target/release/bundle/`:
 
 Os instaladores **não são assinados**:
 - Windows: SmartScreen → "Mais informações" → "Executar assim mesmo".
-- macOS: clique direito no app → **Abrir** → Abrir.
+- macOS 15+: *Ajustes do Sistema → Privacidade e Segurança → Abrir Mesmo Assim*; macOS 14 e
+  anteriores: clique direito no app → **Abrir**. Se aparecer "está danificado":
+  `xattr -dr com.apple.quarantine "/Applications/Ebiki Studio.app"`.
 
 ---
 
@@ -167,7 +169,7 @@ npm --prefix ui run e2e
 ## 8. Onde ficam os dados
 
 - **Projeto**: a pasta `Nome.ebiki` que você escolheu (banco `project.db`, `audio/`, `backups/`) — portátil.
-- **Biblioteca** (recentes, bases do usuário, progressões): pasta de dados do app `com.ebikistudio.app`
-  - Windows: `%APPDATA%\com.ebikistudio.app`
-  - macOS: `~/Library/Application Support/com.ebikistudio.app`
-  - Linux: `~/.local/share/com.ebikistudio.app`
+- **Biblioteca** (recentes, bases do usuário, progressões): pasta de dados do app `com.ebikistudio.studio`
+  - Windows: `%APPDATA%\com.ebikistudio.studio`
+  - macOS: `~/Library/Application Support/com.ebikistudio.studio`
+  - Linux: `~/.local/share/com.ebikistudio.studio`

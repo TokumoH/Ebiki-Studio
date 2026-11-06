@@ -9,7 +9,7 @@ O projeto nasceu com o nome provisório "AppMusica". O usuário escolheu o nome 
 
 ## Decisão
 - Nome exibido: **Ebiki Studio** (janela, instalador, tela inicial, documentação).
-- Identificador do pacote: `com.ebikistudio.app`; binário: `ebiki-studio`.
+- Identificador do pacote: `com.ebikistudio.studio` (antes da v0.1.0 era `com.ebikistudio.app`; trocado porque um identificador terminado em `.app` faz a pasta de dados parecer um pacote de aplicativo no macOS); binário: `ebiki-studio`.
 - Extensão da pasta de projeto: **`.ebiki`** (antes `.amproj`); projetos `.amproj` continuam abrindo
   (a abertura aceita qualquer pasta que contenha `project.db`).
 - Nomes internos (repositório `AppMusica`, crates `ctx-*`, `app-core`…) não mudam: são identificadores
