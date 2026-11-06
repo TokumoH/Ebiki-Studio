@@ -8,6 +8,7 @@ import { useTheme } from "../core/theme";
 import { Button, Dialog } from "../shared/components";
 import { TransportBar } from "../contexts/transport/TransportBar";
 import { DockLayout } from "../panels/DockLayout";
+import { splitAtCursor } from "../contexts/project/clipActions";
 import { AudioSettingsDialog } from "./AudioSettingsDialog";
 import { ExportDialog } from "./ExportDialog";
 import { ShortcutsDialog } from "./ShortcutsDialog";
@@ -62,6 +63,7 @@ export function Workspace() {
         void run(() => api.recordingLoop(r ? null : [0, 960 * 16]));
       },
       home: () => void run(() => api.seek(0)),
+      split: () => void splitAtCursor(),
     };
     const onKey = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target) || document.querySelector(".dialog-backdrop")) return;

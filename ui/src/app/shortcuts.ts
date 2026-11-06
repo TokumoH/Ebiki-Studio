@@ -19,6 +19,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: "metronome", label: "Metrônomo", keys: "C" },
   { id: "loop", label: "Loop", keys: "L" },
   { id: "home", label: "Voltar ao início", keys: "Home" },
+  { id: "split", label: "Dividir clipe no cursor", keys: "S" },
 ];
 
 /** Normaliza um evento de teclado para o formato "Ctrl+Shift+K". */

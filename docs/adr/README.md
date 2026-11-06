@@ -32,3 +32,4 @@ Gerado por `scripts/adr_index.py`.
 | [0028](0028-afinador-por-derivacao-lock-free-da-entrada.md) | Afinador por derivação lock-free da entrada na engine | Aceita |
 | [0029](0029-processamento-de-altura-e-tempo-gera-fonte-derivada.md) | Correção de afinação, time-stretch e partitura renderizada geram fontes derivadas; corretor em tempo real como insert | Aceita |
 | [0030](0030-nome-do-produto-ebiki-studio.md) | Nome do produto — Ebiki Studio | Aceita |
+| [0031](0031-edicao-nao-destrutiva-de-clipes.md) | Edição de clipes não destrutiva (janela + processamento na engine) e espectrograma como fabricação pura | Aceita |

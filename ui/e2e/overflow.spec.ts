@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const PANELS = ["Mixer", "Gravação", "Mapa de tempo", "Análise da mixagem", "Partitura", "Letra", "Afinação", "Harmonia", "Bases"];
+const PANELS = ["Mixer", "Gravação", "Mapa de tempo", "Análise da mixagem", "Partitura", "Letra", "Afinação", "Harmonia", "Bases", "Clipe"];
 
 /** Elementos que ultrapassam a borda inferior do painel sem um ancestral rolável que os alcance. */
 async function clippedInPanels(page: Page): Promise<string[]> {

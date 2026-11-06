@@ -50,6 +50,31 @@ npm test
 - **Delete** remove o clipe selecionado. Duplo clique no nome da faixa renomeia.
 - Clique na régua para posicionar a reprodução. Zoom com **−/+** no canto da timeline.
 - **M** (mute), **S** (solo) e **⏺** (armar para gravação) em cada faixa.
+- **≋** em cada faixa alterna entre **forma de onda** e **espectrograma** (frequências graves embaixo,
+  agudas em cima; cores claras = mais energia).
+
+### 3.1 Edição de clipes (não destrutiva)
+
+Nada do que você faz aqui altera o arquivo de áudio original: o projeto guarda só o trecho usado e
+os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito (Ctrl+Z).
+
+- **Cortar:** arraste a **borda esquerda ou direita** do clipe (encaixa nos tempos; **Alt** = livre).
+  Puxar a borda para fora revela áudio que havia sido cortado, até o limite do arquivo.
+- **Dividir:** posicione o cursor (clique na régua) dentro do clipe e pressione **S** (ou *Dividir no
+  cursor* no menu/painel). O som não muda; você passa a ter dois clipes independentes.
+- **Fades:** arraste as **alças quadradas nos cantos superiores** do clipe; a curva desenhada mostra a
+  atenuação. No painel **Clipe** dá para digitar a duração em ms e escolher a curva
+  (*Linear* ou *Equal power*, mais natural para música).
+- **Crossfade:** sobreponha dois clipes da mesma faixa (estenda/arraste um sobre o outro), selecione um
+  deles e use *Crossfade* (menu ou painel). A sobreposição vira fade de saída + fade de entrada
+  (equal power).
+- **Normalizar:** ajusta o **ganho do clipe** para o pico chegar a −1 dBFS.
+- **Ganho do clipe:** slider no painel **Clipe** (−24 a +12 dB; duplo clique volta a 0 dB).
+- **Inverter fase** (Ø) e **Reverter** (⇆, toca de trás para frente): botões do painel ou itens do menu.
+- **Menu do clipe:** botão direito no clipe, ou tecla **Menu** / **Shift+F10** com o clipe
+  selecionado. Navegue com as setas, **Enter** executa, **Esc** fecha.
+- **Teclado nas alças:** com o clipe selecionado, **Tab** até uma borda/alça e use **←/→**
+  (cortar: 1/16 de tempo, **Shift** = 1 tempo; fades: 10 ms, **Shift** = 100 ms).
 
 ## 4. Gravação
 
@@ -129,6 +154,8 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 | Metrônomo | C |
 | Loop | L |
 | Início | Home |
+| Dividir clipe no cursor | S |
+| Menu do clipe selecionado | Menu ou Shift+F10 |
 
 ## 12. Limitações conhecidas
 
@@ -139,3 +166,4 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
   limpeza futura.
 - Exportação AAC indisponível; MP3 até 48 kHz.
 - Sem plugins VST3/CLAP e sem automação nesta versão (arquitetura preparada — ADR-0011).
+- Efeitos **por clipe** ainda não existem (efeitos são por faixa/bus no mixer).

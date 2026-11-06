@@ -40,3 +40,8 @@ PANELS.push(
   { id: "harmony", title: "Harmonia", area: "bottom", component: HarmonyPanel },
   { id: "bases", title: "Bases", area: "bottom", component: BasesPanel },
 );
+
+// ---- Edição / pós-produção (Fase 3) ----
+import { ClipInspector } from "../contexts/project/ClipInspector";
+
+PANELS.push({ id: "clip", title: "Clipe", area: "bottom", component: ClipInspector });
