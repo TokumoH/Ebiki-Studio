@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import { dbToFader, faderToDb, Fader, Segmented, Dialog } from "./components";
+import { dbToFader, faderToDb, Fader, Segmented, Dialog, InlineRename } from "./components";
 
 describe("curva do fader", () => {
   it("é monotônica e inversível", () => {
@@ -92,5 +92,38 @@ describe("Dialog e foco", () => {
       </Dialog>,
     );
     expect(document.activeElement).toBe(opener);
+  });
+});
+
+describe("InlineRename", () => {
+  it("Enter confirma o novo nome (sem espaços nas pontas)", () => {
+    const commits: string[] = [];
+    render(<InlineRename value="Bus 1" label="Renomear Bus 1" inputLabel="Nome" onCommit={(v) => commits.push(v)} />);
+    fireEvent.click(screen.getByRole("button", { name: "Renomear Bus 1" }));
+    const input = screen.getByRole("textbox", { name: "Nome" });
+    fireEvent.change(input, { target: { value: "  Reverb  " } });
+    fireEvent.keyDown(input, { key: "Enter" });
+    fireEvent.blur(input);
+    expect(commits).toEqual(["Reverb"]);
+    expect(screen.getByRole("button", { name: "Renomear Bus 1" })).toBeInTheDocument();
+  });
+
+  it("Esc cancela e nome vazio ou igual não confirma", () => {
+    const commits: string[] = [];
+    render(<InlineRename value="A" label="Renomear A" inputLabel="Nome" onCommit={(v) => commits.push(v)} />);
+    const open = () => {
+      fireEvent.keyDown(screen.getByRole("button", { name: "Renomear A" }), { key: "F2" });
+      return screen.getByRole("textbox", { name: "Nome" });
+    };
+    let input = open();
+    fireEvent.change(input, { target: { value: "B" } });
+    fireEvent.keyDown(input, { key: "Escape" });
+    fireEvent.blur(input);
+    input = open();
+    fireEvent.change(input, { target: { value: "   " } });
+    fireEvent.blur(input);
+    input = open();
+    fireEvent.blur(input);
+    expect(commits).toEqual([]);
   });
 });

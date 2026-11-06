@@ -1,6 +1,8 @@
 import { test, expect, type Page } from "@playwright/test";
+import { PANEL_CATALOG } from "../src/panels/catalog";
 
-const PANELS = ["Mixer", "Gravação", "Mapa de tempo", "Análise da mixagem", "Partitura", "Letra", "Afinação", "Harmonia", "Bases"];
+// derivado do catálogo: painéis novos entram na verificação automaticamente
+const PANELS = PANEL_CATALOG.map((p) => p.title);
 
 /** Elementos que ultrapassam a borda inferior do painel sem um ancestral rolável que os alcance. */
 async function clippedInPanels(page: Page): Promise<string[]> {

@@ -6,6 +6,9 @@
 .strip[aria-selected="true"] { border-color: var(--accent); }
 .strip--master { width: 124px; background: var(--panel-2); }
 .strip-name { font-weight: 600; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.strip-name--editable { display: flex; align-items: center; justify-content: center; gap: 2px; }
+.strip-name--editable .inline-rename { flex: 1 1 auto; min-width: 0; text-align: center; }
+.strip-name--editable .btn { flex: none; width: 20px; height: 20px; padding: 0; }
 .strip-inserts { display: flex; flex-direction: column; gap: 2px; }
 .insert { display: flex; align-items: center; gap: 2px; background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 0 2px 0 6px; height: 22px; font-size: var(--text-xs); cursor: pointer; }
 .insert[data-bypass="true"] { opacity: 0.45; text-decoration: line-through; }

@@ -5,7 +5,7 @@
   -webkit-mask: url("../shared/assets/ebiki-mark.png") center / contain no-repeat;
   mask: url("../shared/assets/ebiki-mark.png") center / contain no-repeat; }
 .start .brand-mark { width: 16px; height: 34px; }
-.project-name { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
+.project-name { display: flex; align-items: center; min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
 .dirty { color: var(--accent); }
 .topbar .sep { width: 1px; height: 24px; background: var(--line); flex: none; }
 .statusbar { display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-3); border-top: 1px solid var(--line); background: var(--bg-raised); font-size: var(--text-xs); color: var(--fg-muted); white-space: nowrap; overflow: hidden; }

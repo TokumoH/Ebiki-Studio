@@ -37,6 +37,16 @@ export function isTypingTarget(t: EventTarget | null): boolean {
   return t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName);
 }
 
+const ACTIVATION_ROLES = ["button", "menuitem", "menuitemcheckbox", "menuitemradio", "option", "tab", "checkbox", "radio", "switch", "link"];
+
+/** Enter/Espaço num controle focado pertencem ao controle (ativação por teclado), não ao atalho global. */
+export function isActivationKey(keys: string, t: EventTarget | null): boolean {
+  if (keys !== "Enter" && keys !== "Space") return false;
+  if (!(t instanceof HTMLElement)) return false;
+  if (["BUTTON", "A", "SUMMARY"].includes(t.tagName)) return true;
+  return ACTIVATION_ROLES.includes(t.getAttribute("role") ?? "");
+}
+
 export function loadShortcuts(): Shortcut[] {
   try {
     const raw = localStorage.getItem("ebiki.shortcuts");

@@ -1,7 +1,8 @@
 // Cálculos de grade musical a partir do mapa de tempo (puros, testáveis).
 import type { TempoMap } from "../../ipc/types";
+import { PPQ } from "../../core/bars";
 
-export const PPQ = 960;
+export { PPQ };
 
 export interface GridLine {
   tick: number;

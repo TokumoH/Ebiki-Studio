@@ -5,7 +5,7 @@ import type { ChannelStrip, EffectSlot, PresetInfo, StripTarget, BusView } from 
 import { run, useSession, newGesture, endGesture } from "../../core/session";
 import { useLive } from "../../core/live";
 import { formatDb, formatPan } from "../../core/format";
-import { Button, Dialog, Fader, Knob, Meter, Toggle } from "../../shared/components";
+import { Button, Dialog, Fader, InlineRename, Knob, Meter, Toggle } from "../../shared/components";
 import { defaultEffect, EFFECT_LABELS } from "./effectsMeta";
 import { EffectEditor } from "./EffectEditor";
 
@@ -20,12 +20,28 @@ function useGesture() {
   };
 }
 
-function StripView({ name, target, strip, peak, buses, selected, onSelect, isMaster }: { name: string; target: StripTarget; strip: ChannelStrip; peak: [number, number]; buses: BusView[]; selected?: boolean; onSelect?: () => void; isMaster?: boolean }) {
+interface StripProps {
+  name: string;
+  target: StripTarget;
+  strip: ChannelStrip;
+  peak: [number, number];
+  buses: BusView[];
+  selected?: boolean;
+  onSelect?: () => void;
+  isMaster?: boolean;
+  /** Presente: o nome vira editável (clique/F2). */
+  onRename?: (name: string) => void;
+  /** Presente: mostra "remover", com confirmação. */
+  onDelete?: () => void;
+}
+
+function StripView({ name, target, strip, peak, buses, selected, onSelect, isMaster, onRename, onDelete }: StripProps) {
   const vol = useGesture();
   const pan = useGesture();
   const [editing, setEditing] = useState<EffectSlot | null>(null);
   const [adding, setAdding] = useState(false);
   const [presets, setPresets] = useState<PresetInfo[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const isTrack = target.kind === "track";
   useEffect(() => {
     if (adding && presets.length === 0) void api.mixerPresets().then(setPresets).catch(() => undefined);
@@ -33,9 +49,20 @@ function StripView({ name, target, strip, peak, buses, selected, onSelect, isMas
   const current = editing ? strip.inserts.find((i) => i.id === editing.id) : undefined;
   return (
     <div className={`strip${isMaster ? " strip--master" : ""}`} aria-selected={selected} aria-label={`Canal ${name}`} onPointerDown={onSelect}>
-      <div className="strip-name" title={name}>
-        {name}
-      </div>
+      {onRename || onDelete ? (
+        <div className="strip-name strip-name--editable" title={name}>
+          {onRename ? <InlineRename value={name} label={`Renomear ${name}`} inputLabel={`Novo nome de ${name}`} onCommit={onRename} /> : <span>{name}</span>}
+          {onDelete ? (
+            <Button size="sm" variant="ghost" icon aria-label={`Remover ${name}`} title="Remover bus" onClick={() => setConfirmDelete(true)}>
+              ✕
+            </Button>
+          ) : null}
+        </div>
+      ) : (
+        <div className="strip-name" title={name}>
+          {name}
+        </div>
+      )}
       <div className="strip-inserts">
         {strip.inserts.map((s) => (
           <div key={s.id} className="insert" data-bypass={s.bypass} onClick={() => setEditing(s)} role="button" tabIndex={0} aria-label={`Editar ${EFFECT_LABELS[s.effect.type] ?? s.effect.type}`} onKeyDown={(e) => e.key === "Enter" && setEditing(s)}>
@@ -123,6 +150,27 @@ function StripView({ name, target, strip, peak, buses, selected, onSelect, isMas
           ))}
         </div>
       </Dialog>
+      <Dialog
+        title={`Remover ${name}?`}
+        open={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        footer={
+          <>
+            <Button onClick={() => setConfirmDelete(false)}>Cancelar</Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                setConfirmDelete(false);
+                onDelete?.();
+              }}
+            >
+              Remover
+            </Button>
+          </>
+        }
+      >
+        <p>As faixas que saem por “{name}” voltam para o Master e os envios para ele são apagados. Você pode desfazer com Ctrl+Z.</p>
+      </Dialog>
       <Dialog title={`Efeito — ${name}`} open={!!current} onClose={() => setEditing(null)} footer={<Button onClick={() => setEditing(null)}>Fechar</Button>}>
         {current ? <EffectEditor target={target} slot={current} onClose={() => setEditing(null)} /> : null}
       </Dialog>
@@ -147,7 +195,16 @@ export function MixerPanel() {
       <div className="mixer-sep" />
       <div className="mixer-group">
         {session.buses.map((b) => (
-          <StripView key={b.id} name={b.name} target={{ kind: "bus", id: b.id }} strip={b.strip} peak={peakOf(b.id, meters?.buses)} buses={[]} />
+          <StripView
+            key={b.id}
+            name={b.name}
+            target={{ kind: "bus", id: b.id }}
+            strip={b.strip}
+            peak={peakOf(b.id, meters?.buses)}
+            buses={[]}
+            onRename={(n) => void run(() => api.busRename(b.id, n))}
+            onDelete={() => void run(() => api.busDelete(b.id))}
+          />
         ))}
         <div style={{ display: "flex", flexDirection: "column", gap: 4, justifyContent: "flex-start" }}>
           <Button size="sm" onClick={() => void run(() => api.busCreate(`Bus ${session.buses.length + 1}`))}>
