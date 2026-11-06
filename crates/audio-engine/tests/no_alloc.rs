@@ -9,6 +9,19 @@ use std::sync::Arc;
 #[global_allocator]
 static A: AllocDisabler = AllocDisabler;
 
+/// Metade das faixas com fades/reverso/polaridade (Fase 3): o caminho por amostra também não aloca.
+fn edited_clip(k: u128, src: Arc<SourceBuffer>, start: u64) -> ClipRender {
+    let mut c = clip(src, start);
+    if k.is_multiple_of(2) {
+        c.fade_in = 5_000;
+        c.fade_out = 5_000;
+        c.fade_in_shape = FadeShape::EqualPower;
+        c.reverse = k.is_multiple_of(4);
+        c.invert = true;
+    }
+    c
+}
+
 #[test]
 fn process_does_not_allocate() {
     let mut g = RenderGraph::empty(SR);
@@ -16,7 +29,7 @@ fn process_does_not_allocate() {
         let mut t = track(
             k + 1,
             k as usize + 1,
-            vec![clip(sine(220.0, 0.1, 200_000), (k as u64) * 100)],
+            vec![edited_clip(k, sine(220.0, 0.1, 200_000), (k as u64) * 100)],
         );
         t.strip.inserts.push(InsertRender {
             id: k,

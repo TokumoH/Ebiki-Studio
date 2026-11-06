@@ -283,6 +283,7 @@ impl Studio {
                 offset_frames: offset,
                 length_frames: length,
                 gain: old.gain,
+                edit: ctx_project::ClipEdit::default(),
             },
         )));
         self.register_buffer(source_id, rendered.buffer);

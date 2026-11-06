@@ -455,7 +455,11 @@ mod tests {
         let v: u32 = c
             .pragma_query_value(None, "user_version", |r| r.get(0))
             .unwrap();
-        assert_eq!(v, 2, "abrir migra para a versão atual");
+        assert_eq!(
+            v,
+            crate::PROJECT_SCHEMA_VERSION,
+            "abrir migra para a versão atual"
+        );
         // e o projeto migrado salva/carrega normalmente
         SqliteSessionRepository.save_to(&path, &s).unwrap();
         assert_eq!(SqliteSessionRepository.load_from(&path).unwrap(), s);

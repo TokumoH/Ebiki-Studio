@@ -1,0 +1,17 @@
+{
+  "fades": {
+    "fadeInFrames": 480,
+    "fadeInShape": "equalPower",
+    "fadeOutFrames": 960,
+    "fadeOutShape": "linear"
+  },
+  "shapes": [
+    "linear",
+    "equalPower"
+  ],
+  "spectrogram": {
+    "bins": 128,
+    "fftSize": 2048,
+    "hop": 512
+  }
+}

@@ -22,4 +22,6 @@ export const PANEL_CATALOG: readonly PanelMeta[] = [
   // Fases 4–5 (harmonia e bases)
   { id: "harmony", title: "Harmonia", area: "bottom" },
   { id: "bases", title: "Bases", area: "bottom" },
+  // Fase 3 (edição / pós-produção)
+  { id: "clip", title: "Clipe", area: "bottom" },
 ];

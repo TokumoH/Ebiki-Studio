@@ -34,8 +34,20 @@ export function PanelsMenu() {
       const t = e.target as Node;
       if (!menuRef.current?.contains(t) && !buttonRef.current?.contains(t)) setExpanded(false);
     };
+    // Esc fecha o menu onde quer que esteja o foco (inclusive antes de ele entrar no menu)
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      e.stopPropagation();
+      setExpanded(false);
+      buttonRef.current?.focus();
+    };
     window.addEventListener("pointerdown", onDown, true);
-    return () => window.removeEventListener("pointerdown", onDown, true);
+    window.addEventListener("keydown", onEsc, true);
+    return () => {
+      window.removeEventListener("pointerdown", onDown, true);
+      window.removeEventListener("keydown", onEsc, true);
+    };
   }, [expanded]);
 
   const onMenuKey = (e: React.KeyboardEvent) => {
@@ -46,7 +58,6 @@ export function PanelsMenu() {
     else if (e.key === "ArrowUp") go(i - 1);
     else if (e.key === "Home") go(0);
     else if (e.key === "End") go(list.length - 1);
-    else if (e.key === "Escape") close(true);
     else if (e.key === "Tab") return close(false);
     else return;
     e.preventDefault();

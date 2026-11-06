@@ -19,6 +19,13 @@ pub fn dc(value: f32, frames: usize) -> Arc<SourceBuffer> {
     })
 }
 
+/// Rampa 0, 1, 2, … (identifica a amostra de origem pelo valor).
+pub fn ramp(frames: usize) -> Arc<SourceBuffer> {
+    Arc::new(SourceBuffer {
+        channels: vec![(0..frames).map(|i| i as f32).collect()],
+    })
+}
+
 /// Impulso unitário na amostra `at`.
 pub fn impulse(at: usize, frames: usize) -> Arc<SourceBuffer> {
     let mut v = vec![0.0; frames];
@@ -36,13 +43,7 @@ pub fn track(key: u128, slot: usize, clips: Vec<ClipRender>) -> TrackRender {
 
 pub fn clip(source: Arc<SourceBuffer>, start: u64) -> ClipRender {
     let length = source.frames();
-    ClipRender {
-        source,
-        start,
-        offset: 0,
-        length,
-        gain: 1.0,
-    }
+    ClipRender::new(source, start, 0, length, 1.0)
 }
 
 /// Engine com o grafo aplicado e tocando.

@@ -27,7 +27,19 @@ fn rich_session() -> Session {
     p.insert_track(t1, 0).unwrap();
     p.insert_track(t2, 1).unwrap();
     for (i, start) in [(0, 0i64), (1, 960)] {
-        let _ = i;
+        // o segundo clipe tem todo o processamento da Fase 3 (fades, polaridade, reverso)
+        let edit = if i == 1 {
+            ClipEdit {
+                fade_in_frames: 120,
+                fade_out_frames: 300,
+                fade_in_shape: FadeShape::EqualPower,
+                fade_out_shape: FadeShape::Linear,
+                polarity_inverted: true,
+                reversed: true,
+            }
+        } else {
+            ClipEdit::default()
+        };
         p.insert_clip(
             id1,
             Clip {
@@ -37,6 +49,7 @@ fn rich_session() -> Session {
                 offset_frames: 10,
                 length_frames: 1000,
                 gain: Db(-3.5),
+                edit,
             },
             usize::MAX,
         )

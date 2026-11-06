@@ -64,6 +64,9 @@ export const TrackRecording = z.object({
   activeTake: Id.nullable(),
 });
 
+/** Forma da curva de fade (Fase 3). */
+export const FadeShape = z.enum(["linear", "equalPower"]);
+
 export const Clip = z.object({
   id: Id,
   sourceId: Id,
@@ -74,6 +77,29 @@ export const Clip = z.object({
   lengthFrames: z.number().int(),
   endTick: z.number().int(),
   gain: z.number(),
+  // Fase 3 — edição não destrutiva
+  sourceFrames: z.number().int().nonnegative(),
+  fadeInFrames: z.number().int().nonnegative(),
+  fadeOutFrames: z.number().int().nonnegative(),
+  fadeInShape: FadeShape,
+  fadeOutShape: FadeShape,
+  polarityInverted: z.boolean(),
+  reversed: z.boolean(),
+});
+
+/** Fades enviados em `clip_set_fades`. */
+export const FadeRequest = z.object({
+  fadeInFrames: z.number().int().nonnegative(),
+  fadeOutFrames: z.number().int().nonnegative(),
+  fadeInShape: FadeShape,
+  fadeOutShape: FadeShape,
+});
+
+/** Parâmetros de `source_spectrogram` (resposta binária `AMSG`, ver ipc/spectrogram.ts). */
+export const SpectrogramRequest = z.object({
+  fftSize: z.number().int(),
+  hop: z.number().int(),
+  bins: z.number().int(),
 });
 
 export const Track = z.object({

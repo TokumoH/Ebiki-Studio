@@ -22,6 +22,7 @@ import type {
   VoiceEdit,
   VoiceLoc,
 } from "./types";
+import { clipEditDefaults } from "./mockEdit";
 
 const PPQ = 960;
 
@@ -608,7 +609,7 @@ export function musicHandlers(ctx: MockCtx): { handlers: Record<string, (a: Reco
         const len = sr() * 4;
         const srcId = uuid();
         v.sources.push({ id: srcId, contentHash: "b".repeat(64), relPath: `audio/rendered/${srcId}.wav`, originalName: `${sc.title}.wav`, channels: 2, lengthFrames: len });
-        const clip = { id: uuid(), sourceId: srcId, sourceName: `${sc.title}.wav`, start: a.req.atTick ?? 0, startFrame: 0, offsetFrames: 0, lengthFrames: len, endTick: 0, gain: 0 };
+        const clip = { id: uuid(), sourceId: srcId, sourceName: `${sc.title}.wav`, start: a.req.atTick ?? 0, startFrame: 0, offsetFrames: 0, lengthFrames: len, endTick: 0, gain: 0, ...clipEditDefaults(len) };
         const existing = a.req.trackId ? v.tracks.find((t) => t.id === a.req.trackId) : null;
         if (existing) existing.clips.push(clip);
         else
@@ -755,7 +756,7 @@ export function musicHandlers(ctx: MockCtx): { handlers: Record<string, (a: Reco
         const lengthFrames = Math.round(clip.lengthFrames * ratio);
         const name = src.originalName.replace(/(\.[^.]+)?$/, ` (${Math.round(target)} BPM)$1`);
         v.sources.push({ ...src, id, relPath: `audio/rendered/${id}.wav`, originalName: name, lengthFrames });
-        Object.assign(clip, { id: uuid(), sourceId: id, sourceName: name, offsetFrames: 0, lengthFrames });
+        Object.assign(clip, { id: uuid(), sourceId: id, sourceName: name, offsetFrames: 0, lengthFrames, ...clipEditDefaults(lengthFrames) });
       });
     },
   };

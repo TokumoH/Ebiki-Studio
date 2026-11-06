@@ -16,7 +16,11 @@ impl SourceBuffer {
     }
 }
 
+pub use shared_kernel::FadeShape;
+
 /// Clipe pronto para tocar: tudo em amostras.
+///
+/// O processamento é não destrutivo (RNF-07): a fonte é só lida, nunca escrita.
 #[derive(Debug, Clone)]
 pub struct ClipRender {
     pub source: Arc<SourceBuffer>,
@@ -27,11 +31,101 @@ pub struct ClipRender {
     pub length: u64,
     /// Ganho linear do clipe.
     pub gain: f32,
+    /// Duração do fade de entrada (amostras da timeline).
+    pub fade_in: u64,
+    /// Duração do fade de saída (amostras da timeline).
+    pub fade_out: u64,
+    pub fade_in_shape: FadeShape,
+    pub fade_out_shape: FadeShape,
+    /// Polaridade invertida (multiplica por −1).
+    pub invert: bool,
+    /// Lê a região `[offset, offset + length)` de trás para frente.
+    pub reverse: bool,
 }
 
 impl ClipRender {
+    /// Clipe sem fades, polaridade normal e sem reverso.
+    pub fn new(source: Arc<SourceBuffer>, start: u64, offset: u64, length: u64, gain: f32) -> Self {
+        Self {
+            source,
+            start,
+            offset,
+            length,
+            gain,
+            fade_in: 0,
+            fade_out: 0,
+            fade_in_shape: FadeShape::Linear,
+            fade_out_shape: FadeShape::Linear,
+            invert: false,
+            reverse: false,
+        }
+    }
+
+    /// Fim na timeline (sem overflow).
     pub fn end(&self) -> u64 {
-        self.start + self.length
+        self.start.saturating_add(self.length)
+    }
+
+    /// Índice na fonte da amostra `rel` (relativa ao início do clipe, `rel < length`).
+    #[inline]
+    pub fn source_index(&self, rel: u64) -> usize {
+        let i = if self.reverse {
+            self.offset + (self.length - 1 - rel)
+        } else {
+            self.offset + rel
+        };
+        i as usize
+    }
+
+    /// Ganho total (clipe × fades × polaridade) da amostra `rel`. Puro e sem alocação.
+    #[inline]
+    pub fn gain_at(&self, rel: u64) -> f32 {
+        let mut g = if self.invert { -self.gain } else { self.gain };
+        if rel < self.fade_in {
+            g *= self
+                .fade_in_shape
+                .gain((rel as f64 / self.fade_in as f64) as f32);
+        }
+        let remaining = self.length.saturating_sub(rel);
+        if self.fade_out > 0 && remaining <= self.fade_out {
+            g *= self
+                .fade_out_shape
+                .gain((remaining as f64 / self.fade_out as f64) as f32);
+        }
+        g
+    }
+
+    /// Sem fades nem reverso: pode usar o laço simples.
+    #[inline]
+    fn is_plain(&self) -> bool {
+        self.fade_in == 0 && self.fade_out == 0 && !self.reverse
+    }
+
+    /// Soma `n` amostras do clipe, a partir da amostra relativa `rel`, em `out_l`/`out_r`.
+    /// Sem alocação (thread de áudio).
+    #[inline]
+    pub fn mix_into(&self, rel: u64, out_l: &mut [f32], out_r: &mut [f32]) {
+        let src = &self.source.channels;
+        let Some(l) = src.first() else { return };
+        let r = src.get(1).unwrap_or(l);
+        let n = out_l.len().min(out_r.len());
+        if self.is_plain() {
+            let g = if self.invert { -self.gain } else { self.gain };
+            let s = (self.offset + rel) as usize;
+            let (sl, sr) = (&l[s..s + n], &r[s..s + n]);
+            for i in 0..n {
+                out_l[i] += sl[i] * g;
+                out_r[i] += sr[i] * g;
+            }
+            return;
+        }
+        for i in 0..n {
+            let k = rel + i as u64;
+            let idx = self.source_index(k);
+            let g = self.gain_at(k);
+            out_l[i] += l[idx] * g;
+            out_r[i] += r[idx] * g;
+        }
     }
 }
 
@@ -241,7 +335,7 @@ impl RenderGraph {
                 }
             }
             for c in &t.clips {
-                if c.offset + c.length > c.source.frames() {
+                if c.length == 0 || c.offset.saturating_add(c.length) > c.source.frames() {
                     return Err("clipe além do fim da fonte".into());
                 }
             }

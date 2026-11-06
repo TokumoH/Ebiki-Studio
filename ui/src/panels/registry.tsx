@@ -11,6 +11,7 @@ import { LyricsPanel } from "../contexts/sync/LyricsPanel";
 import { TuningPanel } from "../contexts/tuning/TuningPanel";
 import { HarmonyPanel } from "../contexts/harmony/HarmonyPanel";
 import { BasesPanel } from "../contexts/library/BasesPanel";
+import { ClipInspector } from "../contexts/project/ClipInspector";
 import { PANEL_CATALOG, type PanelMeta } from "./catalog";
 
 export type { PanelArea } from "./catalog";
@@ -30,6 +31,7 @@ export const COMPONENTS: Record<string, ComponentType> = {
   tuning: TuningPanel,
   harmony: HarmonyPanel,
   bases: BasesPanel,
+  clip: ClipInspector,
 };
 
 export const PANELS: PanelDef[] = PANEL_CATALOG.flatMap((p) => {

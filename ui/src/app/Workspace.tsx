@@ -10,6 +10,7 @@ import { Button, InlineRename } from "../shared/components";
 import { TransportBar } from "../contexts/transport/TransportBar";
 import { DockLayout } from "../panels/DockLayout";
 import { PanelsMenu } from "../panels/PanelsMenu";
+import { splitAtCursor } from "../contexts/project/clipActions";
 import { AudioSettingsDialog } from "./AudioSettingsDialog";
 import { ExportDialog } from "./ExportDialog";
 import { ShortcutsDialog } from "./ShortcutsDialog";
@@ -67,6 +68,7 @@ export function Workspace() {
         void run(() => api.recordingLoop(s.recording.loopRange ? null : loopRangeFromCursor(s.tempo, useLive.getState().transport?.tick ?? 0)));
       },
       home: () => void run(() => api.seek(0)),
+      split: () => void splitAtCursor(),
     };
     const onKey = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target) || document.querySelector(".dialog-backdrop")) return;

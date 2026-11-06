@@ -28,3 +28,29 @@
 .tempo-panel table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .tempo-panel td, .tempo-panel th { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
 .tempo-panel form { display: flex; gap: var(--space-2); align-items: end; flex-wrap: wrap; margin-top: var(--space-2); }
+
+/* Fase 3 — edição de clipes */
+.timeline { position: relative; }
+.clip-flag { font-weight: 700; }
+.clip--spectrum { background: #08061c; }
+.clip-fades { position: absolute; left: 0; top: 14px; height: calc(100% - 14px); pointer-events: none; overflow: visible; }
+.clip-fade { fill: color-mix(in srgb, var(--bg) 55%, transparent); stroke: var(--clip-sel); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.clip-handle { position: absolute; z-index: 1; }
+.clip-handle:focus-visible { outline: 2px solid var(--clip-sel); outline-offset: 0; }
+.clip-handle--trim { top: 0; bottom: 0; width: 6px; cursor: ew-resize; }
+.clip-handle--start { left: 0; }
+.clip-handle--end { right: 0; }
+.clip-handle--trim:hover, .clip[aria-selected="true"] .clip-handle--trim { background: color-mix(in srgb, var(--clip-sel) 35%, transparent); }
+.clip-handle--fade { top: 0; width: 8px; height: 8px; border-radius: 2px; background: var(--clip-sel); cursor: col-resize; opacity: 0; }
+.clip:hover .clip-handle--fade, .clip[aria-selected="true"] .clip-handle--fade, .clip-handle--fade:focus-visible { opacity: 1; }
+.clip-menu { position: absolute; z-index: 20; min-width: 240px; padding: 4px 0; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+.clip-menu-item { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 6px; padding: 5px 10px; cursor: pointer; font-size: var(--text-sm); }
+.clip-menu-item:hover, .clip-menu-item:focus { background: var(--panel-2); outline: none; }
+.clip-menu-item[aria-disabled="true"] { opacity: .45; cursor: default; }
+.clip-menu-kbd { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--fg-muted); }
+.clip-inspector { height: 100%; overflow: auto; padding: var(--space-3); display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); align-content: start; }
+.clip-inspector-section { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
+.clip-inspector-title { margin: 0; font-size: var(--text-md, 1rem); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clip-inspector-meta { margin: 0; color: var(--fg-muted); font-size: var(--text-xs); }
+.clip-inspector-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.clip-inspector input[type="range"] { width: 100%; }

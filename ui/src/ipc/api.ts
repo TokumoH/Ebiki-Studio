@@ -213,3 +213,22 @@ export const musicApi = {
 };
 
 export type MusicApi = typeof musicApi;
+
+// ------------------------------------------------------------------------------------------------
+// Edição / pós-produção (Fase 3, commands_edit.rs). Seção só acrescentada, para facilitar o merge.
+import type { FadeRequest, FadeShape, SpectrogramRequest } from "./types";
+import { parseSpectrogram, type Spectrogram } from "./spectrogram";
+
+export const editApi = {
+  clipTrim: (clipId: string, start: number, lengthFrames: number, gesture?: number) => call(Session, "clip_trim", { clipId, start, lengthFrames, gesture: gest(gesture) }),
+  clipSplit: (clipId: string, atTick: number) => call(Session, "clip_split", { clipId, atTick }),
+  clipSetFades: (clipId: string, fades: FadeRequest, gesture?: number) => call(Session, "clip_set_fades", { clipId, fades, gesture: gest(gesture) }),
+  clipSetPolarity: (clipId: string, inverted: boolean) => call(Session, "clip_set_polarity", { clipId, inverted }),
+  clipSetReversed: (clipId: string, reversed: boolean) => call(Session, "clip_set_reversed", { clipId, reversed }),
+  clipCrossfade: (aId: string, bId: string, shape: FadeShape) => call(Session, "clip_crossfade", { aId, bId, shape }),
+  /** Ganho do clipe para levar o pico a `targetDbfs` (padrão −1 dBFS no núcleo). */
+  clipNormalize: (clipId: string, targetDbfs?: number) => call(Session, "clip_normalize", { clipId, targetDbfs: targetDbfs ?? null }),
+  sourceSpectrogram: async (sourceId: string, params?: SpectrogramRequest): Promise<Spectrogram> => parseSpectrogram(await binary("source_spectrogram", { sourceId, params: params ?? null })),
+};
+
+export type EditApi = typeof editApi;

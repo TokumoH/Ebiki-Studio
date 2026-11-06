@@ -20,6 +20,7 @@ use std::path::Path;
 const PROJECT_MIGRATIONS: &[&str] = &[
     include_str!("../migrations/project_v1.sql"),
     include_str!("../migrations/project_v2.sql"),
+    include_str!("../migrations/project_v3.sql"),
 ];
 
 pub const PROJECT_SCHEMA_VERSION: u32 = PROJECT_MIGRATIONS.len() as u32;

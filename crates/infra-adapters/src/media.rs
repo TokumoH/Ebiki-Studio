@@ -1,8 +1,12 @@
 //! `MediaPort` sobre o crate `infra-codecs`.
 
-use app_core::ports::{ExportFormatKind, ExportSettings, ImportedMedia, MediaPort, PortError};
+use app_core::ports::{
+    ExportFormatKind, ExportSettings, ImportedMedia, MediaPort, PortError, SpectrogramRequest,
+};
 use audio_engine::SourceBuffer;
-use infra_codecs::{CodecError, EncodeOptions, Encoder, ExportFormat, Mp3Mode, SampleDepth};
+use infra_codecs::{
+    CodecError, EncodeOptions, Encoder, ExportFormat, Mp3Mode, SampleDepth, SpectrogramParams,
+};
 use std::path::Path;
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -105,5 +109,66 @@ impl MediaPort for CodecsMedia {
         .into_iter()
         .filter(|k| to_codec_format(*k).is_available())
         .collect()
+    }
+
+    fn spectrogram(
+        &self,
+        audio: &SourceBuffer,
+        sample_rate: u32,
+        req: SpectrogramRequest,
+        cache: Option<(&Path, &str)>,
+    ) -> Result<Vec<u8>, PortError> {
+        let params = SpectrogramParams {
+            fft_size: req.fft_size,
+            hop: req.hop,
+            bins: req.bins,
+        };
+        let s = match cache {
+            Some((root, hash)) => infra_codecs::load_or_compute_spectrogram(
+                root,
+                hash,
+                sample_rate,
+                params,
+                &audio.channels,
+            ),
+            None => infra_codecs::compute_spectrogram(&audio.channels, sample_rate, params),
+        }
+        .map_err(port)?;
+        Ok(s.to_bytes())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn spectrogram_is_computed_validated_and_cached() {
+        let audio = SourceBuffer {
+            channels: vec![(0..8000).map(|i| (i as f32 * 0.05).sin() * 0.5).collect()],
+        };
+        let req = SpectrogramRequest::default();
+        let bytes = CodecsMedia.spectrogram(&audio, 48_000, req, None).unwrap();
+        assert_eq!(&bytes[0..4], b"AMSG");
+        let parsed = infra_codecs::Spectrogram::from_bytes(&bytes).unwrap();
+        assert_eq!(parsed.columns(), 8000usize.div_ceil(512));
+        let dir = tempfile::tempdir().unwrap();
+        let hash = "d".repeat(64);
+        let cached = CodecsMedia
+            .spectrogram(&audio, 48_000, req, Some((dir.path(), &hash)))
+            .unwrap();
+        assert_eq!(cached, bytes);
+        assert!(dir.path().join("cache/spectrogram").is_dir());
+        let bad = SpectrogramRequest {
+            fft_size: 1000,
+            ..req
+        };
+        assert_eq!(
+            CodecsMedia
+                .spectrogram(&audio, 48_000, bad, None)
+                .unwrap_err()
+                .code,
+            "codec.invalid_parameter"
+        );
     }
 }

@@ -6,7 +6,8 @@
 //! - [`decode`]: `probe` e `decode_to_f32` (symphonia) com downmix e conversão de taxa (rubato);
 //! - [`import`]: cópia para `audio/imported/<sha256>.<ext>` com deduplicação e gravação atômica;
 //! - [`peaks`]: picos de waveform e cache binário `cache/peaks/<hash>-<fpp>.peaks`;
-//! - [`encode`]: exportação em fluxo WAV/AIFF/FLAC/MP3/OGG e stems.
+//! - [`encode`]: exportação em fluxo WAV/AIFF/FLAC/MP3/OGG e stems;
+//! - [`spectrogram`]: STFT (Hann) com eixo log e cache `cache/spectrogram/` (Fase 3, RF-3.5).
 //!
 //! Spec: `docs/specs/2026-11-05-fase-9-formatos.md`. ADRs: 0022 (codificadores e licenças),
 //! 0023 (AAC).
@@ -20,6 +21,7 @@ mod fsutil;
 pub mod import;
 pub mod peaks;
 pub mod resample;
+pub mod spectrogram;
 
 pub use decode::{
     decode_to_f32, decode_to_f32_with, probe, probe_with, AudioInfo, DecodeLimits, DecodedAudio,
@@ -36,4 +38,8 @@ pub use import::{
 pub use peaks::{
     compute_multi_resolution, compute_peaks, load_or_compute, load_or_compute_multi,
     peaks_cache_path, ChannelPeaks, Peaks, DEFAULT_RESOLUTIONS,
+};
+pub use spectrogram::{
+    compute_spectrogram, load_or_compute_spectrogram, spectrogram_cache_path, Spectrogram,
+    SpectrogramParams,
 };

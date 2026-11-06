@@ -543,7 +543,7 @@ impl EngineCore {
 }
 
 fn mix_clips(clips: &[ClipRender], pos: u64, len: usize, out_l: &mut [f32], out_r: &mut [f32]) {
-    let end = pos + len as u64;
+    let end = pos.saturating_add(len as u64);
     for c in clips {
         if c.start >= end {
             break; // ordenados por início
@@ -553,17 +553,13 @@ fn mix_clips(clips: &[ClipRender], pos: u64, len: usize, out_l: &mut [f32], out_
         }
         let from = c.start.max(pos);
         let to = c.end().min(end);
-        let src = &c.source.channels;
-        let Some(l) = src.first() else { continue };
-        let r = src.get(1).unwrap_or(l);
-        let src_start = (c.offset + (from - c.start)) as usize;
         let out_start = (from - pos) as usize;
         let n = (to - from) as usize;
-        let (sl, sr) = (&l[src_start..src_start + n], &r[src_start..src_start + n]);
-        for i in 0..n {
-            out_l[out_start + i] += sl[i] * c.gain;
-            out_r[out_start + i] += sr[i] * c.gain;
-        }
+        c.mix_into(
+            from - c.start,
+            &mut out_l[out_start..out_start + n],
+            &mut out_r[out_start..out_start + n],
+        );
     }
 }
 
