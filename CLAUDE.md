@@ -68,7 +68,8 @@ Requisitos completos: [`docs/requisitos/2026-11-05-levantamento-requisitos.md`](
 - **Testes:** TDD completo. **CI:** GitHub Actions nos 3 sistemas.
 - **Documentação por fase:** especificação, diagramas (casos de uso, estados, componentes, classes, sequência, serviços, processos), arquitetura, DER, ADRs, manual.
 - **Áudio:** latência alvo < 10 ms (aceitável ≤ 15 ms) via APIs nativas; 48 kHz/24-bit padrão configurável; 32+ faixas.
-- **Fora do escopo:** Spotify, drivers próprios, controlador MIDI, auto-update.
+- **Fora do escopo:** Spotify, drivers próprios, controlador MIDI.
+- **Atualização do app** (revisto em 2026-11-06, ADR-0034): verificação manual ou opt-in ao abrir; instalação assinada dentro do app.
 
 ## 6. Fluxo de Trabalho
 

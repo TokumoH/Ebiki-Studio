@@ -160,6 +160,18 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
   projeto você pode **recuperar** o autosave mais novo ou abrir a versão salva.
 - Desfazer/refazer ilimitado durante a sessão (Ctrl+Z / Ctrl+Shift+Z).
 
+### 10.1 Atualizações do app
+
+- **Ajuda › Verificar atualizações…** consulta a página de releases. Se houver versão nova, o
+  diálogo mostra as novidades e oferece **Instalar e reiniciar**: o app baixa o pacote, confere a
+  **assinatura digital** (arquivo adulterado é recusado) e reinicia. Alterações não salvas são salvas antes.
+- **Verificar ao abrir o app** (no mesmo diálogo, desligado por padrão): com ela ligada, uma versão
+  nova aparece só como aviso na barra de status — nunca interrompe uma gravação.
+- **Pular esta versão** silencia o aviso automático daquela versão (a verificação manual ainda a mostra).
+- Windows, macOS e Linux **AppImage** atualizam dentro do app. Instalações **.deb/.rpm** pertencem
+  ao gerenciador do sistema: o diálogo abre a página de download para instalar a nova versão por cima.
+- Sem internet, o app avisa e continua funcionando normalmente.
+
 ## 11. Atalhos (editáveis em *Editar › Atalhos de teclado…*, Ctrl+/)
 
 | Ação | Atalho |

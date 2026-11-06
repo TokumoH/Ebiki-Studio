@@ -81,9 +81,24 @@ jobs:
             ' CHANGELOG.md
             echo "__EBIKI_NOTES__"
           } >> "$GITHUB_OUTPUT"
+      - name: Assinatura das atualizações
+        id: signing
+        shell: bash
+        env:
+          HAS_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' }}
+        run: |
+          # com a chave: gera pacotes de atualização assinados + latest.json (ADR-0034);
+          # sem ela: a release sai normalmente, só sem atualização dentro do app
+          if [[ "$HAS_KEY" == "true" ]]; then echo "args=" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::Segredo TAURI_SIGNING_PRIVATE_KEY ausente: release sem pacotes de atualização."
+            echo "args=--config crates/app-desktop/tauri.unsigned-updates.conf.json" >> "$GITHUB_OUTPUT"
+          fi
       - uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           # roda da raiz (como `npm run build` local): o beforeBuildCommand `npm --prefix ui …`
           # resolve a partir daqui e o CLI encontra crates/app-desktop/tauri.conf.json sozinho
@@ -95,7 +110,9 @@ jobs:
           releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: false
           prerelease: false
-          args: ${{ matrix.args }}
+          # latest.json aponta o Windows para o instalador NSIS (installMode passivo)
+          updaterJsonPreferNsis: true
+          args: ${{ matrix.args }} ${{ steps.signing.outputs.args }}
 
   checksums:
     name: Somas SHA-256

@@ -107,7 +107,7 @@ scripts/ci-local.sh
 
 ## Privacidade e segurança
 
-- Sem telemetria, sem contas, sem conexões de rede — veja [PRIVACY.md](PRIVACY.md).
+- Sem telemetria, sem contas e sem conexões de rede — exceto verificar atualizações quando você pede (ou liga essa opção) — veja [PRIVACY.md](PRIVACY.md).
 - Para reportar vulnerabilidades, siga o [SECURITY.md](SECURITY.md) (reporte privado, não use issues).
 
 ## Licença

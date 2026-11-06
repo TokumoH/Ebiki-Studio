@@ -1,13 +1,25 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permissões mínimas da janela principal: eventos do núcleo e diálogos de arquivo.",
-  "windows": ["main"],
+  "description": "Permissões mínimas da janela principal: eventos do núcleo, diálogos de arquivo, atualização sob demanda e abertura apenas da página de releases.",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "dialog:allow-open",
     "dialog:allow-save",
     "dialog:allow-ask",
-    "dialog:allow-message"
+    "dialog:allow-message",
+    "updater:default",
+    "process:allow-restart",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://github.com/TokumoH/Ebiki-Studio/releases*"
+        }
+      ]
+    }
   ]
 }

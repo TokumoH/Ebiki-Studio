@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../ipc/api";
 import { transport } from "../ipc/transport";
 import type { AudioStatus } from "../ipc/types";
@@ -17,6 +17,8 @@ import { MenuBar } from "../shared/MenuBar";
 import { buildMenus } from "./menuModel";
 import { HelpCenter } from "./HelpCenter";
 import { AboutDialog } from "./AboutDialog";
+import { UpdateDialog } from "./UpdateDialog";
+import { useUpdates } from "./updates";
 import { Tutorial, shouldAutoStartTutorial, useTour } from "./Tutorial";
 import { AudioSettingsDialog } from "./AudioSettingsDialog";
 import { ExportDialog } from "./ExportDialog";
@@ -76,6 +78,13 @@ export function Workspace() {
     if (shouldAutoStartTutorial()) startTour(1);
   }, [startTour]);
 
+  // atualização: aviso discreto na barra de status e salvamento antes de reiniciar
+  const updateNotice = useUpdates((u) => (u.notice && u.info ? u.info.version : null));
+  const showUpdate = useUpdates((u) => u.show);
+  const saveBeforeRestart = useCallback(async () => {
+    if (useSession.getState().session?.history.dirty) await api.projectSave();
+  }, []);
+
   // registro único de comandos: usado pelos atalhos de teclado e pelo menu principal
   const actions = useRef<Record<string, () => void>>({});
   actions.current = {
@@ -114,6 +123,7 @@ export function Workspace() {
       shortcutsDialog: () => setDialog("shortcuts"),
       help: () => setDialog("help"),
       about: () => setDialog("about"),
+      checkUpdates: () => void useUpdates.getState().check({ manual: true }),
       tutorial: () => startTour(1),
       themeDark: () => useTheme.getState().theme !== "dark" && useTheme.getState().toggle(),
       themeLight: () => useTheme.getState().theme !== "light" && useTheme.getState().toggle(),
@@ -259,6 +269,11 @@ export function Workspace() {
         {audio?.bufferSize ? <span className="mono">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs?.toFixed(1) ?? "?"} ms</span> : null}
         {meters && meters.xruns > 0 ? <span className="warn">{meters.xruns} falha(s) de buffer — aumente o buffer</span> : null}
         <span style={{ flex: 1 }} />
+        {updateNotice ? (
+          <button type="button" className="statusbar-update" onClick={showUpdate}>
+            ● Versão {updateNotice} disponível
+          </button>
+        ) : null}
         <span>{h.dirty ? "Alterações não salvas (autosave a cada 2 min)" : "Salvo"}</span>
       </footer>
       ) : <span />}
@@ -275,6 +290,7 @@ export function Workspace() {
         onEditShortcuts={() => setDialog("shortcuts")}
       />
       <AboutDialog open={dialog === "about"} onClose={() => setDialog(null)} />
+      <UpdateDialog beforeRestart={saveBeforeRestart} />
       <Tutorial />
       <CloseProjectDialog open={dialog === "close"} onClose={() => setDialog(null)} />
     </div>

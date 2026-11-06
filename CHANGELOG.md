@@ -17,6 +17,9 @@ Identidade Ebiki em todo o app e nos instaladores, com navegação e ajuda novas
 - **Tela de carregamento** com a marca Ebiki e diálogo *Sobre*.
 - **Exibir**: zoom da linha do tempo (Ctrl+= / Ctrl+- / Ctrl+0), tela cheia (F11), barra de status
   alternável, espectrograma da faixa e *Restaurar layout padrão*.
+- **Atualizações**: *Ajuda › Verificar atualizações…* mostra as novidades e instala a nova versão
+  dentro do app, com assinatura verificada (no Linux, só o AppImage; `.deb`/`.rpm` abrem a página de
+  download). Verificar ao abrir é opcional e vem desligado — sem ela, o app não usa a rede.
 - **Instaladores com a cara do Ebiki**: telas próprias no instalador do Windows (NSIS e MSI), em
   português e inglês, e fundo personalizado no DMG do macOS.
 

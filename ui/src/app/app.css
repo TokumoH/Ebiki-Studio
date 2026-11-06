@@ -75,3 +75,29 @@ kbd { font-family: var(--font-mono); font-size: var(--text-xs); padding: 1px 6px
 .about-text { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-sm); color: var(--fg-muted); }
 .about-text strong { color: var(--fg); font-size: 16px; }
 .about-legal { margin-top: 6px; font-size: var(--text-xs); color: var(--fg-faint); }
+
+/* Atualizações (ADR-0034) */
+.statusbar-update { background: transparent; border: 0; padding: 0; font: inherit; color: var(--accent); cursor: pointer; }
+.statusbar-update:hover, .statusbar-update:focus-visible { text-decoration: underline; }
+.update { display: flex; flex-direction: column; gap: var(--space-3); min-width: min(460px, 80vw); }
+.update-head { display: flex; gap: var(--space-3); align-items: center; }
+.update-head > div, .update-state > div { display: flex; flex-direction: column; gap: 2px; }
+.update-head strong { font-size: var(--text-lg); }
+.update-head span, .update-state span, .update-muted { color: var(--fg-muted); font-size: var(--text-sm); line-height: 1.5; }
+.update-head b { color: var(--fg); }
+.update-head b.update-new { color: var(--accent); }
+.update-logo { width: 14px; height: 30px; }
+.update-notes { background: var(--bg-sunken); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-3); max-height: 200px; overflow: auto; }
+.update-notes p { margin: 4px 0 0; white-space: pre-wrap; line-height: 1.6; font-size: var(--text-sm); }
+.update-progress { display: flex; flex-direction: column; gap: 6px; }
+.update-progress progress { width: 100%; height: 6px; accent-color: var(--accent); }
+.update-ok { color: var(--ok); }
+.update-state { display: flex; gap: var(--space-3); align-items: flex-start; min-width: min(420px, 80vw); }
+.update-icon { font-size: 18px; line-height: 1.2; }
+.update-icon.ok { color: var(--ok); }
+.update-icon.warn { color: var(--warn); }
+.update-icon.bad { color: var(--crit); }
+.update-line { margin: 0; color: var(--fg-muted); }
+.update-footer { display: flex; align-items: center; gap: var(--space-2); width: 100%; flex-wrap: wrap; }
+.update-auto { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--fg-muted); }
+.update-skip { background: transparent; border: 0; color: var(--fg-muted); text-decoration: underline; font: inherit; font-size: var(--text-sm); cursor: pointer; }

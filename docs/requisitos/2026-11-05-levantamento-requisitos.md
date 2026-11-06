@@ -135,7 +135,7 @@ Estúdio musical **desktop multiplataforma** (Windows, macOS, Linux), de **uso p
 - Integração com Spotify (descartada: termos de uso proíbem captura de áudio)
 - Drivers de áudio próprios (substituídos por APIs nativas de baixa latência)
 - Entrada de teclado/controlador MIDI
-- Auto-update
+- ~~Auto-update~~ — revisto em 2026-11-06: verificação manual/opt-in e instalação assinada no app ([ADR-0034](../adr/0034-atualizacao-do-app-sob-demanda-e-assinada.md))
 
 ## 9. Riscos Identificados
 

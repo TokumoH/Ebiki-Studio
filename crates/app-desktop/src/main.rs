@@ -15,6 +15,7 @@ pub fn app_context<R: tauri::Runtime>() -> tauri::Context<R> {
 #[cfg(test)]
 mod ipc_tests;
 mod state;
+mod updates;
 // Fases 6–8 (partituras, letra, afinação)
 mod commands_music;
 // Fase 3 (edição / pós-produção)
@@ -31,6 +32,9 @@ const AUTOSAVE_INTERVAL: Duration = Duration::from_secs(120);
 fn main() {
     with_commands(tauri::Builder::default())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&data_dir)?;
@@ -70,6 +74,7 @@ fn main() {
 /// Registra todos os comandos IPC (usado pelo app e pelos testes de IPC).
 pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<R> {
     b.invoke_handler(tauri::generate_handler![
+        updates::app_update_mode,
         commands::audio_devices,
         commands::audio_status,
         commands::audio_configure,

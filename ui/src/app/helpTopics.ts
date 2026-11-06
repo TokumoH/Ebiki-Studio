@@ -132,6 +132,18 @@ export const HELP_TOPICS: HelpTopic[] = [
     ],
   },
   {
+    id: "atualizacoes",
+    title: "Atualizações",
+    keywords: "atualizar atualização versão nova update instalar reiniciar download assinatura",
+    intro: "O app só procura versões novas quando você pede (ou se ligar a verificação ao abrir). Cada pacote é assinado e conferido antes de instalar.",
+    steps: [
+      "Ajuda › Verificar atualizações…: se houver versão nova, veja as novidades e clique em Instalar e reiniciar.",
+      "Alterações não salvas são salvas antes de reiniciar.",
+      "Marque Verificar ao abrir o app para receber um aviso discreto na barra de status; Pular esta versão silencia esse aviso.",
+      "Instalações .deb/.rpm no Linux: o botão abre a página de download para instalar a nova versão por cima.",
+    ],
+  },
+  {
     id: "problemas",
     title: "Solução de problemas",
     keywords: "sem som áudio estalos buffer latência dispositivo microfone permissão erro travar",

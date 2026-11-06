@@ -154,6 +154,7 @@ export function buildMenus(c: MenuContext): MenuDef[] {
         item("tutorial", "Tutorial de início"),
         item("shortcutsDialog", "Atalhos de teclado…"),
         sep,
+        item("checkUpdates", "Verificar atualizações…"),
         item("about", "Sobre o Ebiki Studio"),
       ],
     },
