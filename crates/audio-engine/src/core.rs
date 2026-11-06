@@ -423,7 +423,10 @@ impl EngineCore {
             s.buf_l[..len].fill(0.0);
             s.buf_r[..len].fill(0.0);
             if rolling {
-                mix_clips(&t.clips, pos, len, &mut s.buf_l, &mut s.buf_r);
+                // compensação de latência: a faixa lê os clipes adiantada pela latência dos seus
+                // inserts, e a saída atrasada pelos efeitos volta a cair no tempo certo
+                let lead = strip_latency(s);
+                mix_clips(&t.clips, pos + lead, len, &mut s.buf_l, &mut s.buf_r);
             }
             if let Some(m) = t.monitor {
                 if in_channels > 0 {
@@ -561,6 +564,16 @@ fn mix_clips(clips: &[ClipRender], pos: u64, len: usize, out_l: &mut [f32], out_
             &mut out_r[out_start..out_start + n],
         );
     }
+}
+
+/// Latência total (amostras) dos inserts ativos de um canal. Sem alocação.
+fn strip_latency(s: &StripRender) -> u64 {
+    s.inserts
+        .iter()
+        .filter(|i| !i.bypass)
+        .filter_map(|i| i.processor.as_ref())
+        .map(|p| p.latency_samples() as u64)
+        .sum()
 }
 
 fn run_inserts(s: &mut StripRender, len: usize) {

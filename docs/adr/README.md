@@ -33,5 +33,6 @@ Gerado por `scripts/adr_index.py`.
 | [0029](0029-processamento-de-altura-e-tempo-gera-fonte-derivada.md) | Correção de afinação, time-stretch e partitura renderizada geram fontes derivadas; corretor em tempo real como insert | Aceita |
 | [0030](0030-nome-do-produto-ebiki-studio.md) | Nome do produto — Ebiki Studio | Aceita |
 | [0031](0031-edicao-nao-destrutiva-de-clipes.md) | Edição de clipes não destrutiva (janela + processamento na engine) e espectrograma como fabricação pura | Aceita |
+| [0032](0032-compensacao-de-latencia-por-leitura-antecipada.md) | Compensação de latência de efeitos por leitura antecipada dos clipes | Aceita |
 
 Números não usados: 0015, 0024 (reservados durante o desenvolvimento em paralelo e nunca publicados).

@@ -271,3 +271,70 @@ fn metronome_never_drops_clicks_at_block_boundaries() {
         );
     }
 }
+
+/// Efeito de teste com latência: atraso puro de `n` amostras (linha pré-alocada).
+struct Delay {
+    line_l: Vec<f32>,
+    line_r: Vec<f32>,
+    w: usize,
+}
+impl Delay {
+    fn new(n: usize) -> Self {
+        Self {
+            line_l: vec![0.0; n],
+            line_r: vec![0.0; n],
+            w: 0,
+        }
+    }
+}
+impl AudioProcessor for Delay {
+    fn set_params(&mut self, _: &[f32]) {}
+    fn process(&mut self, l: &mut [f32], r: &mut [f32]) {
+        for (x, y) in l.iter_mut().zip(r.iter_mut()) {
+            std::mem::swap(x, &mut self.line_l[self.w]);
+            std::mem::swap(y, &mut self.line_r[self.w]);
+            self.w = (self.w + 1) % self.line_l.len();
+        }
+    }
+    fn reset(&mut self) {}
+    fn latency_samples(&self) -> usize {
+        self.line_l.len()
+    }
+}
+
+/// Faixa com efeito de latência (ex.: limiter com look-ahead) fica alinhada às demais.
+#[test]
+fn insert_latency_is_compensated_on_playback() {
+    let first_hit = |with_delay: bool, bypass: bool| {
+        let mut g = RenderGraph::empty(SR);
+        let mut t = track(1, 0, vec![clip(impulse(1_000, 4_000), 0)]);
+        if with_delay {
+            t.strip.inserts.push(InsertRender {
+                id: 7,
+                type_tag: 77,
+                bypass,
+                params: vec![],
+                processor: Some(Box::new(Delay::new(300))),
+            });
+        }
+        g.tracks.push(t);
+        let (_h, mut core) = playing(g);
+        let (l, _) = offline::render(&mut core, 4_000, 256);
+        l.iter().position(|x| x.abs() > 0.1)
+    };
+    assert_eq!(
+        first_hit(false, false),
+        Some(1_000),
+        "referência sem efeito"
+    );
+    assert_eq!(
+        first_hit(true, false),
+        Some(1_000),
+        "atraso de 300 compensado"
+    );
+    assert_eq!(
+        first_hit(true, true),
+        Some(1_000),
+        "efeito em bypass não adianta a leitura"
+    );
+}
