@@ -1,5 +1,8 @@
-.app { display: grid; grid-template-rows: 44px minmax(0, 1fr) 24px; height: 100%; }
-.topbar { display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-2); border-bottom: 1px solid var(--line); background: var(--bg-raised); min-width: 0; overflow: hidden; }
+.app { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
+.appbar { display: flex; flex-direction: column; min-width: 0; border-bottom: 1px solid var(--line); }
+.menubar-row { height: 34px; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-2); background: var(--bg-sunken); border-bottom: 1px solid var(--line); min-width: 0; }
+.menubar-row .brand-mark { width: 11px; height: 23px; margin: 0 6px 0 4px; }
+.topbar { height: 44px; display: flex; align-items: center; gap: var(--space-2); padding: 0 var(--space-2); background: var(--bg-raised); min-width: 0; overflow: hidden; }
 .brand { font-weight: 700; letter-spacing: 0.02em; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
 .brand-mark { display: inline-block; flex: none; width: 12px; height: 26px; background: var(--brand-fill);
   -webkit-mask: url("../shared/assets/ebiki-mark.png") center / contain no-repeat;
@@ -8,7 +11,7 @@
 .project-name { display: flex; align-items: center; min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
 .dirty { color: var(--accent); }
 .topbar .sep { width: 1px; height: 24px; background: var(--line); flex: none; }
-.statusbar { display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-3); border-top: 1px solid var(--line); background: var(--bg-raised); font-size: var(--text-xs); color: var(--fg-muted); white-space: nowrap; overflow: hidden; }
+.statusbar { height: 24px; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-3); border-top: 1px solid var(--line); background: var(--bg-raised); font-size: var(--text-xs); color: var(--fg-muted); white-space: nowrap; overflow: hidden; }
 .statusbar .warn { color: var(--warn); }
 .dock { height: 100%; }
 .panel-host { height: 100%; overflow: hidden; background: var(--bg); color: var(--fg); }
@@ -24,3 +27,50 @@
 .recent small { display: block; color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .row { display: flex; gap: var(--space-2); align-items: end; flex-wrap: wrap; }
 @media (max-width: 860px) { .start main { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---- central de ajuda ---- */
+.help { display: flex; flex: 1; min-height: 0; width: 100%; }
+.help-nav { width: 250px; flex: none; display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); border-right: 1px solid var(--line); background: var(--bg-raised); overflow: auto; }
+.help-topics { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.help-topic { width: 100%; text-align: left; height: 30px; padding: 0 10px; background: transparent; border: 0; border-radius: var(--radius-sm); color: var(--fg); font: inherit; font-size: var(--text-sm); cursor: pointer; }
+.help-topic:hover { background: var(--panel-2); }
+.help-topic[aria-current="page"] { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); font-weight: 600; }
+.help-empty { color: var(--fg-muted); font-size: var(--text-sm); margin: 0; padding: 0 4px; }
+.help-article { flex: 1; min-width: 0; padding: var(--space-4) var(--space-5, 28px); display: flex; flex-direction: column; gap: var(--space-3); overflow: auto; }
+.help-article h2 { margin: 0; font-size: 20px; }
+.help-intro { margin: 0; color: var(--fg-muted); line-height: 1.55; }
+.help-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; line-height: 1.55; }
+.help-shortcuts { border-collapse: collapse; width: 100%; max-width: 520px; }
+.help-shortcuts td { padding: 6px 4px; border-bottom: 1px solid var(--line); }
+.help-shortcuts td:last-child { text-align: right; white-space: nowrap; }
+kbd { font-family: var(--font-mono); font-size: var(--text-xs); padding: 1px 6px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--bg-sunken); }
+.help-tour { margin-top: auto; display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--line); border-radius: 10px; background: var(--bg-raised); }
+.help-tour > div { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: var(--text-sm); }
+.help-tour span { color: var(--fg-muted); }
+.help-foot { margin: 0; font-size: var(--text-xs); color: var(--fg-faint); }
+
+/* ---- tutorial ---- */
+.tour { position: fixed; inset: 0; z-index: 80; pointer-events: none; }
+.tour-dim { position: absolute; inset: 0; background: rgb(10 9 16 / 0.72); pointer-events: auto; }
+.tour-spot { position: absolute; border: 2px solid var(--accent); border-radius: 10px; box-shadow: 0 0 0 4000px rgb(10 9 16 / 0.72); transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease; }
+.tour-card { position: absolute; pointer-events: auto; box-sizing: border-box; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: 0 20px 50px rgb(0 0 0 / 0.55); outline: none; }
+.tour-card h3 { margin: 0; font-size: 17px; }
+.tour-card p { margin: 0; font-size: var(--text-sm); line-height: 1.6; color: var(--fg-muted); }
+.tour-head { display: flex; align-items: center; justify-content: space-between; }
+.tour-count { font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+.tour-skip { background: transparent; border: 0; color: var(--fg-muted); text-decoration: underline; font: inherit; font-size: var(--text-xs); cursor: pointer; }
+.tour-logo { width: 22px; height: 46px; }
+.tour-dots { display: flex; gap: 6px; align-items: center; }
+.tour-dots span { width: 6px; height: 6px; border-radius: 3px; background: var(--line-strong); }
+.tour-dots span.done { background: var(--fg-muted); }
+.tour-dots span.on { width: 18px; background: var(--accent); }
+.tour-actions { display: flex; align-items: center; gap: 8px; }
+.tour-dont { flex: 1; display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--fg-muted); }
+@media (prefers-reduced-motion: reduce) { .tour-spot { transition: none; } }
+
+/* ---- sobre ---- */
+.about { display: flex; gap: var(--space-4); align-items: center; }
+.about-logo { width: 34px; height: 72px; }
+.about-text { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-sm); color: var(--fg-muted); }
+.about-text strong { color: var(--fg); font-size: 16px; }
+.about-legal { margin-top: 6px; font-size: var(--text-xs); color: var(--fg-faint); }

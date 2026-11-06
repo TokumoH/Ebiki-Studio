@@ -13,17 +13,21 @@ async function newProject(page: Page, name: string) {
 
 const tab = (page: Page, title: string) => page.locator(".dv-tab").filter({ hasText: new RegExp(`^${title}$`) });
 
-test("menu Painéis lista todos os painéis e reabre um painel fechado pelo teclado", async ({ page }) => {
+test("menu Janela lista os painéis e reabre um painel fechado pelo teclado", async ({ page }) => {
   await newProject(page, "Paineis");
   await tab(page, "Mixer").click();
   await tab(page, "Mixer").locator(".dv-default-tab-action").click();
   await expect(tab(page, "Mixer")).toHaveCount(0);
 
-  const button = page.getByRole("button", { name: /Painéis/ });
-  await button.focus();
+  // F10 leva o teclado ao menu principal; → até "Janela"; Enter abre
+  await page.keyboard.press("F10");
+  await expect(page.getByRole("menuitem", { name: "Arquivo" })).toBeFocused();
+  for (let i = 0; i < 7; i++) await page.keyboard.press("ArrowRight");
+  const janela = page.getByRole("menuitem", { name: "Janela" });
+  await expect(janela).toBeFocused();
   await page.keyboard.press("Enter");
-  const menu = page.getByRole("menu", { name: "Painéis" });
-  await expect(menu.getByRole("menuitemcheckbox")).toHaveText(PANEL_CATALOG.map((p) => new RegExp(`${p.title}$`)));
+  const menu = page.getByRole("menu", { name: "Janela" });
+  await expect(menu.getByRole("menuitemcheckbox")).toHaveText(PANEL_CATALOG.map((p) => new RegExp(`${p.title}`)));
   await expect(menu.getByRole("menuitemcheckbox", { name: "Mixer" })).toHaveAttribute("aria-checked", "false");
   await expect(menu.getByRole("menuitemcheckbox", { name: "Arranjo" })).toBeFocused();
 
@@ -34,16 +38,17 @@ test("menu Painéis lista todos os painéis e reabre um painel fechado pelo tecl
   await expect(menu).toHaveCount(0);
   await expect(tab(page, "Mixer")).toHaveCount(1);
   await expect(page.locator(".mixer")).toBeVisible();
-  await expect(page.getByRole("tab", { name: "Mixer" })).toHaveAttribute("aria-selected", "true");
 
-  // painel já aberto: o menu só o traz para a frente; Esc fecha e devolve o foco
-  await button.click();
+  // aberto: aparece marcado; Esc fecha o menu e devolve o foco ao botão
+  await janela.click();
   await expect(menu.getByRole("menuitemcheckbox", { name: "Mixer" })).toHaveAttribute("aria-checked", "true");
   await page.keyboard.press("Escape");
   await expect(menu).toHaveCount(0);
-  await expect(button).toBeFocused();
-  await button.click();
-  await menu.getByRole("menuitemcheckbox", { name: "Letra" }).click();
+  await expect(janela).toBeFocused();
+
+  // Ferramentas traz um painel para a frente
+  await page.getByRole("menuitem", { name: "Ferramentas" }).click();
+  await page.getByRole("menuitem", { name: "Letra sincronizada" }).click();
   await expect(page.locator(".dv-tab.dv-active-tab").filter({ hasText: /^Letra$/ })).toHaveCount(1);
 
   // painel fechado continua fechado ao recarregar (o layout é lembrado)

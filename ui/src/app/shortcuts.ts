@@ -20,6 +20,12 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: "loop", label: "Loop", keys: "L" },
   { id: "home", label: "Voltar ao início", keys: "Home" },
   { id: "split", label: "Dividir clipe no cursor", keys: "S" },
+  { id: "zoomIn", label: "Aproximar (zoom)", keys: "Ctrl+=" },
+  { id: "zoomOut", label: "Afastar (zoom)", keys: "Ctrl+-" },
+  { id: "zoomReset", label: "Zoom padrão", keys: "Ctrl+0" },
+  { id: "fullscreen", label: "Tela cheia", keys: "F11" },
+  { id: "help", label: "Central de ajuda", keys: "F1" },
+  { id: "shortcutsDialog", label: "Atalhos de teclado", keys: "Ctrl+/" },
 ];
 
 /** Normaliza um evento de teclado para o formato "Ctrl+Shift+K". */

@@ -12,6 +12,7 @@ import { useClipViewMode } from "./spectrogramCache";
 import { canSplitAt, fadeFromPx, msToFrames, overlappingNeighbor, trimEndTo, trimStartTo } from "./clipEdit";
 import { crossfadeWithNeighbor, findClip, normalizeClip, setPolarity, setReversed, splitAtCursor } from "./clipActions";
 import { TrackOrderButtons } from "./TrackOrderButtons";
+import { useTimelineView } from "./timelineView";
 
 const TRACK_H = 72;
 
@@ -100,7 +101,7 @@ export function Timeline() {
   const selectedClipId = useSession((s) => s.selectedClipId);
   const select = useSession((s) => s.select);
   const tick = useLive((s) => s.transport?.tick ?? 0);
-  const [pxPerBeat, setPxPerBeat] = useState(40);
+  const { pxPerBeat, zoomIn, zoomOut } = useTimelineView();
   const [scroll, setScroll] = useState({ left: 0, top: 0, width: 1200 });
   const lanesRef = useRef<HTMLDivElement>(null);
   const headersRef = useRef<HTMLDivElement>(null);
@@ -232,6 +233,7 @@ export function Timeline() {
   return (
     <div
       className="timeline"
+      data-tour="arranjo"
       style={{ ["--track-h" as string]: `${TRACK_H}px` }}
       tabIndex={0}
       aria-label="Linha do tempo"
@@ -254,10 +256,10 @@ export function Timeline() {
           + Faixa
         </Button>
         <span style={{ flex: 1 }} />
-        <Button size="sm" icon variant="ghost" aria-label="Diminuir zoom" onClick={() => setPxPerBeat((z) => Math.max(4, z / 1.5))}>
+        <Button size="sm" icon variant="ghost" aria-label="Diminuir zoom" onClick={zoomOut}>
           −
         </Button>
-        <Button size="sm" icon variant="ghost" aria-label="Aumentar zoom" onClick={() => setPxPerBeat((z) => Math.min(400, z * 1.5))}>
+        <Button size="sm" icon variant="ghost" aria-label="Aumentar zoom" onClick={zoomIn}>
           +
         </Button>
       </div>

@@ -4,8 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Ebiki Studio</title>
+    <style>
+      /* tela de carregamento: aparece antes do JavaScript (estilo inline permitido pela CSP) */
+      html, body { margin: 0; height: 100%; background: #14121d; }
+      #splash { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+        background: radial-gradient(ellipse 60% 45% at 50% 46%, #1f1b30 0%, #14121d 70%); color: #eee7f2;
+        font-family: "Inter Variable", "Segoe UI", system-ui, -apple-system, sans-serif; transition: opacity 0.35s ease; }
+      #splash.splash-out { opacity: 0; pointer-events: none; }
+      #splash img { height: 200px; width: auto; animation: splash-in 0.8s ease-out both; }
+      #splash .splash-name { font-size: 30px; font-weight: 600; letter-spacing: 0.02em; }
+      #splash .splash-tag { font-size: 13px; color: #a7a1bb; letter-spacing: 0.08em; margin-top: 6px; text-align: center; }
+      #splash .splash-bar { width: 300px; height: 2px; background: #302b48; border-radius: 2px; overflow: hidden; margin-top: 14px; }
+      #splash .splash-bar span { display: block; width: 40%; height: 100%;
+        background: linear-gradient(90deg, #2b4f7a 0%, #6a6f9e 38%, #e6889a 70%, #f3a46b 100%); animation: splash-run 1.4s ease-in-out infinite; }
+      #splash .splash-status { font-size: 12px; color: #a7a1bb; min-height: 16px; }
+      #splash .splash-foot { position: absolute; bottom: 22px; font-size: 11px; color: #8a83a2; }
+      @keyframes splash-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: none; } }
+      @keyframes splash-run { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+      @media (prefers-reduced-motion: reduce) { #splash img, #splash .splash-bar span { animation: none; } #splash { transition: none; } }
+    </style>
   </head>
   <body>
+    <div id="splash" role="status" aria-live="polite" aria-label="Carregando o Ebiki Studio">
+      <img src="/splash-mark.png" alt="" />
+      <div>
+        <div class="splash-name">Ebiki Studio</div>
+        <div class="splash-tag">響 · estúdio musical</div>
+      </div>
+      <div class="splash-bar" aria-hidden="true"><span></span></div>
+      <div class="splash-status" id="splash-status">Iniciando…</div>
+      <div class="splash-foot">Offline · sem contas · sem coleta de dados</div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

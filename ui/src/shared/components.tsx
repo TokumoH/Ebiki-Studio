@@ -50,7 +50,7 @@ export function Tabs<T extends string>({ value, tabs, onChange, label }: { value
   );
 }
 
-export function Dialog({ title, open, onClose, children, footer }: { title: string; open: boolean; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
+export function Dialog({ title, open, onClose, children, footer, size }: { title: string; open: boolean; onClose: () => void; children: ReactNode; footer?: ReactNode; size?: "lg" }) {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -76,7 +76,7 @@ export function Dialog({ title, open, onClose, children, footer }: { title: stri
   if (!open) return null;
   return (
     <div className="dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="dialog" role="dialog" aria-modal="true" aria-labelledby={id} ref={ref}>
+      <div className={size === "lg" ? "dialog dialog--lg" : "dialog"} role="dialog" aria-modal="true" aria-labelledby={id} ref={ref}>
         <header id={id}>{title}</header>
         <div className="dialog-body">{children}</div>
         {footer ? <footer>{footer}</footer> : null}

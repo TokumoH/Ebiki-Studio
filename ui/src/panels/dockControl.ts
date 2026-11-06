@@ -56,3 +56,42 @@ export function openPanel(id: string): boolean {
   dock.addPanel(opts).api.setActive();
   return true;
 }
+
+/** Fecha um painel aberto (não faz nada se já estiver fechado). */
+export function closePanel(id: string): boolean {
+  const p = dock?.getPanel(id);
+  if (!p) return false;
+  p.api.close();
+  return true;
+}
+
+/** Abre ou fecha um painel do catálogo (usado pelo menu Janela). */
+export function togglePanel(id: string): boolean {
+  return dock?.getPanel(id) ? closePanel(id) : openPanel(id);
+}
+
+/** Monta o layout padrão: painéis principais em cima, os demais em abas embaixo. */
+export function buildDefaultLayout(api: DockviewApi) {
+  const main = PANEL_CATALOG.filter((p) => p.area === "main");
+  const bottom = PANEL_CATALOG.filter((p) => p.area !== "main");
+  for (const p of main) api.addPanel({ id: p.id, component: "host", title: p.title, params: { id: p.id } });
+  bottom.forEach((p, i) => {
+    api.addPanel({
+      id: p.id,
+      component: "host",
+      title: p.title,
+      params: { id: p.id },
+      position: i === 0 ? { referencePanel: main[0]!.id, direction: "below" } : { referencePanel: bottom[0]!.id, direction: "within" },
+      inactive: i > 0,
+    });
+  });
+  api.getPanel(bottom[0]!.id)?.group?.api.setSize({ height: 330 });
+}
+
+/** Volta ao layout padrão (menu Exibir › Restaurar layout padrão). */
+export function resetLayout(): boolean {
+  if (!dock) return false;
+  dock.clear();
+  buildDefaultLayout(dock);
+  return true;
+}

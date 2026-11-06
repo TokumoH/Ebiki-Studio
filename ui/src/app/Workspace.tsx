@@ -9,13 +9,20 @@ import { loopRangeFromCursor } from "../core/bars";
 import { Button, InlineRename } from "../shared/components";
 import { TransportBar } from "../contexts/transport/TransportBar";
 import { DockLayout } from "../panels/DockLayout";
-import { PanelsMenu } from "../panels/PanelsMenu";
-import { splitAtCursor } from "../contexts/project/clipActions";
+import { openPanel, resetLayout, togglePanel, useDockState } from "../panels/dockControl";
+import { findClip, normalizeClip, setPolarity, setReversed, splitAtCursor } from "../contexts/project/clipActions";
+import { useTimelineView } from "../contexts/project/timelineView";
+import { useClipViewMode } from "../contexts/project/spectrogramCache";
+import { MenuBar } from "../shared/MenuBar";
+import { buildMenus } from "./menuModel";
+import { HelpCenter } from "./HelpCenter";
+import { AboutDialog } from "./AboutDialog";
+import { Tutorial, shouldAutoStartTutorial, useTour } from "./Tutorial";
 import { AudioSettingsDialog } from "./AudioSettingsDialog";
 import { ExportDialog } from "./ExportDialog";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { CloseProjectDialog, closeProject } from "./CloseProjectDialog";
-import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts } from "./shortcuts";
+import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, type Shortcut } from "./shortcuts";
 
 const AUDIO_EXT = ["wav", "wave", "aif", "aiff", "flac", "mp3", "ogg", "oga", "m4a", "aac", "mp4"];
 
@@ -26,21 +33,52 @@ export async function importAudio(trackId: string | null = null) {
   await run(() => api.audioImport(files, trackId, Math.max(0, tick)), { busy: true, success: `${files.length} arquivo(s) importado(s).` });
 }
 
+/** Abre outro projeto (pergunta antes se houver alterações não salvas). */
+async function openOtherProject(askToClose: () => void) {
+  if (useSession.getState().session?.history.dirty) return askToClose();
+  const r = await transport().pickOpen({ directory: true, title: "Abrir projeto (.ebiki)" });
+  const path = r?.[0];
+  if (path) await run(() => api.projectOpen(path), { busy: true });
+}
+
+async function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  } catch {
+    /* sem suporte a tela cheia neste ambiente */
+  }
+}
+
 export function Workspace() {
   const session = useSession((s) => s.session)!;
   const busy = useSession((s) => s.busy);
-  const { theme, toggle } = useTheme();
+  const { theme } = useTheme();
   const meters = useLive((s) => s.meters);
+  const selectedTrackId = useSession((s) => s.selectedTrackId);
+  const selectedClipId = useSession((s) => s.selectedClipId);
+  const openPanels = useDockState((s) => s.open);
+  const spectrum = useClipViewMode((s) => s.spectrum);
   const [audio, setAudio] = useState<AudioStatus | null>(null);
-  const [dialog, setDialog] = useState<"audio" | "export" | "shortcuts" | "close" | null>(null);
-  const shortcuts = useRef(loadShortcuts());
+  const [dialog, setDialog] = useState<"audio" | "export" | "shortcuts" | "close" | "help" | "about" | null>(null);
+  const [statusBar, setStatusBar] = useState(true);
+  const [shortcutList, setShortcutList] = useState<Shortcut[]>(loadShortcuts);
+  const shortcuts = useRef(shortcutList);
+  shortcuts.current = shortcutList;
+  const startTour = useTour((s) => s.start);
 
   useEffect(() => {
     void api.audioStatus().then(setAudio).catch(() => undefined);
   }, []);
 
+  // primeira vez: o tutorial abre sozinho (pulável; "não mostrar ao abrir" fica lembrado)
   useEffect(() => {
-    const actions: Record<string, () => void> = {
+    if (shouldAutoStartTutorial()) startTour(1);
+  }, [startTour]);
+
+  // registro único de comandos: usado pelos atalhos de teclado e pelo menu principal
+  const actions = useRef<Record<string, () => void>>({});
+  actions.current = {
       playPause: () => {
         const st = useLive.getState().transport?.state;
         void run(() => (st === "playing" || st === "recording" ? api.pause() : api.play()));
@@ -69,7 +107,60 @@ export function Workspace() {
       },
       home: () => void run(() => api.seek(0)),
       split: () => void splitAtCursor(),
-    };
+      newProject: () => (useSession.getState().session?.history.dirty ? setDialog("close") : void closeProject()),
+      openProject: () => void openOtherProject(() => setDialog("close")),
+      closeProject: () => (useSession.getState().session?.history.dirty ? setDialog("close") : void closeProject()),
+      audioSettings: () => setDialog("audio"),
+      shortcutsDialog: () => setDialog("shortcuts"),
+      help: () => setDialog("help"),
+      about: () => setDialog("about"),
+      tutorial: () => startTour(1),
+      themeDark: () => useTheme.getState().theme !== "dark" && useTheme.getState().toggle(),
+      themeLight: () => useTheme.getState().theme !== "light" && useTheme.getState().toggle(),
+      zoomIn: () => useTimelineView.getState().zoomIn(),
+      zoomOut: () => useTimelineView.getState().zoomOut(),
+      zoomReset: () => useTimelineView.getState().resetZoom(),
+      toggleSpectrum: () => {
+        const id = useSession.getState().selectedTrackId;
+        if (id) useClipViewMode.getState().toggle(id);
+      },
+      toggleStatusBar: () => setStatusBar((v) => !v),
+      fullscreen: () => void toggleFullscreen(),
+      resetLayout: () => void resetLayout(),
+      deleteClip: () => {
+        const id = useSession.getState().selectedClipId;
+        if (id) void run(() => api.clipDelete(id));
+      },
+      normalizeClip: () => {
+        const id = useSession.getState().selectedClipId;
+        if (id) void normalizeClip(id);
+      },
+      polarityClip: () => {
+        const f = findClip(useSession.getState().session, useSession.getState().selectedClipId);
+        if (f) void setPolarity(f.clip.id, !f.clip.polarityInverted);
+      },
+      reverseClip: () => {
+        const f = findClip(useSession.getState().session, useSession.getState().selectedClipId);
+        if (f) void setReversed(f.clip.id, !f.clip.reversed);
+      },
+      armTrack: () => {
+        const st = useSession.getState();
+        const t = st.session?.tracks.find((x) => x.id === st.selectedTrackId);
+        if (t) void run(() => api.recordingTrack({ trackId: t.id, armed: !t.recording.armed, input: t.recording.input ?? { left: 0, right: null } }));
+      },
+      deleteTrack: () => {
+        const id = useSession.getState().selectedTrackId;
+        if (id) void run(() => api.trackDelete(id));
+      },
+  };
+
+  const runCommand = (id: string) => {
+    if (id.startsWith("panel:")) openPanel(id.slice(6));
+    else if (id.startsWith("togglePanel:")) togglePanel(id.slice(12));
+    else actions.current[id]?.();
+  };
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target) || document.querySelector(".dialog-backdrop")) return;
       const keys = eventKeys(e);
@@ -77,7 +168,7 @@ export function Workspace() {
       const sc = shortcuts.current.find((s) => s.keys === keys);
       if (!sc) return;
       e.preventDefault();
-      actions[sc.id]?.();
+      actions.current[sc.id]?.();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -106,50 +197,60 @@ export function Workspace() {
   }, []);
 
   const h = session.history;
+  const selectedTrack = session.tracks.find((t) => t.id === selectedTrackId);
+  const selectedClip = findClip(session, selectedClipId)?.clip ?? null;
+  const menus = buildMenus({
+    shortcuts: shortcutList,
+    run: runCommand,
+    canUndo: h.canUndo,
+    canRedo: h.canRedo,
+    undoLabel: h.undoLabel,
+    redoLabel: h.redoLabel,
+    theme,
+    openPanels,
+    statusBar,
+    metronome: session.recording.metronome.enabled,
+    loop: session.recording.loopRange !== null,
+    hasSelectedTrack: Boolean(selectedTrack),
+    selectedTrackArmed: selectedTrack?.recording.armed ?? false,
+    selectedTrackSpectrum: Boolean(selectedTrack && spectrum[selectedTrack.id]),
+    clip: selectedClip ? { polarityInverted: selectedClip.polarityInverted, reversed: selectedClip.reversed } : null,
+  });
   return (
     <div className="app" aria-busy={busy}>
-      <header className="topbar">
-        <div className="brand">
+      <header className="appbar">
+        <div className="menubar-row" data-tour="menu">
           <span className="brand-mark" role="img" aria-label="Ebiki Studio" />
+          <MenuBar menus={menus} />
+          <span style={{ flex: 1 }} />
+          <span className="project-name" title={session.project.root}>
+            <InlineRename value={session.project.name} label={`Renomear projeto ${session.project.name}`} inputLabel="Novo nome do projeto" onCommit={(name) => void run(() => api.projectRename(name))} />
+            {h.dirty ? <span className="dirty" title="Alterações não salvas"> ●</span> : null}
+          </span>
         </div>
-        <span className="project-name" title={session.project.root}>
-          <InlineRename value={session.project.name} label={`Renomear projeto ${session.project.name}`} inputLabel="Novo nome do projeto" onCommit={(name) => void run(() => api.projectRename(name))} />
-          {h.dirty ? <span className="dirty" title="Alterações não salvas"> ●</span> : null}
-        </span>
-        <span className="sep" />
-        <Button icon variant="ghost" disabled={!h.canUndo} title={h.undoLabel ? `Desfazer: ${h.undoLabel} (Ctrl+Z)` : "Desfazer"} aria-label="Desfazer" onClick={() => void run(() => api.undo())}>
-          ↶
-        </Button>
-        <Button icon variant="ghost" disabled={!h.canRedo} title={h.redoLabel ? `Refazer: ${h.redoLabel}` : "Refazer"} aria-label="Refazer" onClick={() => void run(() => api.redo())}>
-          ↷
-        </Button>
-        <span className="sep" />
-        <TransportBar />
-        <span style={{ flex: 1 }} />
-        <PanelsMenu />
-        <Button size="sm" onClick={() => void importAudio(useSession.getState().selectedTrackId)} title="Importar áudio (Ctrl+I)">
-          Importar
-        </Button>
-        <Button size="sm" onClick={() => setDialog("export")} title="Exportar (Ctrl+E)">
-          Exportar
-        </Button>
-        <Button size="sm" variant="primary" onClick={() => void run(() => api.projectSave(), { success: "Projeto salvo." })} title="Salvar (Ctrl+S)">
-          Salvar
-        </Button>
-        <Button size="sm" variant="ghost" icon onClick={() => setDialog("audio")} title="Configurações de áudio" aria-label="Configurações de áudio">
-          ⚙
-        </Button>
-        <Button size="sm" variant="ghost" icon onClick={() => setDialog("shortcuts")} title="Atalhos de teclado" aria-label="Atalhos de teclado">
-          ⌨
-        </Button>
-        <Button size="sm" variant="ghost" icon onClick={toggle} title="Alternar tema" aria-label="Alternar tema">
-          ◐
-        </Button>
-        <Button size="sm" variant="ghost" icon onClick={() => (h.dirty ? setDialog("close") : void closeProject())} title="Fechar projeto" aria-label="Fechar projeto">
-          ✕
-        </Button>
+        <div className="topbar" data-tour="transporte">
+          <Button icon variant="ghost" disabled={!h.canUndo} title={h.undoLabel ? `Desfazer: ${h.undoLabel} (Ctrl+Z)` : "Desfazer"} aria-label="Desfazer" onClick={() => void run(() => api.undo())}>
+            ↶
+          </Button>
+          <Button icon variant="ghost" disabled={!h.canRedo} title={h.redoLabel ? `Refazer: ${h.redoLabel}` : "Refazer"} aria-label="Refazer" onClick={() => void run(() => api.redo())}>
+            ↷
+          </Button>
+          <span className="sep" />
+          <TransportBar />
+          <span style={{ flex: 1 }} />
+          <Button size="sm" onClick={() => void importAudio(useSession.getState().selectedTrackId)} title="Importar áudio (Ctrl+I)">
+            Importar
+          </Button>
+          <Button size="sm" onClick={() => setDialog("export")} title="Exportar (Ctrl+E)">
+            Exportar
+          </Button>
+          <Button size="sm" variant="primary" onClick={() => void run(() => api.projectSave(), { success: "Projeto salvo." })} title="Salvar (Ctrl+S)">
+            Salvar
+          </Button>
+        </div>
       </header>
       <DockLayout theme={theme} />
+      {statusBar ? (
       <footer className="statusbar" aria-label="Status">
         <span>
           {audio ? (audio.mode === "device" ? `Saída: ${audio.outputName ?? "padrão"}` : <span className="warn">Sem dispositivo de áudio (modo silencioso)</span>) : "…"}
@@ -160,9 +261,21 @@ export function Workspace() {
         <span style={{ flex: 1 }} />
         <span>{h.dirty ? "Alterações não salvas (autosave a cada 2 min)" : "Salvo"}</span>
       </footer>
+      ) : <span />}
       <AudioSettingsDialog open={dialog === "audio"} onClose={() => setDialog(null)} onChanged={setAudio} />
       <ExportDialog open={dialog === "export"} onClose={() => setDialog(null)} />
-      <ShortcutsDialog open={dialog === "shortcuts"} onClose={() => setDialog(null)} onChanged={(s) => (shortcuts.current = s)} />
+      <ShortcutsDialog open={dialog === "shortcuts"} onClose={() => setDialog(null)} onChanged={setShortcutList} />
+      <HelpCenter
+        open={dialog === "help"}
+        onClose={() => setDialog(null)}
+        onStartTour={(step) => {
+          setDialog(null);
+          startTour(step);
+        }}
+        onEditShortcuts={() => setDialog("shortcuts")}
+      />
+      <AboutDialog open={dialog === "about"} onClose={() => setDialog(null)} />
+      <Tutorial />
       <CloseProjectDialog open={dialog === "close"} onClose={() => setDialog(null)} />
     </div>
   );

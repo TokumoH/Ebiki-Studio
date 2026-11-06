@@ -186,7 +186,7 @@ export function MixerPanel() {
   if (!session) return null;
   const peakOf = (id: string, list: { id: string; peak: [number, number] }[] | undefined): [number, number] => list?.find((m) => m.id === id)?.peak ?? [0, 0];
   return (
-    <div className="mixer" aria-label="Mixer">
+    <div className="mixer" aria-label="Mixer" data-tour="mixer">
       <div className="mixer-group">
         {session.tracks.map((t) => (
           <StripView key={t.id} name={t.name} target={{ kind: "track", id: t.id }} strip={t.strip} peak={peakOf(t.id, meters?.tracks)} buses={session.buses} selected={t.id === selected} onSelect={() => select({ trackId: t.id })} />

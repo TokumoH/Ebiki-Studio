@@ -6,8 +6,10 @@ import { App } from "./app/App";
 import { isTauri, setTransport } from "./ipc/transport";
 import { createMockTransport } from "./ipc/mock";
 import { withCompositionMock } from "./ipc/mockComposition";
+import { hideSplash, splashStatus } from "./app/splash";
 
 async function boot() {
+  splashStatus("Conectando ao motor de áudio…");
   if (isTauri() && !__FORCE_MOCK__) {
     const { tauriTransport } = await import("./ipc/tauri");
     setTransport(tauriTransport);
@@ -19,6 +21,9 @@ async function boot() {
       <App />
     </StrictMode>,
   );
+  splashStatus("Pronto");
+  // espera o primeiro quadro desenhado pelo React antes de revelar a interface
+  requestAnimationFrame(() => requestAnimationFrame(() => void hideSplash()));
 }
 
 void boot();
