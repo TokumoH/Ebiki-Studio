@@ -547,6 +547,7 @@ impl Studio {
                 offset_frames: 0,
                 length_frames: m.frames,
                 gain: Db::UNITY,
+                edit: ctx_project::ClipEdit::default(),
             };
             steps.push(on_project(AddClip::new(target, clip)));
         }
@@ -830,6 +831,7 @@ impl Studio {
                 offset_frames: offset,
                 length_frames: f.frames - offset,
                 gain: Db::UNITY,
+                edit: ctx_project::ClipEdit::default(),
             };
             steps.push(on_project(AddSource::new(src)));
             steps.push(on_project(AddClip::new(*track, clip)));
@@ -881,6 +883,7 @@ impl Studio {
                 offset_frames: offset,
                 length_frames: new.length_frames,
                 gain: Db::UNITY,
+                edit: ctx_project::ClipEdit::default(),
             },
         )));
         tr.active_take = Some(take);

@@ -7,6 +7,9 @@ use shared_kernel::id::{AudioSourceId, TrackId};
 use shared_kernel::tempo::TempoError;
 use shared_kernel::{AudioFormat, Db, TempoMap, Tick};
 
+mod edit;
+pub use edit::{ClipEdit, FadeShape};
+
 define_id!(
     /// Identificador do projeto.
     ProjectId
@@ -42,6 +45,14 @@ pub enum ProjectError {
     InvalidPath(String),
     #[error("hash de conteúdo inválido")]
     InvalidHash,
+    #[error(
+        "fades inválidos: fade de entrada + fade de saída não podem exceder a duração do clipe"
+    )]
+    InvalidFade,
+    #[error("ponto de divisão fora do clipe")]
+    InvalidSplit,
+    #[error("os clipes precisam estar na mesma faixa e se sobrepor")]
+    ClipsDoNotOverlap,
     #[error(transparent)]
     Tempo(#[from] TempoError),
 }
@@ -60,6 +71,9 @@ impl ProjectError {
             Self::InvalidPosition => "project.invalid_position",
             Self::InvalidPath(_) => "project.invalid_path",
             Self::InvalidHash => "project.invalid_hash",
+            Self::InvalidFade => "project.invalid_fade",
+            Self::InvalidSplit => "project.invalid_split",
+            Self::ClipsDoNotOverlap => "project.clips_do_not_overlap",
             Self::Tempo(_) => "project.tempo",
         }
     }
@@ -147,6 +161,9 @@ impl AudioSource {
 }
 
 /// Trecho de uma fonte de áudio posicionado no tempo musical.
+///
+/// Edição não destrutiva (RNF-07): a fonte nunca é alterada; `offset_frames`/`length_frames`
+/// recortam a região e [`ClipEdit`] descreve o processamento aplicado na reprodução.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Clip {
@@ -156,6 +173,34 @@ pub struct Clip {
     pub offset_frames: u64,
     pub length_frames: u64,
     pub gain: Db,
+    /// Fades, polaridade e reverso (Fase 3).
+    #[serde(flatten)]
+    pub edit: ClipEdit,
+}
+
+impl Clip {
+    /// Clipe sem processamento (ganho unitário, sem fades).
+    pub fn new(
+        source_id: AudioSourceId,
+        start: Tick,
+        offset_frames: u64,
+        length_frames: u64,
+    ) -> Self {
+        Self {
+            id: ClipId::new(),
+            source_id,
+            start,
+            offset_frames,
+            length_frames,
+            gain: Db::UNITY,
+            edit: ClipEdit::default(),
+        }
+    }
+
+    /// Fim da região na fonte (sem overflow).
+    pub fn source_end(&self) -> u64 {
+        self.offset_frames.saturating_add(self.length_frames)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -396,7 +441,7 @@ impl Project {
         if clip.length_frames == 0 || end > src.length_frames || !clip.gain.0.is_finite() {
             return Err(ProjectError::ClipOutOfBounds);
         }
-        Ok(())
+        clip.edit.validate(clip.length_frames)
     }
 
     /// Insere um clipe numa faixa (índice limitado ao fim). Retorna o índice.
@@ -469,7 +514,11 @@ impl Project {
         self.tracks
             .iter()
             .flat_map(|t| &t.clips)
-            .map(|c| self.tempo.tick_to_frame(c.start, sr) + c.length_frames)
+            .map(|c| {
+                self.tempo
+                    .tick_to_frame(c.start, sr)
+                    .saturating_add(c.length_frames)
+            })
             .max()
             .unwrap_or(0)
     }
@@ -500,6 +549,7 @@ pub(crate) mod fixtures {
             offset_frames: 0,
             length_frames: len,
             gain: Db::UNITY,
+            edit: ClipEdit::default(),
         }
     }
 
@@ -614,6 +664,15 @@ mod tests {
         let (mut p, t, s) = project_with_track();
         p.insert_clip(t, clip(&s, 960 * 2, 1000), 0).unwrap(); // 2 semínimas @120 = 1 s = 48000
         assert_eq!(p.content_end_frame(), 49_000);
+    }
+
+    #[test]
+    fn content_end_saturates_instead_of_overflowing() {
+        let (mut p, t, _) = project_with_track();
+        let big = source(u64::MAX);
+        p.add_source(big.clone()).unwrap();
+        p.insert_clip(t, clip(&big, i64::MAX, u64::MAX), 0).unwrap();
+        assert_eq!(p.content_end_frame(), u64::MAX);
     }
 
     #[test]

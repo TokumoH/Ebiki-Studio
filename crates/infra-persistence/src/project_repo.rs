@@ -5,7 +5,7 @@ use crate::{open_project_db, PersistenceError};
 use app_core::ports::{PortError, SessionRepository};
 use app_core::Session;
 use ctx_mixing::{AuxSend, Bus, ChannelStrip, Mixer, Output};
-use ctx_project::{AudioSource, Clip, Project, RelPath, Track, TrackKind};
+use ctx_project::{AudioSource, Clip, ClipEdit, FadeShape, Project, RelPath, Track, TrackKind};
 use ctx_recording::{
     InputAssignment, MetronomeConfig, MonitorMode, RecordingSetup, Take, TrackRecording,
 };
@@ -20,6 +20,11 @@ pub struct SqliteSessionRepository;
 
 fn corrupt(what: &str) -> PersistenceError {
     PersistenceError::Corrupt(what.to_owned())
+}
+
+/// Contagens em amostras cabem em INTEGER (i64); acima disso o estado não é gravável.
+fn to_i64(v: u64) -> Result<i64, PersistenceError> {
+    i64::try_from(v).map_err(|_| corrupt("valor grande demais para o banco"))
 }
 
 fn parse_id<T: std::str::FromStr>(s: &str) -> Result<T, PersistenceError> {
@@ -136,16 +141,22 @@ fn write_project(tx: &Transaction, p: &Project) -> Result<(), PersistenceError> 
         )?;
         for (cpos, c) in t.clips.iter().enumerate() {
             tx.execute(
-                "INSERT INTO clip (id, track_id, source_id, position, start_tick, offset_frames, length_frames, gain_db) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                "INSERT INTO clip (id, track_id, source_id, position, start_tick, offset_frames, length_frames, gain_db, fade_in_frames, fade_out_frames, fade_in_shape, fade_out_shape, polarity_inverted, reversed) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
                 params![
                     c.id.to_string(),
                     t.id.to_string(),
                     c.source_id.to_string(),
                     cpos as i64,
                     c.start.0,
-                    c.offset_frames as i64,
-                    c.length_frames as i64,
-                    c.gain.0 as f64
+                    to_i64(c.offset_frames)?,
+                    to_i64(c.length_frames)?,
+                    c.gain.0 as f64,
+                    to_i64(c.edit.fade_in_frames)?,
+                    to_i64(c.edit.fade_out_frames)?,
+                    c.edit.fade_in_shape.code(),
+                    c.edit.fade_out_shape.code(),
+                    c.edit.polarity_inverted,
+                    c.edit.reversed
                 ],
             )?;
         }
@@ -213,7 +224,7 @@ fn read_project(conn: &Connection) -> Result<Project, PersistenceError> {
     let mut tracks = Vec::new();
     let mut ts = conn.prepare("SELECT id, name FROM track ORDER BY position")?;
     let mut cs = conn.prepare(
-        "SELECT id, source_id, start_tick, offset_frames, length_frames, gain_db FROM clip WHERE track_id = ?1 ORDER BY position",
+        "SELECT id, source_id, start_tick, offset_frames, length_frames, gain_db, fade_in_frames, fade_out_frames, fade_in_shape, fade_out_shape, polarity_inverted, reversed FROM clip WHERE track_id = ?1 ORDER BY position",
     )?;
     let trows: Vec<(String, String)> = ts
         .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
@@ -222,16 +233,29 @@ fn read_project(conn: &Connection) -> Result<Project, PersistenceError> {
         let clips: Vec<Clip> = cs
             .query_map(params![tid], |r| {
                 Ok((
-                    r.get::<_, String>(0)?,
-                    r.get::<_, String>(1)?,
-                    r.get::<_, i64>(2)?,
-                    r.get::<_, i64>(3)?,
-                    r.get::<_, i64>(4)?,
-                    r.get::<_, f64>(5)?,
+                    (
+                        r.get::<_, String>(0)?,
+                        r.get::<_, String>(1)?,
+                        r.get::<_, i64>(2)?,
+                        r.get::<_, i64>(3)?,
+                        r.get::<_, i64>(4)?,
+                        r.get::<_, f64>(5)?,
+                    ),
+                    (
+                        r.get::<_, i64>(6)?,
+                        r.get::<_, i64>(7)?,
+                        r.get::<_, String>(8)?,
+                        r.get::<_, String>(9)?,
+                        r.get::<_, bool>(10)?,
+                        r.get::<_, bool>(11)?,
+                    ),
                 ))
             })?
             .map(|row| {
-                let (id, src, start, off, len, gain) = row?;
+                let ((id, src, start, off, len, gain), (fi, fo, si, so, inv, rev)) = row?;
+                let shape = |code: &str| {
+                    FadeShape::from_code(code).ok_or_else(|| corrupt("forma de fade desconhecida"))
+                };
                 Ok(Clip {
                     id: parse_id(&id)?,
                     source_id: parse_id(&src)?,
@@ -239,6 +263,14 @@ fn read_project(conn: &Connection) -> Result<Project, PersistenceError> {
                     offset_frames: u64::try_from(off).map_err(|_| corrupt("offset negativo"))?,
                     length_frames: u64::try_from(len).map_err(|_| corrupt("duração negativa"))?,
                     gain: Db(gain as f32),
+                    edit: ClipEdit {
+                        fade_in_frames: u64::try_from(fi).map_err(|_| corrupt("fade negativo"))?,
+                        fade_out_frames: u64::try_from(fo).map_err(|_| corrupt("fade negativo"))?,
+                        fade_in_shape: shape(&si)?,
+                        fade_out_shape: shape(&so)?,
+                        polarity_inverted: inv,
+                        reversed: rev,
+                    },
                 })
             })
             .collect::<Result<_, PersistenceError>>()?;
@@ -531,4 +563,99 @@ fn read_recording(conn: &Connection) -> Result<RecordingSetup, PersistenceError>
     }
     RecordingSetup::restore(metronome, pair(ps, pe), pair(ls, le), lat, tracks)
         .map_err(|e| PersistenceError::Corrupt(e.to_string()))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{migrate, open, PROJECT_MIGRATIONS};
+
+    const PROJECT: &str = "0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b";
+    const TRACK: &str = "0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5c";
+    const SOURCE: &str = "0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5d";
+    const CLIP: &str = "0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5e";
+
+    /// Banco criado por uma versão anterior à Fase 3 (schema 2), já com um clipe.
+    fn v2_db_with_clip(path: &Path) {
+        let mut c = open(path).unwrap();
+        assert_eq!(migrate(&mut c, &PROJECT_MIGRATIONS[..2]).unwrap(), 2);
+        let hash = "b".repeat(64);
+        c.execute_batch(&format!(
+            "INSERT INTO project (singleton, id, name, sample_rate, bit_depth, updated_at)
+               VALUES (1, '{PROJECT}', 'Antigo', 48000, 24, '0');
+             INSERT INTO tempo_event (tick, bpm) VALUES (0, 120.0);
+             INSERT INTO meter_event (tick, numerator, denominator) VALUES (0, 4, 4);
+             INSERT INTO master_strip (singleton, volume_db, pan, mute) VALUES (1, 0.0, 0.0, 0);
+             INSERT INTO audio_source (id, content_hash, rel_path, original_name, channels, length_frames)
+               VALUES ('{SOURCE}', '{hash}', 'audio/imported/{hash}.wav', 'voz.wav', 2, 48000);
+             INSERT INTO track (id, name, kind, position) VALUES ('{TRACK}', 'Voz', 'audio', 0);
+             INSERT INTO clip (id, track_id, source_id, position, start_tick, offset_frames, length_frames, gain_db)
+               VALUES ('{CLIP}', '{TRACK}', '{SOURCE}', 0, 960, 100, 2000, -2.0);"
+        ))
+        .unwrap();
+    }
+
+    #[test]
+    fn v2_clip_migrates_to_v3_without_processing() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("project.db");
+        v2_db_with_clip(&path);
+        let s = SqliteSessionRepository.load_from(&path).unwrap();
+        let clip = &s.project.tracks()[0].clips[0];
+        assert_eq!(clip.start, Tick(960));
+        assert_eq!((clip.offset_frames, clip.length_frames), (100, 2000));
+        assert_eq!(clip.gain, Db(-2.0));
+        assert_eq!(
+            clip.edit,
+            ClipEdit::default(),
+            "padrões = comportamento antigo"
+        );
+        let v: u32 = open(&path)
+            .unwrap()
+            .pragma_query_value(None, "user_version", |r| r.get(0))
+            .unwrap();
+        assert_eq!(v, crate::PROJECT_SCHEMA_VERSION);
+
+        // edita, salva e recarrega: os novos campos persistem
+        let mut s2 = s.clone();
+        let id = clip.id;
+        let mut edited = s2.project.clip(id).unwrap().clone();
+        edited.edit = ClipEdit {
+            fade_in_frames: 10,
+            fade_out_frames: 20,
+            fade_in_shape: FadeShape::Linear,
+            fade_out_shape: FadeShape::EqualPower,
+            polarity_inverted: true,
+            reversed: true,
+        };
+        s2.project.replace_clip(edited).unwrap();
+        SqliteSessionRepository.save_to(&path, &s2).unwrap();
+        assert_eq!(SqliteSessionRepository.load_from(&path).unwrap(), s2);
+    }
+
+    #[test]
+    fn invalid_clip_edit_values_are_rejected() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("project.db");
+        v2_db_with_clip(&path);
+        // o CHECK do schema barra formas desconhecidas
+        let c = open_project_db_for_test(&path);
+        assert!(c
+            .execute("UPDATE clip SET fade_in_shape = 'zigzag'", [])
+            .is_err());
+        assert!(c.execute("UPDATE clip SET reversed = 2", []).is_err());
+        // fades maiores que o clipe passam pelo banco mas a restauração do domínio recusa
+        c.execute(
+            "UPDATE clip SET fade_in_frames = 1500, fade_out_frames = 600",
+            [],
+        )
+        .unwrap();
+        drop(c);
+        let err = SqliteSessionRepository.load_from(&path).unwrap_err();
+        assert_eq!(err.code(), "persistence.corrupt");
+    }
+
+    fn open_project_db_for_test(path: &Path) -> Connection {
+        crate::open_project_db(path).unwrap()
+    }
 }

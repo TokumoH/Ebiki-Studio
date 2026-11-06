@@ -124,17 +124,14 @@ pub fn compile(
             .iter()
             .filter_map(|c| {
                 let src = sources.get(&c.source_id)?;
-                let end = c.offset_frames + c.length_frames;
-                if end > src.frames() {
+                if c.source_end() > src.frames() {
                     return None; // fonte decodificada menor que o esperado: ignora em vez de falhar
                 }
-                Some(ClipRender {
-                    source: src.clone(),
-                    start: tempo.tick_to_frame(c.start, sr),
-                    offset: c.offset_frames,
-                    length: c.length_frames,
-                    gain: c.gain.to_linear(),
-                })
+                Some(clip_render(
+                    c,
+                    src.clone(),
+                    tempo.tick_to_frame(c.start, sr),
+                ))
             })
             .collect();
         clips.sort_by_key(|c| c.start);
@@ -172,5 +169,29 @@ pub fn compile(
         graph: g,
         meters,
         effects: b.effects,
+    }
+}
+
+/// Converte um clipe do domínio no clipe da engine (ganho, fades, polaridade e reverso).
+pub(crate) fn clip_render(
+    c: &ctx_project::Clip,
+    source: Arc<SourceBuffer>,
+    start: u64,
+) -> ClipRender {
+    let e = &c.edit;
+    ClipRender {
+        fade_in: e.fade_in_frames,
+        fade_out: e.fade_out_frames,
+        fade_in_shape: e.fade_in_shape,
+        fade_out_shape: e.fade_out_shape,
+        invert: e.polarity_inverted,
+        reverse: e.reversed,
+        ..ClipRender::new(
+            source,
+            start,
+            c.offset_frames,
+            c.length_frames,
+            c.gain.to_linear(),
+        )
     }
 }

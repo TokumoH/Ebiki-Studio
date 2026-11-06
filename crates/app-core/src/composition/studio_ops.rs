@@ -525,6 +525,7 @@ impl Studio {
                 offset_frames: 0,
                 length_frames: frames,
                 gain: Db::UNITY,
+                edit: ctx_project::ClipEdit::default(),
             },
         )));
         self.register_source_buffers(buffers);

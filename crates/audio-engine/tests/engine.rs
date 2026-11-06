@@ -167,17 +167,8 @@ fn invalid_graph_is_rejected() {
     assert!(h.swap_graph(g).is_err());
     let mut g = RenderGraph::empty(SR);
     let src = dc(1.0, 10);
-    g.tracks.push(track(
-        1,
-        1,
-        vec![ClipRender {
-            source: src,
-            start: 0,
-            offset: 5,
-            length: 10,
-            gain: 1.0,
-        }],
-    ));
+    g.tracks
+        .push(track(1, 1, vec![ClipRender::new(src, 0, 5, 10, 1.0)]));
     assert!(h.swap_graph(g).is_err(), "clipe além do fim da fonte");
 }
 
