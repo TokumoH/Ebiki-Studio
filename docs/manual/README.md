@@ -160,10 +160,12 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 ## 12. Limitações conhecidas
 
 - Áudio dos clipes fica decodificado em memória (≈ 1 h de estéreo por 8 GB de RAM).
-- Sem compensação automática de atraso de plugins: a correção de afinação em tempo real atrasa a
-  faixa em ≈ 58 ms (use a correção offline para resultado alinhado).
-- Arquivos gerados que deixaram de ser usados (após desfazer) permanecem em `audio/` até uma
-  limpeza futura.
+- Compensação de atraso de efeitos (limiter, correção de afinação) é feita **nas faixas**, na
+  reprodução e na exportação. Efeitos com atraso em **buses** não são compensados, e a entrada
+  monitorada ao vivo soma o atraso do efeito (≈ 58 ms na correção de afinação) — ponha-o em bypass
+  enquanto grava (ADR-0032).
+- Arquivos gerados que deixaram de ser usados (renders desfeitos, takes substituídos) ficam em
+  `audio/` durante a sessão (o desfazer precisa deles) e são apagados ao reabrir o projeto.
 - Exportação AAC indisponível; MP3 até 48 kHz.
 - Sem plugins VST3/CLAP e sem automação nesta versão (arquitetura preparada — ADR-0011).
 - Efeitos **por clipe** ainda não existem (efeitos são por faixa/bus no mixer).

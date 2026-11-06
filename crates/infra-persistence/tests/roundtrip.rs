@@ -40,8 +40,9 @@ fn rich_session() -> Session {
         } else {
             ClipEdit::default()
         };
+        // um clipe em cada faixa: a associação clipe→faixa precisa sobreviver ao reload
         p.insert_clip(
-            id1,
+            [id1, id2][i],
             Clip {
                 id: ClipId::new(),
                 source_id: src.id,
@@ -159,6 +160,13 @@ fn save_load_is_identity() {
     repo.save_to(&path, &s).unwrap();
     let loaded = repo.load_from(&path).unwrap();
     assert_eq!(loaded.project, s.project);
+    let counts: Vec<usize> = loaded
+        .project
+        .tracks()
+        .iter()
+        .map(|t| t.clips.len())
+        .collect();
+    assert_eq!(counts, [1, 1], "cada faixa mantém o seu clipe");
     assert_eq!(loaded.recording, s.recording);
     assert_eq!(loaded.mixer, s.mixer);
     // salvar de novo sobre o mesmo arquivo substitui tudo (sem duplicar)
