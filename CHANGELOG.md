@@ -3,10 +3,14 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.2.1] - 2026-11-07
+
+Entrada de áudio no painel Gravação, partitura mais direta e correções importantes.
 
 ### Novidades
 
+- **Atualizando da 0.2.0? Salve o projeto antes** de clicar em *Instalar e reiniciar*: a 0.2.0 usa
+  o fluxo antigo e, no Windows, fecha na hora. A partir da 0.2.1 o app salva sozinho antes de instalar.
 - **Entrada de áudio no painel Gravação**: escolha do dispositivo de entrada, medidores de nível por
   canal e **🎧 Ouvir entrada** (ouve o dispositivo direto na saída, com volume próprio, sem armar
   faixa; não entra na gravação nem na exportação).
@@ -24,6 +28,14 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - **Configurações de áudio**: não era possível escolher saída nem entrada — a cada atualização dos
   medidores (~30 por segundo) o diálogo devolvia o foco ao primeiro campo e fechava a lista aberta.
   Afetava todos os diálogos. O diálogo também passa a abrir com os dispositivos e o buffer atuais.
+
+### Downloads
+
+Mesmos formatos da 0.2.0 (Windows `.exe`/`.msi`, macOS `.dmg` universal, Linux `.deb`/`.rpm`/`.AppImage`),
+com `SHA256SUMS.txt`. Quem tem a 0.2.0 recebe esta versão em *Ajuda › Verificar atualizações…*.
+
+Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
+Licença: GPL-3.0-or-later (nome e logo reservados).
 
 ## [0.2.0] - 2026-11-06
 
@@ -109,5 +121,6 @@ Confira a integridade com `SHA256SUMS.txt` (ex.: `sha256sum -c SHA256SUMS.txt --
 Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
 Licença: GPL-3.0-or-later (nome e logo reservados).
 
+[0.2.1]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.1.0

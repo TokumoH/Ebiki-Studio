@@ -81,7 +81,7 @@ test("Sobre mostra a versão e a licença", async ({ page }) => {
   await menu(page, "Ajuda").click();
   await page.getByRole("menuitem", { name: "Sobre o Ebiki Studio" }).click();
   const dialog = page.getByRole("dialog", { name: "Sobre o Ebiki Studio" });
-  await expect(dialog).toContainText("Ebiki Studio 0.2.0");
+  await expect(dialog).toContainText("Ebiki Studio 0.2.1");
   await expect(dialog).toContainText("GPL-3.0");
 });
 
