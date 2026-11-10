@@ -117,6 +117,12 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
 2. Escolha a entrada de cada faixa (mono ou par estéreo) e a monitoração da faixa
    (desligada, quando armada ou sempre).
 3. Arme a faixa (⏺) e pressione **R** (ou o botão de gravar).
+   - **Loop** (botão ⟲ Loop, tecla **L**): repete um trecho na reprodução. O **▾** ao lado (ou
+     *Transporte › Opções de loop…*) escolhe o trecho: *4 compassos a partir do cursor*, *Projeto
+     inteiro* (do início ao fim do compasso do último clipe) ou *Compassos X até Y*. Também dá para
+     **arrastar na faixa de cima da régua** para desenhar o loop e arrastar as bordas para ajustar. O
+     botão mostra o trecho (ex.: *Loop · 1–8*); desligar e religar volta ao mesmo trecho. **Na gravação
+     o loop é ignorado** (grava em linha reta): para regravar um trecho, use o punch in/out.
 4. **Metrônomo**: liga/desliga (C), volume, subdivisão, contagem (0, 1, 2 ou 4 compassos).
 5. **Punch in/out**: defina os compassos; só o trecho entre eles é gravado.
 6. **Takes**: cada passada vira um take; escolha o take ativo na lista da faixa.

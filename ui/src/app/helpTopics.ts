@@ -37,6 +37,7 @@ export const HELP_TOPICS: HelpTopic[] = [
       "Arme a faixa no botão ● do cabeçalho e escolha a entrada dela (mono ou estéreo).",
       "Ligue o metrônomo (C) e, se quiser, a contagem prévia e o punch-in/out no painel Gravação.",
       "Pressione R para gravar e Espaço para parar. Buffer de 64 a 128 amostras dá a menor latência.",
+      "Loop: botão ⟲ Loop (L) e ▾ ao lado para escolher o trecho (4 compassos, projeto inteiro ou compassos X–Y); ou arraste na faixa de cima da régua. Na gravação o loop é ignorado; use o punch para regravar um trecho.",
       "Para trocar de take, use a lista de takes da faixa no painel Gravação.",
     ],
     tourStep: 3,

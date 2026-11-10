@@ -107,7 +107,8 @@ export function buildMenus(c: MenuContext): MenuDef[] {
         item("home", "Voltar ao início"),
         sep,
         item("metronome", "Metrônomo", { checked: c.metronome }),
-        item("loop", "Loop de 4 compassos", { checked: c.loop }),
+        item("loop", "Loop", { checked: c.loop }),
+        item("loopOptions", "Opções de loop…"),
       ],
     },
     {

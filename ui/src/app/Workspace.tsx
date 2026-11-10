@@ -5,7 +5,6 @@ import { refreshAudio, useAudio } from "../core/audio";
 import { run, useSession } from "../core/session";
 import { useLive } from "../core/live";
 import { useTheme } from "../core/theme";
-import { loopRangeFromCursor } from "../core/bars";
 import { Button, InlineRename } from "../shared/components";
 import { TransportBar } from "../contexts/transport/TransportBar";
 import { DockLayout } from "../panels/DockLayout";
@@ -19,6 +18,7 @@ import { HelpCenter } from "./HelpCenter";
 import { AboutDialog } from "./AboutDialog";
 import { UpdateDialog } from "./UpdateDialog";
 import { useTooltipPrefs } from "./tooltips";
+import { toggleLoop, useLoopUi } from "../core/loop";
 import { useUpdates } from "./updates";
 import { Tutorial, shouldAutoStartTutorial, useTour } from "./Tutorial";
 import { AudioSettingsDialog } from "./AudioSettingsDialog";
@@ -114,12 +114,8 @@ export function Workspace() {
         const m = useSession.getState().session?.recording.metronome;
         if (m) void run(() => api.recordingMetronome({ ...m, enabled: !m.enabled }));
       },
-      loop: () => {
-        const s = useSession.getState().session;
-        if (!s) return;
-        // liga: 4 compassos a partir do compasso do cursor; desliga se já houver loop
-        void run(() => api.recordingLoop(s.recording.loopRange ? null : loopRangeFromCursor(s.tempo, useLive.getState().transport?.tick ?? 0)));
-      },
+      loop: () => void toggleLoop(),
+      loopOptions: () => useLoopUi.getState().setOpen(true),
       home: () => void run(() => api.seek(0)),
       split: () => void splitAtCursor(),
       newProject: () => (useSession.getState().session?.history.dirty ? setDialog("close") : void closeProject()),

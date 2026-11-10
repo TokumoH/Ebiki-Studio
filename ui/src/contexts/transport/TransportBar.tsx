@@ -1,13 +1,20 @@
+import { useRef } from "react";
 import { api } from "../../ipc/api";
 import { run, useSession } from "../../core/session";
 import { useLive } from "../../core/live";
 import { formatBarBeat, formatTime } from "../../core/format";
 import { Button, Toggle } from "../../shared/components";
+import { loopLabel } from "../../core/bars";
+import { LoopPopover } from "./LoopPopover";
+import { toggleLoop, useLoopUi } from "../../core/loop";
 import "./transport.css";
 
 export function TransportBar() {
   const session = useSession((s) => s.session);
   const t = useLive((s) => s.transport);
+  const loopOpen = useLoopUi((u) => u.open);
+  const setLoopOpen = useLoopUi((u) => u.setOpen);
+  const loopMenuBtn = useRef<HTMLButtonElement>(null);
   if (!session) return null;
   const state = t?.state ?? "stopped";
   const rolling = state === "playing" || state === "recording" || state === "countin";
@@ -53,14 +60,15 @@ export function TransportBar() {
       <Toggle pressed={rec.metronome.enabled} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, enabled: v }))} title="Metrônomo (C)" aria-label="Metrônomo">
         Metrônomo
       </Toggle>
-      <Toggle
-        pressed={rec.loopRange !== null}
-        onChange={(v) => void run(() => api.recordingLoop(v ? [0, 960 * 4 * 4] : null))}
-        title="Loop (L) — padrão: compassos 1–4"
-        aria-label="Loop"
-      >
-        Loop
-      </Toggle>
+      <span className={`loop-group${rec.loopRange ? " loop-group--on" : ""}`}>
+        <Toggle pressed={rec.loopRange !== null} onChange={() => void toggleLoop()} aria-label="Loop">
+          ⟲ Loop{rec.loopRange ? ` · ${loopLabel(session.tempo, rec.loopRange)}` : ""}
+        </Toggle>
+        <button ref={loopMenuBtn} type="button" className="btn btn--sm loop-more" aria-label="Opções de loop" aria-haspopup="dialog" aria-expanded={loopOpen} onClick={() => setLoopOpen(!loopOpen)}>
+          ▾
+        </button>
+        {loopOpen ? <LoopPopover session={session} anchor={loopMenuBtn.current} /> : null}
+      </span>
       {state === "countin" ? <span className="badge-rec">Contagem…</span> : state === "recording" ? <span className="badge-rec">● Gravando</span> : null}
     </div>
   );

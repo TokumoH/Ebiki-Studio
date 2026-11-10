@@ -61,3 +61,11 @@
 .track-header { position: relative; }
 .track-resize { position: absolute; left: 0; right: 0; bottom: -3px; height: 6px; cursor: ns-resize; z-index: 1; }
 .track-resize:hover, .track-resize:focus-visible { background: var(--accent); opacity: 0.5; outline: none; }
+/* loop na régua: faixa de cima desenha; bordas ajustam */
+.ruler::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 10px; cursor: col-resize; }
+.ruler:hover::before { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.ruler-range--loop { height: 10px; }
+.ruler-range--punch { top: 10px; }
+.loop-edge { position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; background: var(--accent); opacity: 0.85; }
+.loop-edge--start { left: -1px; border-radius: 2px 0 0 2px; }
+.loop-edge--end { right: -1px; border-radius: 0 2px 2px 0; }

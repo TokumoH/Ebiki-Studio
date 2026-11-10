@@ -101,6 +101,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
   "transport.metronome": e("Metrônomo", "Clique no tempo durante a reprodução e a gravação. Volume, subdivisão e contagem no painel Gravação.", "C", [/^Metrônomo$/]),
   "transport.loop": e("Loop", "Repete um trecho na reprodução. ▾ escolhe o trecho: 4 compassos, projeto inteiro ou compassos X–Y. Na gravação o loop é ignorado.", "L", [/^Loop$/]),
   "transport.loopMenu": e("Opções de loop", "Escolha o trecho do loop. Também dá para arrastar na faixa de cima da régua.", undefined, [/^Opções de loop$/]),
+  "transport.loopBars": e("Compassos do loop", "Do primeiro ao último compasso (inclusive) — mesma numeração da régua.", undefined, [/^(Primeiro|Último) compasso do loop$/]),
   "transport.position": e("Posição", "Compasso.tempo.tique e tempo decorrido do cursor."),
   "transport.tempo": e("Andamento e compasso", "BPM e fórmula de compasso no cursor. Mude no painel Mapa de tempo."),
   "transport.undo": e("Desfazer", "Desfaz a última ação.", "Ctrl+Z", [/^Desfazer/]),
@@ -108,6 +109,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
 
   // ------------------------------------------------------------------ arranjo
   "timeline.ruler": e("Régua", "Clique para mover o cursor. Na faixa de cima, arraste para desenhar o loop e arraste as bordas para ajustá-lo.", undefined, [/^Régua/]),
+  "timeline.loopEdge": e("Borda do loop", "Arraste para mudar o início ou o fim do loop (encaixa nos tempos)."),
   "timeline.newTrack": e("Nova faixa", "Cria uma faixa de áudio vazia.", "Ctrl+T", [/^Nova faixa/, /^\+ Faixa$/]),
   "track.arm": e("Armar", "Prepara a faixa para gravar. Só faixas armadas recebem a gravação.", undefined, [/^Armar /]),
   "track.resize": e("Altura da faixa", "Arraste para deixar a faixa (e a onda) maior ou menor. Com foco: ↑/↓.", "Alt+roda: todas as faixas", [/^Altura de /]),

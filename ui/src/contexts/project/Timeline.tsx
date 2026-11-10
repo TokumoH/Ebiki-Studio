@@ -13,6 +13,10 @@ import { canSplitAt, fadeFromPx, msToFrames, overlappingNeighbor, trimEndTo, tri
 import { crossfadeWithNeighbor, findClip, normalizeClip, setPolarity, setReversed, splitAtCursor } from "./clipActions";
 import { TrackOrderButtons } from "./TrackOrderButtons";
 import { anchoredScrollLeft, trackIndexAt, useTimelineView, wheelFactor } from "./timelineView";
+import { setLoop } from "../../core/loop";
+
+/** Altura (px) da faixa de cima da régua onde arrastar desenha o loop. */
+const LOOP_BAND = 10;
 
 
 /** Alça na borda de baixo do cabeçalho: arrastar (ou ↑/↓ com foco) muda a altura da faixa. */
@@ -143,6 +147,8 @@ export function Timeline() {
   const heights = useMemo(() => (session ? session.tracks.map((t) => customHeights[t.id] ?? baseHeight) : []), [session, customHeights, baseHeight]);
   // zoom pela roda: o tique sob o mouse e sua distância à borda, para manter o ponto parado
   const zoomAnchor = useRef<{ tick: number; offset: number } | null>(null);
+  // loop sendo desenhado/ajustado na régua (prévia local até soltar)
+  const [loopDraft, setLoopDraft] = useState<[number, number] | null>(null);
   const [scroll, setScroll] = useState({ left: 0, top: 0, width: 1200 });
   const lanesRef = useRef<HTMLDivElement>(null);
   const headersRef = useRef<HTMLDivElement>(null);
@@ -336,11 +342,72 @@ export function Timeline() {
           +
         </Button>
       </div>
-      <div className="ruler" aria-label="Régua (clique para posicionar)" onPointerDown={(e) => void run(() => api.seek(Math.round(snapToBeat(session.tempo, xToTick(e.clientX)))))}>
+      <div
+        className="ruler"
+        aria-label="Régua (clique para posicionar)"
+        onPointerDown={(e) => {
+          const snap = (x: number) => Math.round(snapToBeat(session.tempo, xToTick(x)));
+          const inBand = e.clientY - e.currentTarget.getBoundingClientRect().top <= LOOP_BAND;
+          if (!inBand) return void run(() => api.seek(snap(e.clientX)));
+          // faixa de cima: arrastar desenha o loop; clique sem arrastar só posiciona
+          const anchorTick = snap(e.clientX);
+          const el = e.currentTarget;
+          el.setPointerCapture(e.pointerId);
+          let draft: [number, number] | null = null;
+          const move = (ev: PointerEvent) => {
+            const t = snap(ev.clientX);
+            draft = t === anchorTick ? null : [Math.min(anchorTick, t), Math.max(anchorTick, t)];
+            setLoopDraft(draft);
+          };
+          const up = () => {
+            el.removeEventListener("pointermove", move);
+            el.removeEventListener("pointerup", up);
+            setLoopDraft(null);
+            if (draft && draft[1] - draft[0] >= PPQ) void setLoop(draft);
+            else void run(() => api.seek(anchorTick));
+          };
+          el.addEventListener("pointermove", move);
+          el.addEventListener("pointerup", up);
+        }}
+      >
         <div style={{ position: "absolute", left: -scroll.left, top: 0, bottom: 0, width: totalWidth }}>
-          {session.recording.loopRange ? (
-            <div className="ruler-range ruler-range--loop" style={{ left: session.recording.loopRange[0] * pxPerTick, width: (session.recording.loopRange[1] - session.recording.loopRange[0]) * pxPerTick }} title="Loop" />
-          ) : null}
+          {(() => {
+            const r = loopDraft ?? session.recording.loopRange;
+            if (!r) return null;
+            // bordas do loop: arrastar ajusta o início/fim (mínimo de um tempo)
+            const edge = (side: 0 | 1) => (e: React.PointerEvent<HTMLDivElement>) => {
+              e.stopPropagation();
+              const base = session.recording.loopRange;
+              if (!base) return;
+              const el = e.currentTarget;
+              el.setPointerCapture(e.pointerId);
+              let draft: [number, number] = base;
+              const move = (ev: PointerEvent) => {
+                const t = Math.round(snapToBeat(session.tempo, xToTick(ev.clientX)));
+                draft = side === 0 ? [Math.min(t, base[1] - PPQ), base[1]] : [base[0], Math.max(t, base[0] + PPQ)];
+                setLoopDraft(draft);
+              };
+              const up = () => {
+                el.removeEventListener("pointermove", move);
+                el.removeEventListener("pointerup", up);
+                setLoopDraft(null);
+                if (draft !== base) void setLoop(draft);
+              };
+              el.addEventListener("pointermove", move);
+              el.addEventListener("pointerup", up);
+            };
+            return (
+              <div className="ruler-range ruler-range--loop" data-testid="loop-range" style={{ left: r[0] * pxPerTick, width: (r[1] - r[0]) * pxPerTick }}>
+                {/* as bordas ficam montadas durante o arraste (desmontar perderia o pointerup) */}
+                {session.recording.loopRange ? (
+                  <>
+                    <div className="loop-edge loop-edge--start" aria-label="Início do loop" data-tip="timeline.loopEdge" onPointerDown={edge(0)} />
+                    <div className="loop-edge loop-edge--end" aria-label="Fim do loop" data-tip="timeline.loopEdge" onPointerDown={edge(1)} />
+                  </>
+                ) : null}
+              </div>
+            );
+          })()}
           {session.recording.punch ? (
             <div className="ruler-range ruler-range--punch" style={{ left: session.recording.punch[0] * pxPerTick, width: (session.recording.punch[1] - session.recording.punch[0]) * pxPerTick }} title="Punch" />
           ) : null}

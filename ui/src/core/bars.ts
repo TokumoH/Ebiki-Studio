@@ -45,3 +45,47 @@ export function loopRangeFromCursor(tempo: TempoMap, cursorTick: number, bars = 
   }
   return [start, pos];
 }
+
+/** Tick de início do compasso `bar` (1 = primeiro), na mesma numeração da régua. */
+export function barToTick(tempo: TempoMap, bar: number): number {
+  let n = 1;
+  const target = Math.max(1, Math.floor(bar));
+  for (const seg of segments(tempo)) {
+    const bars = Number.isFinite(seg.end) ? Math.ceil((seg.end - seg.start) / seg.barTicks) : Number.POSITIVE_INFINITY;
+    if (target < n + bars) return seg.start + (target - n) * seg.barTicks;
+    n += bars;
+  }
+  return 0;
+}
+
+/** Número (1 = primeiro) do compasso que contém `tick`, na mesma numeração da régua. */
+export function tickToBar(tempo: TempoMap, tick: number): number {
+  const t = Math.max(0, tick);
+  let n = 1;
+  for (const seg of segments(tempo)) {
+    if (t < seg.end) return n + Math.floor((t - seg.start) / seg.barTicks);
+    n += Math.ceil((seg.end - seg.start) / seg.barTicks);
+  }
+  return n;
+}
+
+/** Loop do compasso `from` até o fim do compasso `to` (inclusivo; aceita a ordem invertida). */
+export function loopRangeBars(tempo: TempoMap, from: number, to: number): [number, number] {
+  const a = Math.max(1, Math.min(from, to));
+  const b = Math.max(1, Math.max(from, to));
+  return [barToTick(tempo, a), barToTick(tempo, b + 1)];
+}
+
+/** Loop do início até o fim do compasso onde termina o último clipe; `null` sem clipes. */
+export function projectLoopRange(tempo: TempoMap, lastClipEnd: number): [number, number] | null {
+  if (lastClipEnd <= 0) return null;
+  const lastBar = tickToBar(tempo, lastClipEnd - 1);
+  return [0, barToTick(tempo, lastBar + 1)];
+}
+
+/** "1–8" (primeiro e último compasso do loop) ou "3" para um compasso só. */
+export function loopLabel(tempo: TempoMap, range: [number, number]): string {
+  const a = tickToBar(tempo, range[0]);
+  const b = tickToBar(tempo, Math.max(range[0], range[1] - 1));
+  return a === b ? String(a) : `${a}–${b}`;
+}

@@ -12,6 +12,9 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
   em *Exibir › Legendas ao passar o mouse*.
 - **Zoom pela roda do mouse**: Ctrl+roda (ou pinça) no tempo, centrado no mouse; Alt+roda na altura
   das faixas (tamanho da onda); Shift+roda para os lados; borda do cabeçalho redimensiona uma faixa.
+- **Loop configurável**: ▾ ao lado de Loop e *Transporte › Opções de loop…* com 4 compassos a partir
+  do cursor, **projeto inteiro** ou compassos X–Y; desenhar e ajustar arrastando na régua; o botão
+  mostra o trecho e religar volta ao mesmo trecho.
 
 ## [0.2.1] - 2026-11-07
 
