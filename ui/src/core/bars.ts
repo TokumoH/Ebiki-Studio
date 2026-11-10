@@ -11,6 +11,7 @@ interface Segment {
   start: number;
   end: number;
   barTicks: number;
+  beatTicks: number;
 }
 
 function segments(tempo: TempoMap): Segment[] {
@@ -20,6 +21,7 @@ function segments(tempo: TempoMap): Segment[] {
     start: m.tick,
     end: meters[i + 1]?.tick ?? Number.POSITIVE_INFINITY,
     barTicks: ((PPQ * 4) / m.denominator) * m.numerator,
+    beatTicks: (PPQ * 4) / m.denominator,
   }));
 }
 
@@ -67,6 +69,14 @@ export function tickToBar(tempo: TempoMap, tick: number): number {
     n += Math.ceil((seg.end - seg.start) / seg.barTicks);
   }
   return n;
+}
+
+/** Posição compasso.tempo.tique de `tick`, com o compasso na mesma numeração da régua. */
+export function barBeatAt(tempo: TempoMap, tick: number): { bar: number; beat: number; tickInBeat: number } {
+  const t = Math.max(0, tick);
+  const seg = segmentAt(segments(tempo), t);
+  const inBar = t - barStartAt(tempo, t);
+  return { bar: tickToBar(tempo, t), beat: Math.floor(inBar / seg.beatTicks) + 1, tickInBeat: inBar % seg.beatTicks };
 }
 
 /** Loop do compasso `from` até o fim do compasso `to` (inclusivo; aceita a ordem invertida). */
