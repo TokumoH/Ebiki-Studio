@@ -40,11 +40,11 @@ export function TransportBar() {
       >
         ⏺
       </Button>
-      <div className="transport-display" aria-live="off">
+      <div className="transport-display" aria-live="off" data-tip="transport.position">
         <span className="mono big" data-testid="bar-beat">{t ? formatBarBeat(t.barBeat) : "001.1.000"}</span>
         <span className="mono">{formatTime(t?.seconds ?? 0)}</span>
       </div>
-      <div className="transport-display">
+      <div className="transport-display" data-tip="transport.tempo">
         <span className="mono big">♩ {(t?.bpm ?? session.tempo.tempos[0]?.bpm ?? 120).toFixed(1)}</span>
         <span className="mono">
           {meter?.numerator ?? 4}/{meter?.denominator ?? 4}

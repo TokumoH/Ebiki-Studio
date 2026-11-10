@@ -114,3 +114,12 @@
 .menubar-sep { height: 1px; margin: 5px 6px; background: var(--line-strong); }
 .dialog--lg { width: min(1000px, calc(100vw - 32px)); height: min(640px, calc(100vh - 32px)); display: flex; flex-direction: column; overflow: hidden; }
 .dialog--lg .dialog-body { flex: 1; min-height: 0; padding: 0; display: flex; }
+
+/* Legendas ao passar o mouse (TooltipLayer) */
+.tooltip { position: fixed; z-index: 1000; max-width: 320px; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 11px; box-shadow: 0 10px 24px rgb(0 0 0 / 0.4); display: flex; flex-direction: column; gap: 3px; font-size: var(--text-sm); line-height: 1.45; pointer-events: none; animation: tip-in 120ms ease-out; }
+.tooltip strong { font-size: var(--text-sm); color: var(--fg); }
+.tooltip span { color: var(--fg-muted); }
+.tooltip small { color: var(--accent); font-size: var(--text-xs); }
+@keyframes tip-in { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .tooltip { animation: none; } }
+.has-tip { text-decoration: underline dotted var(--fg-faint); text-underline-offset: 3px; text-decoration-thickness: 1px; }

@@ -268,7 +268,7 @@ function PitchEditor() {
         <Button variant="primary" disabled={!map} onClick={() => void run(() => musicApi.tuningApply(clip.sourceId, clip.id), { busy: true, success: "Correção aplicada (nova fonte de áudio; Ctrl+Z desfaz)." })}>
           Aplicar
         </Button>
-        <Button disabled={!map} onClick={() => void run(() => musicApi.tuningClear(clip.sourceId))}>
+        <Button disabled={!map} data-tip="tuning.clear" onClick={() => void run(() => musicApi.tuningClear(clip.sourceId))}>
           Limpar
         </Button>
         <Button onClick={() => setStretching(true)}>Time-stretch…</Button>

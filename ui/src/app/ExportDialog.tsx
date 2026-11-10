@@ -55,16 +55,16 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
       }
     >
       {session.contentEndFrame === 0 ? <p>O projeto ainda não tem áudio para exportar.</p> : null}
-      <Field label="Formato">
+      <Field label="Formato" tip="export.format">
         <Segmented label="Formato" value={s.format} onChange={(f) => setS({ ...s, format: f, bitDepth: f === "flac" && s.bitDepth === 32 ? 24 : s.bitDepth })} options={formats.map((f) => ({ value: f, label: LABELS[f] }))} />
       </Field>
       {lossless ? (
-        <Field label="Resolução">
+        <Field label="Resolução" tip="export.bitDepth">
           <Segmented label="Resolução" value={s.bitDepth} onChange={(b) => setS({ ...s, bitDepth: b })} options={[{ value: 16, label: "16 bits" }, { value: 24, label: "24 bits" }, ...(s.format === "flac" ? [] : [{ value: 32, label: "32 float" }])]} />
         </Field>
       ) : null}
       {s.format === "mp3" ? (
-        <Field label="Qualidade MP3">
+        <Field label="Qualidade MP3" tip="export.quality">
           <select className="select" value={s.mp3Kbps ?? 0} onChange={(e) => setS({ ...s, mp3Kbps: Number(e.target.value) || null })}>
             {[320, 256, 192, 160, 128].map((k) => (
               <option key={k} value={k}>
@@ -81,10 +81,10 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
         </Field>
       ) : null}
       <div className="row">
-        <Toggle pressed={s.normalize} onChange={(v) => setS({ ...s, normalize: v })}>
+        <Toggle pressed={s.normalize} onChange={(v) => setS({ ...s, normalize: v })} data-tip="export.normalize">
           Normalizar (−1 dBFS)
         </Toggle>
-        <Toggle pressed={stems} onChange={setStems}>
+        <Toggle pressed={stems} onChange={setStems} data-tip="export.stems">
           Uma faixa por arquivo (stems)
         </Toggle>
       </div>

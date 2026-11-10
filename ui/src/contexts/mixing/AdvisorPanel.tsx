@@ -29,7 +29,7 @@ export function AdvisorPanel() {
   return (
     <div className="advisor">
       <div style={{ display: "flex", gap: 8, alignItems: "end", flexWrap: "wrap" }}>
-        <Field label="Meta de loudness">
+        <Field label="Meta de loudness" tip="advisor.target">
           <select className="select" value={target} onChange={(e) => setTarget(Number(e.target.value))}>
             <option value={-14}>−14 LUFS (Spotify, YouTube)</option>
             <option value={-16}>−16 LUFS (Apple Music)</option>
@@ -46,11 +46,11 @@ export function AdvisorPanel() {
       ) : (
         <>
           <div className="advisor-stats">
-            <div className="stat"><span>Loudness integrado</span><strong>{fmt(m?.integratedLufs, "LUFS")}</strong></div>
-            <div className="stat"><span>Pico real (true peak)</span><strong>{fmt(m?.truePeakDb, "dBTP")}</strong></div>
-            <div className="stat"><span>Pico</span><strong>{fmt(m?.peakDb, "dBFS")}</strong></div>
-            <div className="stat"><span>RMS</span><strong>{fmt(m?.rmsDb, "dB")}</strong></div>
-            <div className="stat"><span>Correlação</span><strong>{m ? m.correlation.toFixed(2) : "—"}</strong></div>
+            <div className="stat" data-tip="advisor.lufs"><span className="has-tip">Loudness integrado</span><strong>{fmt(m?.integratedLufs, "LUFS")}</strong></div>
+            <div className="stat" data-tip="advisor.truePeak"><span className="has-tip">Pico real (true peak)</span><strong>{fmt(m?.truePeakDb, "dBTP")}</strong></div>
+            <div className="stat" data-tip="advisor.peak"><span className="has-tip">Pico</span><strong>{fmt(m?.peakDb, "dBFS")}</strong></div>
+            <div className="stat" data-tip="advisor.rms"><span className="has-tip">RMS</span><strong>{fmt(m?.rmsDb, "dB")}</strong></div>
+            <div className="stat" data-tip="advisor.correlation"><span className="has-tip">Correlação</span><strong>{m ? m.correlation.toFixed(2) : "—"}</strong></div>
           </div>
           {report.advice.length === 0 ? <p>Nenhum problema encontrado. 🎉</p> : null}
           {report.advice.map((a, i) => (

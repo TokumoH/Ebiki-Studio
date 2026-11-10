@@ -95,20 +95,20 @@ export function RecordingPanel() {
       </section>
       </div>
       <section className="recording-side">
-        <h3>Metrônomo</h3>
+        <h3 className="has-tip" data-tip="transport.metronome">Metrônomo</h3>
         <div className="row">
-          <Toggle pressed={rec.metronome.enabled} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, enabled: v }))}>
+          <Toggle pressed={rec.metronome.enabled} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, enabled: v }))} data-tip="transport.metronome">
             Ligado
           </Toggle>
-          <Toggle pressed={rec.metronome.accentFirstBeat} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, accentFirstBeat: v }))}>
+          <Toggle pressed={rec.metronome.accentFirstBeat} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, accentFirstBeat: v }))} data-tip="rec.accent">
             Acentuar 1º tempo
           </Toggle>
         </div>
         <div className="row">
-          <Field label="Volume">
+          <Field label="Volume" tip="rec.metronomeVolume">
             <input type="range" min={0} max={1} step={0.05} value={rec.metronome.volume} onChange={(e) => void run(() => api.recordingMetronome({ ...rec.metronome, volume: Number(e.target.value) }))} />
           </Field>
-          <Field label="Subdivisão">
+          <Field label="Subdivisão" tip="rec.subdivision">
             <select className="select" value={rec.metronome.subdivision} onChange={(e) => void run(() => api.recordingMetronome({ ...rec.metronome, subdivision: Number(e.target.value) }))}>
               <option value={1}>Tempos</option>
               <option value={2}>Colcheias</option>
@@ -116,7 +116,7 @@ export function RecordingPanel() {
               <option value={4}>Semicolcheias</option>
             </select>
           </Field>
-          <Field label="Contagem">
+          <Field label="Contagem" tip="rec.countIn">
             <select className="select" value={rec.metronome.countInBars} onChange={(e) => void run(() => api.recordingMetronome({ ...rec.metronome, countInBars: Number(e.target.value) }))}>
               {[0, 1, 2, 4].map((n) => (
                 <option key={n} value={n}>
@@ -126,23 +126,23 @@ export function RecordingPanel() {
             </select>
           </Field>
         </div>
-        <h3>Punch in/out</h3>
+        <h3 className="has-tip" data-tip="rec.punch">Punch in/out</h3>
         <div className="row">
-          <Field label="Do compasso">
+          <Field label="Do compasso" tip="rec.punchFrom">
             <input className="input" type="number" min={1} value={punch[0]} onChange={(e) => setPunch([Math.max(1, Number(e.target.value)), punch[1]])} style={{ width: 70 }} />
           </Field>
-          <Field label="Até o compasso">
+          <Field label="Até o compasso" tip="rec.punchTo">
             <input className="input" type="number" min={2} value={punch[1]} onChange={(e) => setPunch([punch[0], Math.max(punch[0] + 1, Number(e.target.value))])} style={{ width: 70 }} />
           </Field>
-          <Button onClick={() => void run(() => api.recordingPunch([(punch[0] - 1) * BAR, (punch[1] - 1) * BAR]))}>Definir</Button>
-          <Button variant="ghost" disabled={!rec.punch} onClick={() => void run(() => api.recordingPunch(null))}>
+          <Button data-tip="rec.punchSet" onClick={() => void run(() => api.recordingPunch([(punch[0] - 1) * BAR, (punch[1] - 1) * BAR]))}>Definir</Button>
+          <Button variant="ghost" disabled={!rec.punch} data-tip="rec.punchClear" onClick={() => void run(() => api.recordingPunch(null))}>
             Limpar
           </Button>
         </div>
         <p className="hint">Compassos em 4/4 a partir do início. {rec.punch ? `Ativo: ticks ${rec.punch[0]}–${rec.punch[1]}.` : "Sem punch: grava do ponto atual."}</p>
-        <h3>Compensação de latência</h3>
+        <h3 className="has-tip" data-tip="rec.latency">Compensação de latência</h3>
         <div className="row">
-          <Field label="Amostras">
+          <Field label="Amostras" tip="rec.latency">
             <input className="input" type="number" min={0} max={48000} value={rec.latencyCompensationFrames} onChange={(e) => void run(() => api.recordingLatency(Math.max(0, Math.min(48000, Number(e.target.value)))))} style={{ width: 100 }} />
           </Field>
           {audio?.bufferSize ? (

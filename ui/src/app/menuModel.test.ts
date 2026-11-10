@@ -13,6 +13,7 @@ const base: MenuContext = {
   theme: "dark",
   openPanels: ["timeline", "mixer"],
   statusBar: true,
+  tooltips: true,
   metronome: false,
   loop: true,
   hasSelectedTrack: false,

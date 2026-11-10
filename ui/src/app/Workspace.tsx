@@ -18,6 +18,7 @@ import { buildMenus } from "./menuModel";
 import { HelpCenter } from "./HelpCenter";
 import { AboutDialog } from "./AboutDialog";
 import { UpdateDialog } from "./UpdateDialog";
+import { useTooltipPrefs } from "./tooltips";
 import { useUpdates } from "./updates";
 import { Tutorial, shouldAutoStartTutorial, useTour } from "./Tutorial";
 import { AudioSettingsDialog } from "./AudioSettingsDialog";
@@ -64,6 +65,7 @@ export function Workspace() {
   const audio = useAudio((a) => a.status);
   const [dialog, setDialog] = useState<"audio" | "export" | "shortcuts" | "close" | "help" | "about" | null>(null);
   const [statusBar, setStatusBar] = useState(true);
+  const tooltipsOn = useTooltipPrefs((s) => s.enabled);
   const [shortcutList, setShortcutList] = useState<Shortcut[]>(loadShortcuts);
   const shortcuts = useRef(shortcutList);
   shortcuts.current = shortcutList;
@@ -139,6 +141,7 @@ export function Workspace() {
         if (id) useClipViewMode.getState().toggle(id);
       },
       toggleStatusBar: () => setStatusBar((v) => !v),
+      toggleTooltips: () => useTooltipPrefs.getState().toggle(),
       fullscreen: () => void toggleFullscreen(),
       resetLayout: () => void resetLayout(),
       deleteClip: () => {
@@ -223,6 +226,7 @@ export function Workspace() {
     theme,
     openPanels,
     statusBar,
+    tooltips: tooltipsOn,
     metronome: session.recording.metronome.enabled,
     loop: session.recording.loopRange !== null,
     hasSelectedTrack: Boolean(selectedTrack),
@@ -266,11 +270,11 @@ export function Workspace() {
       <DockLayout theme={theme} />
       {statusBar ? (
       <footer className="statusbar" aria-label="Status">
-        <span>
+        <span data-tip="status.audio">
           {audio ? (audio.mode === "device" ? `Saída: ${audio.outputName ?? "padrão"}` : <span className="warn">Sem dispositivo de áudio (modo silencioso)</span>) : "…"}
         </span>
-        <span className="mono">{session.project.sampleRate / 1000} kHz · {session.project.bitDepth} bits</span>
-        {audio?.bufferSize ? <span className="mono">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs?.toFixed(1) ?? "?"} ms</span> : null}
+        <span className="mono" data-tip="status.format">{session.project.sampleRate / 1000} kHz · {session.project.bitDepth} bits</span>
+        {audio?.bufferSize ? <span className="mono" data-tip="status.buffer">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs?.toFixed(1) ?? "?"} ms</span> : null}
         {meters && meters.xruns > 0 ? <span className="warn">{meters.xruns} falha(s) de buffer — aumente o buffer</span> : null}
         <span style={{ flex: 1 }} />
         {updateNotice ? (

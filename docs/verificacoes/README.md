@@ -47,6 +47,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 |---|---|
 | [_modelo-registro-de-correcao.md](_modelo-registro-de-correcao.md) | Modelo do registro |
 | [VER-2026-11-10-01-core-no-claude-md.md](VER-2026-11-10-01-core-no-claude-md.md) | Adoção do CORE no CLAUDE.md e criação deste diretório |
+| [VER-2026-11-10-02-legendas.md](VER-2026-11-10-02-legendas.md) | Legendas ao passar o mouse (glossário + camada única) |
 
 ## Lógica
 

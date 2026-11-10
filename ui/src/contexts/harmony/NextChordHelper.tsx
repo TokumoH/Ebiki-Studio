@@ -70,7 +70,7 @@ export function NextChordHelper({ harmonyKey, notation, target }: { harmonyKey: 
         <Button size="sm" disabled={!seq.length} onClick={() => set(removeLast(seq))}>
           ↶ Remover último
         </Button>
-        <Button size="sm" disabled={!seq.length} onClick={() => set([])}>
+        <Button size="sm" disabled={!seq.length} data-tip="harmony.clearSeq" onClick={() => set([])}>
           Limpar
         </Button>
         {playing ? (

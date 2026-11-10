@@ -6,10 +6,13 @@ import { applyTheme, useTheme } from "../core/theme";
 import { StartScreen } from "./StartScreen";
 import { Workspace } from "./Workspace";
 import { Toasts } from "./Toasts";
+import { TooltipLayer } from "../shared/TooltipLayer";
+import { resolveTip, useTooltipPrefs } from "./tooltips";
 
 export function App() {
   const hasProject = useSession((s) => s.session !== null);
   const theme = useTheme((s) => s.theme);
+  const tipsOn = useTooltipPrefs((s) => s.enabled);
   useEffect(() => applyTheme(theme), [theme]);
   useEffect(() => {
     let off: (() => void) | undefined;
@@ -20,6 +23,7 @@ export function App() {
     <>
       {hasProject ? <Workspace /> : <StartScreen />}
       <Toasts />
+      <TooltipLayer resolve={resolveTip} enabled={tipsOn} />
     </>
   );
 }

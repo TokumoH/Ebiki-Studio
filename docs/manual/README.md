@@ -46,6 +46,11 @@ Ao abrir, a **tela de carregamento** mostra a marca Ebiki e o progresso. No prim
 O menu fixo no topo reúne todas as ações: **Arquivo, Editar, Exibir, Transporte, Faixa, Clipe,
 Ferramentas, Janela e Ajuda**. Os atalhos aparecem ao lado de cada item.
 
+**Legendas ao passar o mouse:** pare o ponteiro ~0,5 s sobre qualquer setor (aba), efeito, parâmetro,
+botão ou campo para ver o que ele faz — com a faixa de valores e um valor típico quando ajuda (ex.:
+*Ataque · 0,1–200 ms · voz: 5–15 ms*). Também aparecem ao focar pelo teclado; Esc fecha. Rótulos com
+sublinhado pontilhado têm explicação. Desligue em *Exibir › Legendas ao passar o mouse*.
+
 - **Alt** ou **F10** levam o teclado ao menu; ←/→ trocam de menu, ↑/↓ percorrem, Enter ativa, Esc fecha.
 - **Exibir**: tema escuro/claro, zoom da linha do tempo (Ctrl+= / Ctrl+- / Ctrl+0), painéis,
   espectrograma da faixa, barra de status, tela cheia (F11) e *Restaurar layout padrão*.

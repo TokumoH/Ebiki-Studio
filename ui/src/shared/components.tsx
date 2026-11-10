@@ -16,10 +16,10 @@ export function Toggle({ pressed, onChange, children, className = "", ...rest }:
   );
 }
 
-export function Field({ label, children, error }: { label: string; children: ReactNode; error?: string | null }) {
+export function Field({ label, children, error, tip }: { label: string; children: ReactNode; error?: string | null; tip?: string }) {
   return (
-    <label className="field">
-      <span>{label}</span>
+    <label className="field" data-tip={tip}>
+      <span className={tip ? "has-tip" : undefined}>{label}</span>
       {children}
       {error ? <em className="field-error">{error}</em> : null}
     </label>

@@ -28,7 +28,9 @@ export function EffectEditor({ target, slot, onClose }: { target: StripTarget; s
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <strong style={{ flex: 1 }}>{EFFECT_LABELS[e.type] ?? e.type}</strong>
+        <strong style={{ flex: 1 }} className="has-tip" data-tip={`effect.${e.type}`}>
+          {EFFECT_LABELS[e.type] ?? e.type}
+        </strong>
         <Toggle pressed={slot.bypass} onChange={(v) => void run(() => api.mixerEdit(target, { op: "bypass", id: slot.id, value: v }))} aria-label="Bypass">
           Bypass
         </Toggle>
@@ -46,7 +48,7 @@ export function EffectEditor({ target, slot, onClose }: { target: StripTarget; s
             return (
               <div className="eq-band" key={i}>
                 <div style={{ display: "flex", gap: 4 }}>
-                  <select className="select" value={b.kind} aria-label={`Tipo da banda ${i + 1}`} onChange={(ev) => setBand({ kind: ev.target.value as EqBand["kind"] })} style={{ flex: 1 }}>
+                  <select className="select" value={b.kind} aria-label={`Tipo da banda ${i + 1}`} data-tip="param.eq.kind" onChange={(ev) => setBand({ kind: ev.target.value as EqBand["kind"] })} style={{ flex: 1 }}>
                     {EQ_KINDS.map((k) => (
                       <option key={k.value} value={k.value}>
                         {k.label}
@@ -57,9 +59,9 @@ export function EffectEditor({ target, slot, onClose }: { target: StripTarget; s
                     On
                   </Toggle>
                 </div>
-                <Slider label="Frequência" unit="Hz" min={20} max={20000} step={1} log value={b.freqHz} onChange={(v) => setBand({ freqHz: v })} onEnd={finish} />
-                <Slider label="Ganho" unit="dB" min={-24} max={24} step={0.1} value={b.gainDb} onChange={(v) => setBand({ gainDb: v })} onEnd={finish} />
-                <Slider label="Q" unit="" min={0.1} max={18} step={0.01} log value={b.q} onChange={(v) => setBand({ q: v })} onEnd={finish} />
+                <Slider tip="param.eq.freqHz" label="Frequência" unit="Hz" min={20} max={20000} step={1} log value={b.freqHz} onChange={(v) => setBand({ freqHz: v })} onEnd={finish} />
+                <Slider tip="param.eq.gainDb" label="Ganho" unit="dB" min={-24} max={24} step={0.1} value={b.gainDb} onChange={(v) => setBand({ gainDb: v })} onEnd={finish} />
+                <Slider tip="param.eq.q" label="Q" unit="" min={0.1} max={18} step={0.01} log value={b.q} onChange={(v) => setBand({ q: v })} onEnd={finish} />
               </div>
             );
           })}
@@ -69,6 +71,7 @@ export function EffectEditor({ target, slot, onClose }: { target: StripTarget; s
           {(PARAMS[e.type] ?? []).map((p) => (
             <Slider
               key={p.key}
+              tip={`param.${e.type}.${p.key}`}
               label={p.label}
               unit={p.unit}
               min={p.min}
@@ -92,16 +95,16 @@ export function EffectEditor({ target, slot, onClose }: { target: StripTarget; s
   );
 }
 
-function Slider({ label, unit, min, max, step, value, log, onChange, onEnd }: { label: string; unit: string; min: number; max: number; step: number; value: number; log?: boolean; onChange: (v: number) => void; onEnd: () => void }) {
+function Slider({ label, unit, min, max, step, value, log, onChange, onEnd, tip }: { tip?: string; label: string; unit: string; min: number; max: number; step: number; value: number; log?: boolean; onChange: (v: number) => void; onEnd: () => void }) {
   const toPos = (v: number) => (log ? Math.log(v / min) / Math.log(max / min) : (v - min) / (max - min));
   const fromPos = (p: number) => {
     const v = log ? min * Math.pow(max / min, p) : min + p * (max - min);
     return Math.round(v / step) * step;
   };
   return (
-    <div className="param">
+    <div className="param" data-tip={tip}>
       <label>
-        <span>{label}</span>
+        <span className={tip ? "has-tip" : undefined}>{label}</span>
         <span className="mono">
           {value.toFixed(step < 1 ? (step < 0.1 ? 2 : 1) : 0)} {unit}
         </span>

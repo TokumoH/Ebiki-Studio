@@ -23,6 +23,7 @@ export const HELP_TOPICS: HelpTopic[] = [
       "Arquivo › Configurações de áudio: escolha entrada, saída e buffer. Sem dispositivo, o app funciona em modo silencioso.",
       "Importe áudios com Arquivo › Importar (Ctrl+I) ou arrastando arquivos para a janela.",
       "Salve com Ctrl+S. O autosave guarda uma cópia a cada 2 minutos e oferece recuperação se o app fechar sem salvar.",
+      "Dúvida sobre um botão, efeito ou parâmetro? Pare o mouse em cima dele: a legenda explica (desligue em Exibir › Legendas).",
     ],
     tourStep: 1,
   },

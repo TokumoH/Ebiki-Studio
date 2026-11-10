@@ -148,7 +148,7 @@ export function BasesPanel() {
           <option value="bundledCc0">Incluídas (CC0)</option>
         </select>
         <input className="input tags" placeholder="tags, separadas, por vírgula" aria-label="Filtrar por tags" value={filters.tags} onChange={(e) => set({ tags: e.target.value })} />
-        <Button size="sm" variant="ghost" onClick={() => setFilters(EMPTY_FILTERS)}>
+        <Button size="sm" variant="ghost" data-tip="bases.clear" onClick={() => setFilters(EMPTY_FILTERS)}>
           Limpar
         </Button>
       </form>

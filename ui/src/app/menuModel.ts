@@ -15,6 +15,8 @@ export interface MenuContext {
   theme: "dark" | "light";
   openPanels: string[];
   statusBar: boolean;
+  /** Legendas ao passar o mouse ligadas. */
+  tooltips: boolean;
   metronome: boolean;
   loop: boolean;
   hasSelectedTrack: boolean;
@@ -89,6 +91,7 @@ export function buildMenus(c: MenuContext): MenuDef[] {
         { kind: "submenu", id: "exibir-paineis", label: "Painéis", items: panelItems("view") },
         item("toggleSpectrum", "Espectrograma na faixa selecionada", { checked: c.selectedTrackSpectrum, disabled: !c.hasSelectedTrack }),
         item("toggleStatusBar", "Barra de status", { checked: c.statusBar }),
+        item("toggleTooltips", "Legendas ao passar o mouse", { checked: c.tooltips }),
         sep,
         item("fullscreen", "Tela cheia"),
         item("resetLayout", "Restaurar layout padrão"),

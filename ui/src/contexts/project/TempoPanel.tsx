@@ -90,13 +90,13 @@ export function TempoPanel() {
             void run(() => api.tempoSet(barToTick(bpmBar), bpm));
           }}
         >
-          <Field label="Compasso">
+          <Field label="Compasso" tip="tempo.bar">
             <input className="input" type="number" min={1} value={bpmBar} onChange={(e) => setBpmBar(Math.max(1, Number(e.target.value)))} style={{ width: 80 }} />
           </Field>
-          <Field label="BPM">
+          <Field label="BPM" tip="tempo.bpm">
             <input className="input" type="number" min={20} max={999} step={0.01} value={bpm} onChange={(e) => setBpm(Number(e.target.value))} style={{ width: 90 }} />
           </Field>
-          <Button type="submit">Definir</Button>
+          <Button type="submit" data-tip="tempo.setBpm">Definir</Button>
         </form>
       </section>
       <section>
@@ -115,13 +115,13 @@ export function TempoPanel() {
             void run(() => api.meterSet(barToTick(meterBar), num, den));
           }}
         >
-          <Field label="Compasso">
+          <Field label="Compasso" tip="tempo.bar">
             <input className="input" type="number" min={1} value={meterBar} onChange={(e) => setMeterBar(Math.max(1, Number(e.target.value)))} style={{ width: 80 }} />
           </Field>
-          <Field label="Tempos">
+          <Field label="Tempos" tip="tempo.numerator">
             <input className="input" type="number" min={1} max={32} value={num} onChange={(e) => setNum(Number(e.target.value))} style={{ width: 70 }} />
           </Field>
-          <Field label="Figura">
+          <Field label="Figura" tip="tempo.denominator">
             <select className="select" value={den} onChange={(e) => setDen(Number(e.target.value))}>
               {[1, 2, 4, 8, 16, 32].map((d) => (
                 <option key={d} value={d}>
@@ -130,7 +130,7 @@ export function TempoPanel() {
               ))}
             </select>
           </Field>
-          <Button type="submit">Definir</Button>
+          <Button type="submit" data-tip="tempo.setMeter">Definir</Button>
         </form>
       </section>
     </div>

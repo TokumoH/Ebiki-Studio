@@ -3,6 +3,14 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Novidades
+
+- **Legendas ao passar o mouse** em todo o app: setores (abas), efeitos, cada parâmetro (limiar,
+  ataque, liberação…), botões, medidores e campos, com faixa de valores e valor típico. Desligáveis
+  em *Exibir › Legendas ao passar o mouse*.
+
 ## [0.2.1] - 2026-11-07
 
 Entrada de áudio no painel Gravação, partitura mais direta e correções importantes.

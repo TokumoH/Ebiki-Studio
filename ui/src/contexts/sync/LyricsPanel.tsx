@@ -197,7 +197,7 @@ export function LyricsPanel() {
               <Button size="sm" variant="primary" onClick={() => void run(() => musicApi.lyricsSetSpan(selected.unit, beatsToTicks(start), beatsToTicks(end)))}>
                 Definir
               </Button>
-              <Button size="sm" onClick={() => void run(() => musicApi.lyricsClearSpan(selected.unit))}>
+              <Button size="sm" data-tip="lyrics.clearSpan" onClick={() => void run(() => musicApi.lyricsClearSpan(selected.unit))}>
                 Limpar
               </Button>
             </div>
