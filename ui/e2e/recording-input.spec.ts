@@ -35,3 +35,32 @@ test("Gravação: escolher a entrada no painel, ver o nível e ouvir a entrada",
   await section.getByLabel("Dispositivo de entrada da gravação").selectOption("");
   await expect(section.getByRole("button", { name: "Ouvir entrada" })).toHaveCount(0);
 });
+
+test("Gravação: o bloco Entrada de áudio recolhe para uma linha de resumo e lembra a escolha", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Recolher");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  await page.locator(".dv-tab", { hasText: "Gravação" }).click();
+  const section = page.getByRole("region", { name: "Entrada de áudio" });
+  await section.getByLabel("Dispositivo de entrada da gravação").selectOption("sim-in");
+  await section.getByRole("button", { name: "Ouvir entrada" }).click();
+  const toggle = section.getByRole("button", { name: /Entrada de áudio/ });
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  // resumo: dispositivo, medidor resumido e "ouvindo"; controles completos escondidos
+  await expect(section).toContainText("Entrada simulada");
+  await expect(section).toContainText("🎧 ouvindo");
+  await expect(section.getByRole("meter", { name: "Nível da entrada (resumo)" })).toBeVisible();
+  await expect(section.getByLabel("Dispositivo de entrada da gravação")).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem("ebiki.recording.inputCollapsed"))).toBe("1");
+  // o painel de faixas continua lá, mais perto do topo
+  await expect(page.getByRole("heading", { name: "Faixas" })).toBeVisible();
+  // teclado abre de novo
+  await toggle.focus();
+  await page.keyboard.press("Enter");
+  await expect(section.getByLabel("Dispositivo de entrada da gravação")).toBeVisible();
+});

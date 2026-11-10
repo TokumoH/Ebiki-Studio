@@ -44,7 +44,9 @@ Ao abrir, a **tela de carregamento** mostra a marca Ebiki e o progresso. No prim
 ### Menu principal e ajuda
 
 O menu fixo no topo reúne todas as ações: **Arquivo, Editar, Exibir, Transporte, Faixa, Clipe,
-Ferramentas, Janela e Ajuda**. Os atalhos aparecem ao lado de cada item.
+Ferramentas, Janela e Ajuda**. Os atalhos aparecem ao lado de cada item. **Clique na logo** (primeiro
+menu) para o essencial: novo/abrir/salvar, exportar, importar, configurações de áudio, atalhos, tema,
+legendas, atualizações, ajuda, sobre e fechar projeto.
 
 **Legendas ao passar o mouse:** pare o ponteiro ~0,5 s sobre qualquer setor (aba), efeito, parâmetro,
 botão ou campo para ver o que ele faz — com a faixa de valores e um valor típico quando ajuda (ex.:
@@ -114,6 +116,8 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
    - **🎧 Ouvir entrada** toca o dispositivo direto na saída, com volume próprio e sem armar faixa —
      útil para testar o microfone e ajustar o ganho da interface. Não entra na gravação nem na
      exportação. Começa desligado a cada abertura do app; use fones para evitar microfonia.
+   - Clique no título **▾ Entrada de áudio** para recolher o bloco numa linha de resumo
+     (dispositivo, medidor e "🎧 ouvindo"); o app lembra a escolha.
 2. Escolha a entrada de cada faixa (mono ou par estéreo) e a monitoração da faixa
    (desligada, quando armada ou sempre).
 3. Arme a faixa (⏺) e pressione **R** (ou o botão de gravar).

@@ -15,6 +15,10 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - **Loop configurável**: ▾ ao lado de Loop e *Transporte › Opções de loop…* com 4 compassos a partir
   do cursor, **projeto inteiro** ou compassos X–Y; desenhar e ajustar arrastando na régua; o botão
   mostra o trecho e religar volta ao mesmo trecho.
+- **Menu na logo**: projeto, exportar, importar, configurações de áudio, atalhos, tema, legendas,
+  atualizações, ajuda e sobre num clique.
+- **Entrada de áudio recolhível** no painel Gravação: vira uma linha com dispositivo, medidor e
+  "ouvindo"; o app lembra.
 
 ## [0.2.1] - 2026-11-07
 

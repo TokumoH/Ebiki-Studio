@@ -21,8 +21,8 @@ test("menu Janela lista os painéis e reabre um painel fechado pelo teclado", as
 
   // F10 leva o teclado ao menu principal; → até "Janela"; Enter abre
   await page.keyboard.press("F10");
-  await expect(page.getByRole("menuitem", { name: "Arquivo" })).toBeFocused();
-  for (let i = 0; i < 7; i++) await page.keyboard.press("ArrowRight");
+  await expect(page.getByRole("menuitem", { name: "Menu do Ebiki" })).toBeFocused();
+  for (let i = 0; i < 8; i++) await page.keyboard.press("ArrowRight");
   const janela = page.getByRole("menuitem", { name: "Janela" });
   await expect(janela).toBeFocused();
   await page.keyboard.press("Enter");

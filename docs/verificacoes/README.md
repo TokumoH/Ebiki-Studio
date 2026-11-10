@@ -50,6 +50,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-10-02-legendas.md](VER-2026-11-10-02-legendas.md) | Legendas ao passar o mouse (glossário + camada única) |
 | [VER-2026-11-10-03-zoom-pela-roda.md](VER-2026-11-10-03-zoom-pela-roda.md) | Zoom pela roda, altura das faixas e camadas acima do dockview |
 | [VER-2026-11-10-04-loop-configuravel.md](VER-2026-11-10-04-loop-configuravel.md) | Loop configurável (opções, projeto inteiro, régua) |
+| [VER-2026-11-10-05-menu-da-logo-e-entrada-recolhivel.md](VER-2026-11-10-05-menu-da-logo-e-entrada-recolhivel.md) | Menu da logo e entrada de áudio recolhível |
 
 ## Lógica
 

@@ -213,6 +213,8 @@ export function Workspace() {
   const selectedTrack = session.tracks.find((t) => t.id === selectedTrackId);
   const selectedClip = findClip(session, selectedClipId)?.clip ?? null;
   const menus = buildMenus({
+    projectName: session.project.name,
+    projectDetail: `${session.project.sampleRate / 1000} kHz · ${session.project.bitDepth} bits`,
     shortcuts: shortcutList,
     run: runCommand,
     canUndo: h.canUndo,
@@ -229,12 +231,23 @@ export function Workspace() {
     selectedTrackArmed: selectedTrack?.recording.armed ?? false,
     selectedTrackSpectrum: Boolean(selectedTrack && spectrum[selectedTrack.id]),
     clip: selectedClip ? { polarityInverted: selectedClip.polarityInverted, reversed: selectedClip.reversed } : null,
-  });
+  }).map((m) =>
+    m.id === "app"
+      ? {
+          ...m,
+          content: (
+            <>
+              <span className="brand-mark" aria-hidden="true" />
+              <span className="menubar-caret" aria-hidden="true">▾</span>
+            </>
+          ),
+        }
+      : m,
+  );
   return (
     <div className="app" aria-busy={busy}>
       <header className="appbar">
         <div className="menubar-row" data-tour="menu">
-          <span className="brand-mark" role="img" aria-label="Ebiki Studio" />
           <MenuBar menus={menus} />
           <span style={{ flex: 1 }} />
           <span className="project-name" title={session.project.root}>

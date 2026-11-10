@@ -26,8 +26,18 @@ const items = (c: MenuContext, menu: string) => buildMenus(c).find((m) => m.id =
 const byId = (c: MenuContext, menu: string, id: string) => items(c, menu).find((i) => i.id === id)!;
 
 describe("modelo do menu principal", () => {
-  it("tem os 9 menus na ordem do header", () => {
-    expect(buildMenus(base).map((m) => m.label)).toEqual(["Arquivo", "Editar", "Exibir", "Transporte", "Faixa", "Clipe", "Ferramentas", "Janela", "Ajuda"]);
+  it("tem o menu da logo e os 9 menus na ordem do header", () => {
+    expect(buildMenus(base).map((m) => m.label)).toEqual(["Menu do Ebiki", "Arquivo", "Editar", "Exibir", "Transporte", "Faixa", "Clipe", "Ferramentas", "Janela", "Ajuda"]);
+  });
+
+  it("menu da logo: cabeçalho do projeto e o essencial (exportar, configurações, legendas, ajuda)", () => {
+    const app = buildMenus({ ...base, projectName: "Demo", projectDetail: "48 kHz · 24 bits" })[0]!;
+    expect(app.items[0]).toEqual({ kind: "label", text: "Demo", detail: "48 kHz · 24 bits" });
+    const ids = app.items.flatMap((i) => (i.kind === "item" ? [i.id] : []));
+    for (const id of ["export", "import", "save", "audioSettings", "shortcutsDialog", "toggleTooltips", "checkUpdates", "help", "about", "closeProject"]) expect(ids).toContain(id);
+    // tema: oferece o oposto do atual
+    expect(ids).toContain("themeLight");
+    expect(buildMenus({ ...base, theme: "light" })[0]!.items.some((i) => i.kind === "item" && i.id === "themeDark")).toBe(true);
   });
 
   it("mostra o atalho configurado (inclusive personalizado)", () => {

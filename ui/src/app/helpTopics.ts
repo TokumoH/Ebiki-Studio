@@ -20,6 +20,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     intro: "Um projeto é uma pasta Nome.ebiki com tudo dentro: banco do projeto, áudios e autosaves. Pode ser copiada para outro computador.",
     steps: [
       "Na tela inicial, escolha nome, pasta, taxa de amostragem (48 kHz) e resolução (24 bits) e clique em Criar projeto.",
+      "A logo no canto superior abre o essencial: salvar, exportar, configurações de áudio, legendas, atualizações e ajuda.",
       "Arquivo › Configurações de áudio: escolha entrada, saída e buffer. Sem dispositivo, o app funciona em modo silencioso.",
       "Importe áudios com Arquivo › Importar (Ctrl+I) ou arrastando arquivos para a janela.",
       "Salve com Ctrl+S. O autosave guarda uma cópia a cada 2 minutos e oferece recuperação se o app fechar sem salvar.",

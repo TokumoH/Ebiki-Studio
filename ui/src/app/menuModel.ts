@@ -22,6 +22,9 @@ export interface MenuContext {
   hasSelectedTrack: boolean;
   selectedTrackArmed: boolean;
   selectedTrackSpectrum: boolean;
+  /** Nome e formato do projeto (cabeçalho do menu da logo). */
+  projectName?: string;
+  projectDetail?: string;
   /** Clipe selecionado (ou null) e seus estados de edição. */
   clip: { polarityInverted: boolean; reversed: boolean } | null;
 }
@@ -48,6 +51,30 @@ export function buildMenus(c: MenuContext): MenuDef[] {
   const noClip = c.clip === null;
 
   return [
+    {
+      // menu da logo (mockup 9): o que mais se usa, num lugar só; o conteúdo visual (logo) vem do Workspace
+      id: "app",
+      label: "Menu do Ebiki",
+      items: [
+        { kind: "label", text: c.projectName ?? "Ebiki Studio", detail: c.projectDetail },
+        item("newProject", "Novo projeto…"),
+        item("openProject", "Abrir projeto…"),
+        item("save", "Salvar"),
+        sep,
+        item("export", "Exportar…"),
+        item("import", "Importar áudio…"),
+        sep,
+        item("audioSettings", "Configurações de áudio…"),
+        item("shortcutsDialog", "Atalhos de teclado…"),
+        c.theme === "dark" ? item("themeLight", "Tema claro (Agridoce)") : item("themeDark", "Tema escuro (Odoriko)"),
+        item("toggleTooltips", "Legendas ao passar o mouse", { checked: c.tooltips }),
+        item("checkUpdates", "Verificar atualizações…"),
+        sep,
+        item("help", "Central de ajuda"),
+        item("about", "Sobre o Ebiki Studio"),
+        item("closeProject", "Fechar projeto"),
+      ],
+    },
     {
       id: "arquivo",
       label: "Arquivo",

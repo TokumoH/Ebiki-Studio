@@ -32,6 +32,8 @@ test("menu fixo: Exibir troca o tema e Alt leva o teclado ao menu", async ({ pag
   await page.keyboard.press("Escape"); // sai da barra
 
   await page.keyboard.press("Alt");
+  await expect(menu(page, "Menu do Ebiki")).toBeFocused(); // a logo é o primeiro menu
+  await page.keyboard.press("ArrowRight");
   await expect(menu(page, "Arquivo")).toBeFocused();
   await page.keyboard.press("ArrowDown");
   await expect(page.getByRole("menu", { name: "Arquivo" })).toBeVisible();
@@ -92,4 +94,18 @@ test("janela estreita: o nome do projeto encolhe sem cobrir o menu", async ({ pa
   const nome = await page.locator(".project-name").boundingBox();
   expect(nome!.x).toBeGreaterThanOrEqual(ajuda!.x + ajuda!.width);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(800);
+});
+
+test("menu da logo: cabeçalho do projeto e atalhos para exportar e configurações", async ({ page }) => {
+  await newProject(page, "Logo");
+  await menu(page, "Menu do Ebiki").click();
+  const m = page.getByRole("menu", { name: "Menu do Ebiki" });
+  await expect(m).toContainText("Logo");
+  await expect(m).toContainText("48 kHz · 24 bits");
+  await m.getByRole("menuitem", { name: "Exportar…" }).click();
+  await expect(page.getByRole("dialog", { name: /Exportar/ })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await menu(page, "Menu do Ebiki").click();
+  await m.getByRole("menuitem", { name: "Configurações de áudio…" }).click();
+  await expect(page.getByRole("dialog", { name: "Configurações de áudio" })).toBeVisible();
 });

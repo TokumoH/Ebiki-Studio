@@ -35,8 +35,39 @@ function InputMeters({ channels }: { channels: number }) {
   );
 }
 
+const COLLAPSED_KEY = "ebiki.recording.inputCollapsed";
+
+function loadCollapsed(): boolean {
+  try {
+    return window.localStorage.getItem(COLLAPSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Resumo do bloco recolhido: o maior nível entre os canais, numa barra só. */
+function InputSummaryMeter() {
+  const inputs = useLive((s) => s.meters?.inputs);
+  const peak = Math.max(0, ...(inputs ?? []));
+  return (
+    <span className="input-summary-meter" role="meter" aria-label="Nível da entrada (resumo)" aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(peakDb(peak))}>
+      <span style={{ width: `${meterFraction(peak) * 100}%` }} />
+    </span>
+  );
+}
+
 export function InputSection() {
   const status = useAudio((a) => a.status);
+  const [collapsed, setCollapsed] = useState(loadCollapsed);
+  const toggleCollapsed = () =>
+    setCollapsed((c) => {
+      try {
+        window.localStorage.setItem(COLLAPSED_KEY, c ? "0" : "1");
+      } catch {
+        /* sem armazenamento: vale só nesta sessão */
+      }
+      return !c;
+    });
   const [devices, setDevices] = useState<DeviceList["inputs"] | null>(null);
   const [monitor, setMonitor] = useState<DeviceMonitor | null>(null);
   const [route, setRoute] = useState("0:");
@@ -90,77 +121,93 @@ export function InputSection() {
   };
 
   return (
-    <section className="input-section" aria-label="Entrada de áudio">
+    <section className={`input-section${collapsed ? " input-section--collapsed" : ""}`} aria-label="Entrada de áudio">
       <div className="input-head">
-        <h3>Entrada de áudio</h3>
-        <span className="hint">Saída e buffer: Arquivo › Configurações de áudio</span>
-      </div>
-      <div className="row">
-        <label className="field">
-          <span>Dispositivo</span>
-          <select className="select" aria-label="Dispositivo de entrada da gravação" value={inputId} disabled={busy || devices === null} onChange={(e) => void changeDevice(e.target.value)}>
-            <option value="">Nenhuma</option>
-            {!known ? <option value={inputId}>{inputId} (desconectado)</option> : null}
-            {(devices ?? []).map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.name}
-                {d.isDefault ? " (padrão)" : ""}
-              </option>
-            ))}
-          </select>
-        </label>
-        {hasInput ? (
-          <span className="hint">
-            {channels} {channels === 1 ? "canal" : "canais"} · {(status?.sampleRate ?? 48000) / 1000} kHz
-            {status?.estimatedLatencyMs ? ` · ~${status.estimatedLatencyMs.toFixed(1)} ms` : ""}
+        <h3>
+          <button type="button" className="input-toggle" aria-expanded={!collapsed} aria-controls="input-section-body" data-tip="rec.inputCollapse" onClick={toggleCollapsed}>
+            <span aria-hidden="true">{collapsed ? "▸" : "▾"}</span> Entrada de áudio
+          </button>
+        </h3>
+        {collapsed ? (
+          <span className="input-summary">
+            <span className="input-summary-device">{status?.inputName ?? "Sem entrada"}</span>
+            {status?.inputName ? <InputSummaryMeter /> : null}
+            {monitor ? <span className="input-summary-listen">🎧 ouvindo</span> : null}
           </span>
         ) : (
-          <span className="hint">Escolha um dispositivo para gravar e ver os níveis.</span>
+          <span className="hint">Saída e buffer: Arquivo › Configurações de áudio</span>
         )}
       </div>
-      {hasInput && channels > 0 ? (
-        <div className="input-body">
-          <InputMeters channels={Math.min(channels, 8)} />
-          <div className="input-monitor">
-            <div className="row">
-              <Toggle pressed={!!monitor} onChange={(on) => void applyMonitor(on)} aria-label="Ouvir entrada">
-                🎧 Ouvir entrada
-              </Toggle>
-              <select
-                className="select"
-                aria-label="Canais para ouvir"
-                value={route}
-                onChange={(e) => {
-                  setRoute(e.target.value);
-                  if (monitor) void applyMonitor(true, e.target.value);
-                }}
-              >
-                {options.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
+      {collapsed ? null : (
+        <div id="input-section-body">
+          <div className="row">
+            <label className="field">
+              <span>Dispositivo</span>
+              <select className="select" aria-label="Dispositivo de entrada da gravação" value={inputId} disabled={busy || devices === null} onChange={(e) => void changeDevice(e.target.value)}>
+                <option value="">Nenhuma</option>
+                {!known ? <option value={inputId}>{inputId} (desconectado)</option> : null}
+                {(devices ?? []).map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                    {d.isDefault ? " (padrão)" : ""}
                   </option>
                 ))}
               </select>
-            </div>
-            <label className="input-gain">
-              <span>Volume</span>
-              <input
-                type="range"
-                min={-60}
-                max={6}
-                step={1}
-                value={gainDb}
-                aria-label="Volume de monitoração"
-                onChange={(e) => setGainDb(Number(e.target.value))}
-                onPointerUp={() => monitor && void applyMonitor(true, route, gainDb)}
-                onKeyUp={() => monitor && void applyMonitor(true, route, gainDb)}
-              />
-              <span className="mono">{gainDb <= -60 ? "mudo" : `${gainDb > 0 ? "+" : ""}${gainDb} dB`}</span>
             </label>
-            <p className="hint">Ouve o dispositivo direto na saída, sem armar faixa. Não entra na gravação nem na exportação. Use fones para evitar microfonia.</p>
+            {hasInput ? (
+              <span className="hint">
+                {channels} {channels === 1 ? "canal" : "canais"} · {(status?.sampleRate ?? 48000) / 1000} kHz
+                {status?.estimatedLatencyMs ? ` · ~${status.estimatedLatencyMs.toFixed(1)} ms` : ""}
+              </span>
+            ) : (
+              <span className="hint">Escolha um dispositivo para gravar e ver os níveis.</span>
+            )}
           </div>
+          {hasInput && channels > 0 ? (
+            <div className="input-body">
+              <InputMeters channels={Math.min(channels, 8)} />
+              <div className="input-monitor">
+                <div className="row">
+                  <Toggle pressed={!!monitor} onChange={(on) => void applyMonitor(on)} aria-label="Ouvir entrada">
+                    🎧 Ouvir entrada
+                  </Toggle>
+                  <select
+                    className="select"
+                    aria-label="Canais para ouvir"
+                    value={route}
+                    onChange={(e) => {
+                      setRoute(e.target.value);
+                      if (monitor) void applyMonitor(true, e.target.value);
+                    }}
+                  >
+                    {options.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <label className="input-gain">
+                  <span>Volume</span>
+                  <input
+                    type="range"
+                    min={-60}
+                    max={6}
+                    step={1}
+                    value={gainDb}
+                    aria-label="Volume de monitoração"
+                    onChange={(e) => setGainDb(Number(e.target.value))}
+                    onPointerUp={() => monitor && void applyMonitor(true, route, gainDb)}
+                    onKeyUp={() => monitor && void applyMonitor(true, route, gainDb)}
+                  />
+                  <span className="mono">{gainDb <= -60 ? "mudo" : `${gainDb > 0 ? "+" : ""}${gainDb} dB`}</span>
+                </label>
+                <p className="hint">Ouve o dispositivo direto na saída, sem armar faixa. Não entra na gravação nem na exportação. Use fones para evitar microfonia.</p>
+              </div>
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      )}
     </section>
   );
 }

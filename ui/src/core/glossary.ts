@@ -121,6 +121,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
 
   // ------------------------------------------------------------------ gravação
   "rec.inputDevice": e("Dispositivo de entrada", "Interface ou microfone usado para gravar. A saída e o buffer ficam em Arquivo › Configurações de áudio.", undefined, [/^Dispositivo de entrada da gravação$/]),
+  "rec.inputCollapse": e("Recolher ou abrir", "Recolhido, mostra só o dispositivo, um medidor resumido e se está ouvindo. O app lembra a escolha."),
   "rec.inputMeter": e("Nível da entrada", "Sinal que chega do dispositivo. Mire em −18 a −6 dB nos trechos fortes; perto de 0 dB vai distorcer.", undefined, [/^Nível da entrada /]),
   "rec.listen": e("Ouvir entrada", "Toca o dispositivo direto na saída, sem armar faixa. Não entra na gravação nem na exportação. Use fones.", undefined, [/^Ouvir entrada$/]),
   "rec.listenChannels": e("Canais para ouvir", "Qual entrada (mono) ou par (estéreo) ouvir.", undefined, [/^Canais para ouvir$/]),

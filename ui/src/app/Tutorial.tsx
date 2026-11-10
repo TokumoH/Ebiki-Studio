@@ -39,7 +39,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     title: "Menu principal",
-    body: "Todas as ações em um lugar: Arquivo, Editar, Exibir, Transporte, Faixa, Clipe, Ferramentas, Janela e Ajuda. Alt ou F10 levam o teclado até ele.",
+    body: "Clique na logo para o essencial (exportar, configurações, legendas, ajuda). Ao lado, todas as ações: Arquivo, Editar, Exibir, Transporte, Faixa, Clipe, Ferramentas, Janela e Ajuda. Alt ou F10 levam o teclado até ele.",
     target: '[data-tour="menu"]',
   },
   {

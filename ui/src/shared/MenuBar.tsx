@@ -1,22 +1,27 @@
 // Barra de menus fixa (estilo Photoshop / VS Code), dirigida por dados e acessível por teclado:
 // Alt ou F10 foca a barra; ←/→ trocam de menu; ↓/Enter abrem; ↑/↓ percorrem; → abre submenu,
 // ← fecha; Enter/Espaço ativam; Esc fecha. Não conhece IPC nem domínio (design system).
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 
 export type MenuEntry =
   | { kind: "item"; id: string; label: string; keys?: string; disabled?: boolean; checked?: boolean; radio?: boolean; run: () => void }
   | { kind: "submenu"; id: string; label: string; items: MenuEntry[] }
-  | { kind: "separator" };
+  | { kind: "separator" }
+  /** Texto informativo, não clicável (ex.: cabeçalho com o nome do projeto). */
+  | { kind: "label"; text: string; detail?: string };
 
 export interface MenuDef {
   id: string;
+  /** Nome do menu (texto do botão e nome acessível). */
   label: string;
+  /** Conteúdo visual do botão no lugar do texto (ex.: a logo); `label` continua como nome acessível. */
+  content?: ReactNode;
   items: MenuEntry[];
 }
 
-type Actionable = Exclude<MenuEntry, { kind: "separator" }>;
+type Actionable = Exclude<MenuEntry, { kind: "separator" } | { kind: "label" }>;
 
-const actionable = (items: MenuEntry[]) => items.filter((i): i is Actionable => i.kind !== "separator");
+const actionable = (items: MenuEntry[]) => items.filter((i): i is Actionable => i.kind !== "separator" && i.kind !== "label");
 
 /** Itens navegáveis diretos de um menu (inclui o gatilho de submenu, que fica num invólucro). */
 function menuItems(root: Element | null): HTMLButtonElement[] {
@@ -160,6 +165,13 @@ export function MenuBar({ menus, label = "Menu principal" }: { menus: MenuDef[];
   const renderEntries = (items: MenuEntry[], menuIndex: number) =>
     items.map((it, k) => {
       if (it.kind === "separator") return <div key={`sep-${k}`} role="separator" className="menubar-sep" />;
+      if (it.kind === "label")
+        return (
+          <div key={`label-${k}`} role="presentation" className="menubar-label-entry">
+            <strong>{it.text}</strong>
+            {it.detail ? <span>{it.detail}</span> : null}
+          </div>
+        );
       if (it.kind === "submenu") {
         const expanded = sub === it.id;
         return (
@@ -220,8 +232,9 @@ export function MenuBar({ menus, label = "Menu principal" }: { menus: MenuDef[];
             }}
             type="button"
             role="menuitem"
-            className="menubar-button"
+            className={`menubar-button${m.content ? " menubar-button--icon" : ""}`}
             data-menu-id={m.id}
+            aria-label={m.content ? m.label : undefined}
             aria-haspopup="menu"
             aria-expanded={open === i}
             tabIndex={i === 0 ? 0 : -1}
@@ -229,7 +242,7 @@ export function MenuBar({ menus, label = "Menu principal" }: { menus: MenuDef[];
             onPointerEnter={() => open !== null && open !== i && openMenu(i, null)}
             onKeyDown={(e) => onTopKey(e, i)}
           >
-            {m.label}
+            {m.content ?? m.label}
           </button>
           {open === i ? (
             <div id={`menu-${m.id}`} role="menu" aria-label={m.label} className="menubar-menu" onKeyDown={(e) => onMenuKey(e, i, false)}>
