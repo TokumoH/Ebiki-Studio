@@ -20,6 +20,11 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - **Entrada de áudio recolhível** no painel Gravação: vira uma linha com dispositivo, medidor e
   "ouvindo"; o app lembra.
 
+### Corrigido
+
+- **Mapa de tempo** numera os compassos como a régua e o loop: o compasso digitado cai na linha de
+  compasso da régua e eventos fora do início do compasso aparecem como compasso.tempo.tique.
+
 ## [0.2.1] - 2026-11-07
 
 Entrada de áudio no painel Gravação, partitura mais direta e correções importantes.

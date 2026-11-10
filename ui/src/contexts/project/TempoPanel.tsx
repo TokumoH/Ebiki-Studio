@@ -2,7 +2,8 @@ import { useState } from "react";
 import { api } from "../../ipc/api";
 import { run, useSession } from "../../core/session";
 import { Button, Field } from "../../shared/components";
-import { PPQ } from "./grid";
+import { barBeatAt, barStartAt, barToTick, tickToBar } from "../../core/bars";
+import { formatBarBeat } from "../../core/format";
 
 /** Tabela de eventos do mapa de tempo (o evento do início não pode ser removido). */
 function EventTable<T extends { tick: number }>({ rows, valueLabel, value, what, fmtBar, onRemove }: { rows: T[]; valueLabel: string; value: (r: T) => string; what: string; fmtBar: (tick: number) => string; onRemove: (tick: number) => void }) {
@@ -43,35 +44,11 @@ export function TempoPanel() {
   const [num, setNum] = useState(4);
   const [den, setDen] = useState(4);
   if (!session) return null;
-  const meters = session.tempo.meters;
-  // tick do início do compasso N considerando mudanças de fórmula
-  const barToTick = (bar: number) => {
-    let acc = 1;
-    for (let i = 0; i < meters.length; i++) {
-      const m = meters[i]!;
-      const barTicks = ((PPQ * 4) / m.denominator) * m.numerator;
-      const next = meters[i + 1];
-      const barsInSeg = next ? (next.tick - m.tick) / barTicks : Number.POSITIVE_INFINITY;
-      if (bar < acc + barsInSeg) return m.tick + (bar - acc) * barTicks;
-      acc += barsInSeg;
-    }
-    return 0;
-  };
-  const tickToBar = (tick: number) => {
-    let acc = 1;
-    for (let i = 0; i < meters.length; i++) {
-      const m = meters[i]!;
-      const barTicks = ((PPQ * 4) / m.denominator) * m.numerator;
-      const next = meters[i + 1];
-      if (!next || tick < next.tick) return acc + (tick - m.tick) / barTicks;
-      acc += (next.tick - m.tick) / barTicks;
-    }
-    return 1;
-  };
-  const fmtBar = (t: number) => {
-    const b = tickToBar(t);
-    return Number.isInteger(b) ? String(b) : b.toFixed(2);
-  };
+  const tempo = session.tempo;
+  const meters = tempo.meters;
+  // mesma numeração da régua e do loop: cada mudança de fórmula inicia um compasso novo;
+  // evento fora do início do compasso (ex.: andamento importado de MIDI) mostra compasso.tempo.tique
+  const fmtBar = (tick: number) => (barStartAt(tempo, tick) === tick ? String(tickToBar(tempo, tick)) : formatBarBeat(barBeatAt(tempo, tick)));
   return (
     <div className="tempo-panel">
       <section>
@@ -87,7 +64,7 @@ export function TempoPanel() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            void run(() => api.tempoSet(barToTick(bpmBar), bpm));
+            void run(() => api.tempoSet(barToTick(tempo, bpmBar), bpm));
           }}
         >
           <Field label="Compasso" tip="tempo.bar">
@@ -112,7 +89,7 @@ export function TempoPanel() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            void run(() => api.meterSet(barToTick(meterBar), num, den));
+            void run(() => api.meterSet(barToTick(tempo, meterBar), num, den));
           }}
         >
           <Field label="Compasso" tip="tempo.bar">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { barToTick, loopLabel, loopRangeBars, projectLoopRange, tickToBar, PPQ } from "../../core/bars";
+import { barBeatAt, barToTick, loopLabel, loopRangeBars, projectLoopRange, tickToBar, PPQ } from "../../core/bars";
 import { gridLines } from "./grid";
 
 const BAR_44 = PPQ * 4;
@@ -15,6 +15,12 @@ describe("compassos ↔ tiques (mesma numeração da régua)", () => {
       expect(barToTick(tempo, l.bar), `compasso ${l.bar}`).toBe(l.tick);
       expect(tickToBar(tempo, l.tick)).toBe(l.bar);
       expect(tickToBar(tempo, l.tick + 1)).toBe(l.bar);
+    }
+  });
+  it.each([["4/4", fourFour], ["troca de fórmula", changing], ["compasso cortado", cut]] as const)("%s: compasso.tempo bate com cada linha da régua", (_, tempo) => {
+    for (const l of gridLines(tempo, 0, BAR_44 * 12)) {
+      expect(barBeatAt(tempo, l.tick), `tick ${l.tick}`).toEqual({ bar: l.bar, beat: l.beat, tickInBeat: 0 });
+      expect(barBeatAt(tempo, l.tick + 7)).toEqual({ bar: l.bar, beat: l.beat, tickInBeat: 7 });
     }
   });
   it("limites", () => {
