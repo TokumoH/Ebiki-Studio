@@ -52,7 +52,12 @@ botão ou campo para ver o que ele faz — com a faixa de valores e um valor tí
 sublinhado pontilhado têm explicação. Desligue em *Exibir › Legendas ao passar o mouse*.
 
 - **Alt** ou **F10** levam o teclado ao menu; ←/→ trocam de menu, ↑/↓ percorrem, Enter ativa, Esc fecha.
-- **Exibir**: tema escuro/claro, zoom da linha do tempo (Ctrl+= / Ctrl+- / Ctrl+0), painéis,
+- **Zoom com a roda do mouse** (na área das faixas): **Ctrl+roda** (ou pinça no trackpad) aproxima e
+  afasta no tempo mantendo o ponto sob o mouse parado; **Alt+roda** aumenta/diminui a altura de todas
+  as faixas (e o tamanho da onda); **Shift+roda** rola para os lados. Arraste a **borda de baixo do
+  cabeçalho** de uma faixa (ou ↑/↓ com foco nela) para mudar só a altura dela.
+- **Exibir**: tema escuro/claro, zoom da linha do tempo (Ctrl+= / Ctrl+- / Ctrl+0, que também volta as
+  alturas ao padrão), painéis,
   espectrograma da faixa, barra de status, tela cheia (F11) e *Restaurar layout padrão*.
 - **Janela**: abre, fecha ou traz qualquer painel para a frente. **Ferramentas**: atalhos para os painéis
   de análise, afinação, harmonia, bases, partitura, letra e tempo.

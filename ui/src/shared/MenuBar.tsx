@@ -63,12 +63,19 @@ export function MenuBar({ menus, label = "Menu principal" }: { menus: MenuDef[];
       altAlone = false;
     };
     const pointer = (e: PointerEvent) => {
+      altAlone = false;
       if (!bar.current?.contains(e.target as Node)) close();
+    };
+    // Alt+roda (altura das faixas) não é "Alt sozinho": soltar o Alt depois não abre o menu
+    const wheel = () => {
+      altAlone = false;
     };
     window.addEventListener("keydown", down, true);
     window.addEventListener("keyup", up, true);
     window.addEventListener("pointerdown", pointer, true);
+    window.addEventListener("wheel", wheel, { capture: true, passive: true });
     return () => {
+      window.removeEventListener("wheel", wheel, true);
       window.removeEventListener("keydown", down, true);
       window.removeEventListener("keyup", up, true);
       window.removeEventListener("pointerdown", pointer, true);

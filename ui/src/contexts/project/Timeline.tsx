@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import "./timeline.css";
 import { api, editApi } from "../../ipc/api";
 import type { Clip, SessionView, Track } from "../../ipc/types";
@@ -12,18 +12,53 @@ import { useClipViewMode } from "./spectrogramCache";
 import { canSplitAt, fadeFromPx, msToFrames, overlappingNeighbor, trimEndTo, trimStartTo } from "./clipEdit";
 import { crossfadeWithNeighbor, findClip, normalizeClip, setPolarity, setReversed, splitAtCursor } from "./clipActions";
 import { TrackOrderButtons } from "./TrackOrderButtons";
-import { useTimelineView } from "./timelineView";
+import { anchoredScrollLeft, trackIndexAt, useTimelineView, wheelFactor } from "./timelineView";
 
-const TRACK_H = 72;
+
+/** Alça na borda de baixo do cabeçalho: arrastar (ou ↑/↓ com foco) muda a altura da faixa. */
+function TrackResizer({ track }: { track: Track }) {
+  const height = useTimelineView((v) => v.heightOf(track.id));
+  const setHeight = useTimelineView((v) => v.setHeight);
+  return (
+    <div
+      className="track-resize"
+      role="separator"
+      aria-orientation="horizontal"
+      aria-label={`Altura de ${track.name}`}
+      aria-valuenow={height}
+      tabIndex={0}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        const startY = e.clientY;
+        const startH = height;
+        const el = e.currentTarget;
+        el.setPointerCapture(e.pointerId);
+        const move = (ev: PointerEvent) => setHeight(track.id, startH + ev.clientY - startY);
+        const up = () => {
+          el.removeEventListener("pointermove", move);
+          el.removeEventListener("pointerup", up);
+        };
+        el.addEventListener("pointermove", move);
+        el.addEventListener("pointerup", up);
+      }}
+      onKeyDown={(e) => {
+        if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+        e.preventDefault();
+        setHeight(track.id, height + (e.key === "ArrowDown" ? 8 : -8));
+      }}
+    />
+  );
+}
 
 function TrackHeader({ track, index, selected }: { track: Track; index: number; selected: boolean }) {
   const select = useSession((s) => s.select);
+  const height = useTimelineView((v) => v.heightOf(track.id));
   const [editing, setEditing] = useState(false);
   const spectrum = useClipViewMode((s) => Boolean(s.spectrum[track.id]));
   const toggleSpectrum = useClipViewMode((s) => s.toggle);
   const target = { kind: "track" as const, id: track.id };
   return (
-    <div className="track-header" aria-selected={selected} onPointerDown={() => select({ trackId: track.id })} data-testid={`track-header-${index}`}>
+    <div className="track-header" style={{ ["--track-h" as string]: `${height}px` }} aria-selected={selected} onPointerDown={() => select({ trackId: track.id })} data-testid={`track-header-${index}`}>
       <div className="title">
       {editing ? (
         <input
@@ -69,6 +104,7 @@ function TrackHeader({ track, index, selected }: { track: Track; index: number; 
           ≋
         </Toggle>
       </div>
+      <TrackResizer track={track} />
     </div>
   );
 }
@@ -101,7 +137,12 @@ export function Timeline() {
   const selectedClipId = useSession((s) => s.selectedClipId);
   const select = useSession((s) => s.select);
   const tick = useLive((s) => s.transport?.tick ?? 0);
-  const { pxPerBeat, zoomIn, zoomOut } = useTimelineView();
+  const { pxPerBeat, zoomIn, zoomOut, zoomBy, scaleHeights } = useTimelineView();
+  const customHeights = useTimelineView((v) => v.heights);
+  const baseHeight = useTimelineView((v) => v.baseHeight);
+  const heights = useMemo(() => (session ? session.tracks.map((t) => customHeights[t.id] ?? baseHeight) : []), [session, customHeights, baseHeight]);
+  // zoom pela roda: o tique sob o mouse e sua distância à borda, para manter o ponto parado
+  const zoomAnchor = useRef<{ tick: number; offset: number } | null>(null);
   const [scroll, setScroll] = useState({ left: 0, top: 0, width: 1200 });
   const lanesRef = useRef<HTMLDivElement>(null);
   const headersRef = useRef<HTMLDivElement>(null);
@@ -125,6 +166,38 @@ export function Timeline() {
     setScroll({ left: el.scrollLeft, top: el.scrollTop, width: el.clientWidth });
   }, []);
 
+  // Ctrl/⌘+roda (ou pinça): zoom no tempo, centrado no mouse · Alt+roda: altura das faixas ·
+  // Shift+roda: rolagem lateral. Ouvinte nativo não passivo: bloqueia o zoom da página do navegador.
+  useEffect(() => {
+    const el = lanesRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const offset = e.clientX - el.getBoundingClientRect().left;
+        const pxPerTickNow = useTimelineView.getState().pxPerBeat / PPQ;
+        zoomAnchor.current = { tick: (el.scrollLeft + offset) / pxPerTickNow, offset };
+        zoomBy(wheelFactor(e.deltaY, e.deltaMode));
+      } else if (e.altKey) {
+        e.preventDefault();
+        scaleHeights(wheelFactor(e.deltaY, e.deltaMode));
+      } else if (e.shiftKey && Math.abs(e.deltaX) < Math.abs(e.deltaY)) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [zoomBy, scaleHeights, session === null]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useLayoutEffect(() => {
+    const a = zoomAnchor.current;
+    const el = lanesRef.current;
+    if (!a || !el) return;
+    zoomAnchor.current = null;
+    el.scrollLeft = anchoredScrollLeft(a.tick, pxPerBeat / PPQ, a.offset);
+  }, [pxPerBeat]);
+
   const xToTick = (clientX: number) => {
     const el = lanesRef.current;
     if (!el) return 0;
@@ -147,7 +220,8 @@ export function Timeline() {
       d.moved = true;
       let t = Math.max(0, d.originTick + dx / pxPerTick);
       if (!ev.altKey) t = snapToBeat(s.tempo, t);
-      const ti = Math.min(s.tracks.length - 1, Math.max(0, d.originTrack + Math.round(dy / TRACK_H)));
+      const lanes = lanesRef.current;
+      const ti = lanes ? trackIndexAt(heights, ev.clientY - lanes.getBoundingClientRect().top + lanes.scrollTop) : d.originTrack;
       const target = s.tracks[ti];
       if (!target) return;
       // serializa as chamadas do gesto (um único item de desfazer no núcleo)
@@ -234,7 +308,6 @@ export function Timeline() {
     <div
       className="timeline"
       data-tour="arranjo"
-      style={{ ["--track-h" as string]: `${TRACK_H}px` }}
       tabIndex={0}
       aria-label="Linha do tempo"
       onKeyDown={(e) => {
@@ -291,14 +364,14 @@ export function Timeline() {
         {session.tracks.length === 0 ? (
           <EmptyState title="Projeto vazio">Importe áudio (Ctrl+I) ou crie uma faixa para começar.</EmptyState>
         ) : (
-          <div className="lanes-inner" style={{ width: totalWidth, height: session.tracks.length * TRACK_H + 200 }}>
+          <div className="lanes-inner" style={{ width: totalWidth, height: heights.reduce((a, h) => a + h, 0) + 200 }}>
             {lines
               .filter((l) => l.isBar || showBeats)
               .map((l) => (
                 <div key={l.tick} className={`grid-line${l.isBar ? "" : " grid-line--beat"}`} style={{ left: l.tick * pxPerTick }} />
               ))}
             {session.tracks.map((t, ti) => (
-              <div key={t.id} className="lane" aria-selected={t.id === selectedTrackId} data-testid={`lane-${ti}`} onPointerDown={() => select({ trackId: t.id })}>
+              <div key={t.id} className="lane" style={{ ["--track-h" as string]: `${heights[ti] ?? 72}px` }} aria-selected={t.id === selectedTrackId} data-testid={`lane-${ti}`} onPointerDown={() => select({ trackId: t.id })}>
                 {t.clips.map((c) => {
                   const left = c.start * pxPerTick;
                   const width = (c.endTick - c.start) * pxPerTick;

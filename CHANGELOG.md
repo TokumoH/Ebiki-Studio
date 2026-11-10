@@ -10,6 +10,8 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - **Legendas ao passar o mouse** em todo o app: setores (abas), efeitos, cada parâmetro (limiar,
   ataque, liberação…), botões, medidores e campos, com faixa de valores e valor típico. Desligáveis
   em *Exibir › Legendas ao passar o mouse*.
+- **Zoom pela roda do mouse**: Ctrl+roda (ou pinça) no tempo, centrado no mouse; Alt+roda na altura
+  das faixas (tamanho da onda); Shift+roda para os lados; borda do cabeçalho redimensiona uma faixa.
 
 ## [0.2.1] - 2026-11-07
 

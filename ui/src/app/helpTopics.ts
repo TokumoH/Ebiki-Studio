@@ -64,6 +64,7 @@ export const HELP_TOPICS: HelpTopic[] = [
       "Arraste as bordas do clipe para aparar e os cantos superiores para fazer fades.",
       "Clique com o botão direito para Normalizar, Inverter fase, Reverter ou fazer crossfade com o vizinho.",
       "O botão ≋ da faixa alterna entre forma de onda e espectrograma.",
+      "Zoom: Ctrl+roda no tempo (centrado no mouse), Alt+roda na altura das faixas; arraste a borda de baixo do cabeçalho para uma faixa só.",
     ],
     tourStep: 2,
   },

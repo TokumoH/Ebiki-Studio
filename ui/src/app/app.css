@@ -51,7 +51,7 @@ kbd { font-family: var(--font-mono); font-size: var(--text-xs); padding: 1px 6px
 .help-foot { margin: 0; font-size: var(--text-xs); color: var(--fg-faint); }
 
 /* ---- tutorial ---- */
-.tour { position: fixed; inset: 0; z-index: 80; pointer-events: none; }
+.tour { position: fixed; inset: 0; z-index: var(--z-tour); pointer-events: none; }
 .tour-dim { position: absolute; inset: 0; background: rgb(10 9 16 / 0.72); pointer-events: auto; }
 .tour-spot { position: absolute; border: 2px solid var(--accent); border-radius: 10px; box-shadow: 0 0 0 4000px rgb(10 9 16 / 0.72); transition: top 0.2s ease, left 0.2s ease, width 0.2s ease, height 0.2s ease; }
 .tour-card { position: absolute; pointer-events: auto; box-sizing: border-box; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line-strong); border-radius: 12px; box-shadow: 0 20px 50px rgb(0 0 0 / 0.55); outline: none; }

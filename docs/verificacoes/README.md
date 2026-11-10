@@ -48,6 +48,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [_modelo-registro-de-correcao.md](_modelo-registro-de-correcao.md) | Modelo do registro |
 | [VER-2026-11-10-01-core-no-claude-md.md](VER-2026-11-10-01-core-no-claude-md.md) | Adoção do CORE no CLAUDE.md e criação deste diretório |
 | [VER-2026-11-10-02-legendas.md](VER-2026-11-10-02-legendas.md) | Legendas ao passar o mouse (glossário + camada única) |
+| [VER-2026-11-10-03-zoom-pela-roda.md](VER-2026-11-10-03-zoom-pela-roda.md) | Zoom pela roda, altura das faixas e camadas acima do dockview |
 
 ## Lógica
 

@@ -110,6 +110,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
   "timeline.ruler": e("Régua", "Clique para mover o cursor. Na faixa de cima, arraste para desenhar o loop e arraste as bordas para ajustá-lo.", undefined, [/^Régua/]),
   "timeline.newTrack": e("Nova faixa", "Cria uma faixa de áudio vazia.", "Ctrl+T", [/^Nova faixa/, /^\+ Faixa$/]),
   "track.arm": e("Armar", "Prepara a faixa para gravar. Só faixas armadas recebem a gravação.", undefined, [/^Armar /]),
+  "track.resize": e("Altura da faixa", "Arraste para deixar a faixa (e a onda) maior ou menor. Com foco: ↑/↓.", "Alt+roda: todas as faixas", [/^Altura de /]),
   "track.spectrum": e("Espectrograma", "Mostra as frequências do áudio em vez da forma de onda.", undefined, [/^Espectrograma /]),
   "track.remove": e("Remover faixa", "Apaga a faixa e seus clipes (dá para desfazer).", undefined, [/^Remover faixa$/]),
   "track.move": e("Reordenar", "Move a faixa para cima ou para baixo.", undefined, [/^Mover .* para (cima|baixo)$/]),

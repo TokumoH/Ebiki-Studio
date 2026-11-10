@@ -46,7 +46,7 @@
 .segmented button:last-child { border-right: 0; }
 .segmented button[aria-checked="true"] { background: var(--accent-soft); color: var(--accent); }
 
-.dialog-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: grid; place-items: center; z-index: 50; }
+.dialog-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: grid; place-items: center; z-index: var(--z-dialog); }
 .dialog {
   width: min(560px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);
@@ -62,7 +62,7 @@
 .dialog .dialog-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
 .dialog footer { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: var(--space-2); }
 
-.toasts { position: fixed; right: var(--space-4); bottom: 40px; display: flex; flex-direction: column; gap: var(--space-2); z-index: 60; max-width: min(420px, calc(100vw - 32px)); }
+.toasts { position: fixed; right: var(--space-4); bottom: 40px; display: flex; flex-direction: column; gap: var(--space-2); z-index: var(--z-toast); max-width: min(420px, calc(100vw - 32px)); }
 .toast { background: var(--panel); border: 1px solid var(--line-strong); border-left: 3px solid var(--fg-muted); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); box-shadow: var(--shadow); display: flex; gap: var(--space-2); align-items: start; }
 .toast--error { border-left-color: var(--crit); }
 .toast--success { border-left-color: var(--ok); }
@@ -99,7 +99,7 @@
 .menubar-button { height: 26px; padding: 0 10px; background: transparent; border: 0; border-radius: var(--radius-sm); color: var(--fg); font: inherit; font-size: var(--text-sm); cursor: default; }
 .menubar-button:hover, .menubar-button[aria-expanded="true"], .menubar-button:focus-visible { background: var(--panel-2); outline: none; }
 .menubar-button:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
-.menubar-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; min-width: 260px; padding: 6px; display: flex; flex-direction: column; background: var(--panel-2); border: 1px solid var(--line-strong); border-radius: 8px; box-shadow: 0 16px 40px rgb(0 0 0 / 0.45); }
+.menubar-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: var(--z-menu); min-width: 260px; padding: 6px; display: flex; flex-direction: column; background: var(--panel-2); border: 1px solid var(--line-strong); border-radius: 8px; box-shadow: 0 16px 40px rgb(0 0 0 / 0.45); }
 .menubar-submenu { top: -7px; left: calc(100% + 4px); min-width: 220px; }
 .menubar-subwrap { position: relative; display: flex; flex-direction: column; }
 .menubar-item { display: flex; align-items: center; gap: 8px; height: 28px; padding: 0 10px; background: transparent; border: 0; border-radius: 5px; color: var(--fg); font: inherit; font-size: var(--text-sm); text-align: left; cursor: default; white-space: nowrap; }
@@ -116,7 +116,7 @@
 .dialog--lg .dialog-body { flex: 1; min-height: 0; padding: 0; display: flex; }
 
 /* Legendas ao passar o mouse (TooltipLayer) */
-.tooltip { position: fixed; z-index: 1000; max-width: 320px; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 11px; box-shadow: 0 10px 24px rgb(0 0 0 / 0.4); display: flex; flex-direction: column; gap: 3px; font-size: var(--text-sm); line-height: 1.45; pointer-events: none; animation: tip-in 120ms ease-out; }
+.tooltip { position: fixed; z-index: var(--z-tooltip); max-width: 320px; background: var(--panel-2); color: var(--fg); border: 1px solid var(--line-strong); border-radius: 8px; padding: 8px 11px; box-shadow: 0 10px 24px rgb(0 0 0 / 0.4); display: flex; flex-direction: column; gap: 3px; font-size: var(--text-sm); line-height: 1.45; pointer-events: none; animation: tip-in 120ms ease-out; }
 .tooltip strong { font-size: var(--text-sm); color: var(--fg); }
 .tooltip span { color: var(--fg-muted); }
 .tooltip small { color: var(--accent); font-size: var(--text-xs); }

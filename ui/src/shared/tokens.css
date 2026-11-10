@@ -1,5 +1,11 @@
 /* Design tokens — tema escuro (padrão de estúdio) e claro. Cores só via tokens. */
 :root {
+  /* camadas sobrepostas: acima do dockview (que usa até 9999 nos divisores e painéis flutuantes) */
+  --z-menu: 10000;
+  --z-dialog: 10010;
+  --z-toast: 10020;
+  --z-tour: 10030;
+  --z-tooltip: 10040;
   /* Ebiki Studio — tema escuro "Odoriko" (noite índigo-violeta, destaque rosa de lanterna).
      O tema claro é "Agridoce — manhã". Ver docs/diagramas/paletas-ebiki.html (contrastes WCAG). */
   --bg: #14121d;

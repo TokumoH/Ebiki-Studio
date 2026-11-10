@@ -81,6 +81,8 @@ entradas novas (menus, zoom, metrônomo, punch, tempo, letra, afinador, harmonia
 ## Verificação
 
 - **Verificação 1:** `tsc` limpo; Vitest **229/229**; Playwright **45/45** (inclui 2 E2E novos e o de cobertura).
+  *Correção registrada em [VER-2026-11-10-03](VER-2026-11-10-03-zoom-pela-roda.md): o commit tem **44**
+  testes E2E versionados; a execução de 45 incluía uma sonda temporária não versionada.*
 - **Verificação 2 (outra abordagem):** build de produção ok e **gancho de teste ausente** do bundle
   (`grep __ebikiResolveTip dist` = 0 arquivos); teste de arquitetura 4/4; capturas nos temas escuro e claro.
 - **Sabotagens:** (1) removida a entrada `rec.punchSet` → o teste de cobertura falha apontando
