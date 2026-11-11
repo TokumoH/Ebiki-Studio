@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "app-core"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "audio-engine",
  "ctx-harmony",
@@ -110,7 +110,7 @@ dependencies = [
 
 [[package]]
 name = "app-desktop"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "app-core",
  "audio-engine",
@@ -324,7 +324,7 @@ checksum = "1254ebf6529f3763c491acfb5ab6e960809e3c75a38584cc664f8c5667fb7107"
 
 [[package]]
 name = "audio-engine"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "assert_no_alloc",
  "cpal",
@@ -1003,7 +1003,7 @@ checksum = "914a755b7c2d4af2bdcff7ce1739e2db9a1b81a9b07123d8015786ae03c0980d"
 
 [[package]]
 name = "ctx-harmony"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1015,7 +1015,7 @@ dependencies = [
 
 [[package]]
 name = "ctx-library"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1027,7 +1027,7 @@ dependencies = [
 
 [[package]]
 name = "ctx-mixing"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1039,7 +1039,7 @@ dependencies = [
 
 [[package]]
 name = "ctx-notation"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1051,7 +1051,7 @@ dependencies = [
 
 [[package]]
 name = "ctx-project"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1063,7 +1063,7 @@ dependencies = [
 
 [[package]]
 name = "ctx-recording"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "serde",
  "shared-kernel",
@@ -1073,7 +1073,7 @@ dependencies = [
 
 [[package]]
 name = "ctx-sync"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1085,7 +1085,7 @@ dependencies = [
 
 [[package]]
 name = "ctx-tuning"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -1305,7 +1305,7 @@ dependencies = [
 
 [[package]]
 name = "dsp"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "assert_no_alloc",
  "proptest",
@@ -1314,7 +1314,7 @@ dependencies = [
 
 [[package]]
 name = "dsp-pitch"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "assert_no_alloc",
  "proptest",
@@ -2339,7 +2339,7 @@ dependencies = [
 
 [[package]]
 name = "infra-adapters"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "app-core",
  "assert_no_alloc",
@@ -2360,7 +2360,7 @@ dependencies = [
 
 [[package]]
 name = "infra-codecs"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "flacenc",
  "hound",
@@ -2379,7 +2379,7 @@ dependencies = [
 
 [[package]]
 name = "infra-notation-io"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "ctx-notation",
  "midly",
@@ -2392,7 +2392,7 @@ dependencies = [
 
 [[package]]
 name = "infra-persistence"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "app-core",
  "ctx-harmony",
@@ -4461,7 +4461,7 @@ dependencies = [
 
 [[package]]
 name = "shared-kernel"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "proptest",
  "serde",
@@ -4941,7 +4941,7 @@ dependencies = [
 
 [[package]]
 name = "synth"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "rustysynth",
  "shared-kernel",

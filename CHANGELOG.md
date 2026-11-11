@@ -3,7 +3,9 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.3.0] - 2026-11-11
+
+Legendas em todo o app, zoom pela roda do mouse, loop configurável e menu na logo.
 
 ### Novidades
 
@@ -24,6 +26,19 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 
 - **Mapa de tempo** numera os compassos como a régua e o loop: o compasso digitado cai na linha de
   compasso da régua e eventos fora do início do compasso aparecem como compasso.tempo.tique.
+- Menus e janelas não ficam mais escondidos atrás das divisórias dos painéis; o popover do loop e o
+  menu do clipe não são mais cortados na borda da janela.
+- App mais leve durante a reprodução (menos redesenhos de painéis e medidores); caches de áudios
+  removidos são apagados ao abrir o projeto.
+
+### Downloads
+
+Mesmos formatos da 0.2.x (Windows `.exe`/`.msi`, macOS `.dmg` universal, Linux `.deb`/`.rpm`/`.AppImage`),
+com `SHA256SUMS.txt`. Quem tem a 0.2.1 recebe esta versão em *Ajuda › Verificar atualizações…*
+(quem está na 0.2.0: salve o projeto antes de instalar).
+
+Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
+Licença: GPL-3.0-or-later (nome e logo reservados).
 
 ## [0.2.1] - 2026-11-07
 
@@ -143,6 +158,7 @@ Confira a integridade com `SHA256SUMS.txt` (ex.: `sha256sum -c SHA256SUMS.txt --
 Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
 Licença: GPL-3.0-or-later (nome e logo reservados).
 
+[0.3.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.0
 [0.1.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.1.0
