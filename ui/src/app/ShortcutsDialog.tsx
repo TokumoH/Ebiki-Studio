@@ -1,3 +1,4 @@
+// Diálogo de atalhos de teclado: lista e edita os atalhos (gravados no armazenamento local).
 import { useState } from "react";
 import { Button, Dialog } from "../shared/components";
 import { eventKeys, loadShortcuts, saveShortcut, type Shortcut } from "./shortcuts";

@@ -9,7 +9,7 @@
 | Usuário responsável | TokumoH |
 | Status | ativo |
 | Commits | origem: `2a4b629`; README na varredura 4 (ver `git log -- scripts/README.md`) |
-| Arquivos | 3 item(ns) — ver "Onde" |
+| Arquivos | 4 item(ns) — ver "Onde" |
 
 ## Propósito
 
@@ -39,6 +39,7 @@ Ferramentas fora do código do produto, versionadas e reproduzíveis.
 |---|---|
 | [adr_index.py](adr_index.py) | Regenera docs/adr/README.md a partir dos arquivos ADR (título e status). |
 | [brand_smooth_edges.py](brand_smooth_edges.py) | Suaviza apenas os contornos: cada conjunto de nível {alfa >= t} é suavizado e re-limiarizado. |
+| [check_readmes.py](check_readmes.py) | Confere a regra de READMEs do CLAUDE.md (§6): todo diretório tem README ou é coberto pelo README do módulo. |
 | [ci-local.sh](ci-local.sh) | Executa localmente as mesmas verificações da CI (.github/workflows/ci.yml). |
 
 ## Lógica

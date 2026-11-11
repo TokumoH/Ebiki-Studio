@@ -1,3 +1,4 @@
+// Raiz da interface: tela inicial ou workspace, tema, telemetria, avisos e camada de legendas.
 import { useEffect } from "react";
 import "./app.css";
 import { useSession } from "../core/session";

@@ -1,3 +1,4 @@
+// Diálogo de exportação: formato, resolução/qualidade, intervalo, normalização e stems.
 import { useEffect, useState } from "react";
 import { api } from "../ipc/api";
 import { transport } from "../ipc/transport";

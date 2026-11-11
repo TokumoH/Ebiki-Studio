@@ -1,3 +1,4 @@
+// Estado dos avisos temporários (notify.success / notify.error).
 import { create } from "zustand";
 
 export interface Toast {

@@ -53,6 +53,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-10-05-menu-da-logo-e-entrada-recolhivel.md](VER-2026-11-10-05-menu-da-logo-e-entrada-recolhivel.md) | Menu da logo e entrada de áudio recolhível |
 | [VER-2026-11-10-06-compassos-do-mapa-de-tempo.md](VER-2026-11-10-06-compassos-do-mapa-de-tempo.md) | Mapa de tempo com a mesma numeração de compassos da régua |
 | [VER-2026-11-11-01-varredura-4.md](VER-2026-11-11-01-varredura-4.md) | Correções da varredura 4 (popovers, renders, caches, CI, docs) |
+| [VER-2026-11-11-02-readme-por-modulo.md](VER-2026-11-11-02-readme-por-modulo.md) | README por módulo e verificador automático |
 
 ## Lógica
 

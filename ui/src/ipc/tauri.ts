@@ -1,3 +1,4 @@
+// Adaptador real do transporte IPC (Tauri): invoke, eventos e diálogos de arquivo.
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { open, save } from "@tauri-apps/plugin-dialog";

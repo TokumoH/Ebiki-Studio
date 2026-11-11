@@ -1,3 +1,4 @@
+// Avisos temporários (sucesso/erro) no canto da tela.
 import { useToasts } from "../core/toasts";
 import { Button } from "../shared/components";
 

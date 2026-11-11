@@ -104,9 +104,20 @@ Fluxo por pedido: verificar duas vezes seguidas sem erro → sugerir no formato 
 
 ### Organização da documentação
 
-Todo diretório **criado** (em `docs/` ou em qualquer lugar do repositório) tem um `README.md`,
-criado no **mesmo commit** que cria o diretório e atualizado no **mesmo commit** que adiciona, remove,
-renomeia ou move arquivos dele. O README segue a dupla verificação e esta estrutura:
+Todo diretório versionado tem um `README.md` **ou é coberto pelo README do seu módulo** (decisão do
+usuário em 2026-11-11):
+
+- **Documentação e apoio** (`docs/*`, `scripts`, `assets/*`, `ui/e2e`, `ui/public`…): um README por diretório.
+- **Código:** um README por **módulo** — cada crate em `crates/<crate>/` e cada camada da UI em
+  `ui/src/<camada>/` (mais os índices `crates/`, `ui/` e `ui/src/`). As subpastas internas (`src/`,
+  `tests/`, `src/domain/`, contextos da UI…) não têm README próprio: aparecem, com todos os seus
+  arquivos, na tabela "Onde" do README do módulo.
+- Diretórios ocultos (`.github`, `.claude`) e de build/dependências (`target`, `node_modules`, `dist`,
+  `gen`) ficam de fora.
+- O README é criado/atualizado no **mesmo commit** que cria o diretório ou adiciona, remove, renomeia ou
+  move arquivos. `scripts/check_readmes.py` confere a regra (roda no `ci-local.sh` e na CI).
+
+O README segue a dupla verificação e esta estrutura:
 
 cabeçalho (tabela: Id, título — nome do diretório —, tipo, data, usuário responsável, status — ativo,
 em construção ou descontinuado —, commits, arquivos) · **propósito** · **origem** (por que foi criado:
@@ -116,7 +127,7 @@ que esta organização** · **por que não outras organizações** (tabela: opç
 arquivos se relacionam entre si e com o código) · **exemplo** · **verificação** (links válidos, todo
 arquivo listado em "onde", nenhum item inexistente, subdiretórios com README próprio) · **riscos**.
 
-Diretórios anteriores a esta regra sem README ficam como pendência da próxima varredura.
+A regra vale para todo o repositório desde 2026-11-11 (48 READMEs; `check_readmes.py` sem pendências).
 
 ## 7. Modo VARREDURA
 
@@ -137,7 +148,7 @@ Procedimento detalhado em [`docs/processo/varredura.md`](docs/processo/varredura
 12. Ambiente e caminho seguro de links.
 13. Lógica de links e páginas conectadas.
 14. Bibliotecas, frameworks e funções desatualizadas.
-15. Documentação atualizada e coerente — inclui todo diretório ter `README.md` coerente com o conteúdo.
+15. Documentação atualizada e coerente — inclui a regra de READMEs (§6) conferida por `scripts/check_readmes.py`.
 16. Integridade do código com os testes e qualidade dos testes (substituir testes que não atendem a função).
 17. Seguir a dupla verificação e sugerir soluções no formato da §5.
 

@@ -1,3 +1,4 @@
+// Tema claro/escuro: estado, preferência guardada e aplicação no documento.
 import { create } from "zustand";
 
 type Theme = "dark" | "light";

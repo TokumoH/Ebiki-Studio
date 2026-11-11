@@ -94,11 +94,13 @@ jobs:
           path: ui/test-results
 
   audit:
-    name: Auditoria de dependências
+    name: Auditoria de dependências e documentação
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+      - name: READMEs (regra do CLAUDE.md §6)
+        run: python3 scripts/check_readmes.py
       - uses: dtolnay/rust-toolchain@1.97.0
       - name: cargo audit (vulnerabilidades conhecidas — RustSec)
         run: |

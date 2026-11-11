@@ -1,3 +1,4 @@
+// Barra de transporte: tocar/parar/gravar, posição, andamento, metrônomo e loop (com as opções).
 import { useRef } from "react";
 import { api } from "../../ipc/api";
 import { run, useSession } from "../../core/session";

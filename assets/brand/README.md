@@ -20,3 +20,16 @@ codificados no canal alfa (preenchimento ≈ 75 %, traços 100 %). Qualquer text
 - Para trocar o ícone: recompor `ebiki-icon-1024.png` e regenerar:
   `npm run tauri -- icon crates/app-desktop/icons/source.png -o crates/app-desktop/icons` (apagar `android/` e `ios/` gerados).
 - Para nitidez máxima, substituir por exportação vetorial ou PNG ≥ 1024 px de altura.
+
+## Onde
+
+| Arquivo | O que contém |
+|---|---|
+| [LICENSE.md](LICENSE.md) | Licença da marca (nome e logo reservados; não cobertos pela GPL) |
+| [bordas-suavizadas-comparacao.png](bordas-suavizadas-comparacao.png) | Comparação antes/depois da suavização das bordas |
+| [ebiki-icon-1024.png](ebiki-icon-1024.png) | Ícone do app em 1024 px (fonte dos ícones do Tauri) |
+| [ebiki-logo-original.svg](ebiki-logo-original.svg) | Logo original em vetor |
+| [ebiki-mark-suave@8x.png](ebiki-mark-suave@8x.png) | Marca com bordas suavizadas em 8× |
+| [ebiki-mark.png](ebiki-mark.png) | Marca em tamanho base |
+| [ebiki-mark@4x.png](ebiki-mark@4x.png) | Marca em 4× |
+| [opcoes-cores.png](opcoes-cores.png) | Opções de cor estudadas para a marca |
