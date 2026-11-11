@@ -1,7 +1,6 @@
 // Matemática pura do afinador e do editor de afinação (ponteiro, alturas, arraste → edição).
 import type { DetectedNote, NoteEdit } from "../../ipc/types";
 
-export const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 export const NOTE_NAMES_PT = ["Dó", "Dó♯", "Ré", "Ré♯", "Mi", "Fá", "Fá♯", "Sol", "Sol♯", "Lá", "Lá♯", "Si"];
 
 /** Ângulo do ponteiro (graus): ±50 cents → ±`maxDeg`, saturando nos extremos. */

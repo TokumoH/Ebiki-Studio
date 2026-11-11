@@ -38,3 +38,26 @@ test("diálogos e menus ficam acima dos divisores dos painéis", async ({ page }
     await page.keyboard.press("Escape");
   }
 });
+
+test("menu do clipe aparece inteiro mesmo aberto perto da borda de baixo do Arranjo", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Menu clipe");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  await page.getByRole("button", { name: "Importar", exact: true }).click();
+  const b = (await page.getByTestId("lane-1").locator(".clip").first().boundingBox())!;
+  await page.mouse.click(b.x + 60, b.y + b.height - 6, { button: "right" });
+  const menu = page.getByRole("menu", { name: /Ações do clipe/ });
+  await expect(menu).toBeVisible();
+  const r = await menu.evaluate((el) => {
+    const q = el.getBoundingClientRect();
+    const pts = [[q.left + q.width / 2, q.top + q.height / 2], [q.left + 4, q.top + 4], [q.left + 4, q.bottom - 4], [q.right - 4, q.bottom - 4]];
+    return { inside: q.top >= 0 && q.bottom <= innerHeight && q.right <= innerWidth, covered: pts.filter(([x, y]) => !el.contains(document.elementFromPoint(x!, y!))).length };
+  });
+  expect(r).toEqual({ inside: true, covered: 0 });
+  // e continua funcionando: um item clicável fecha o menu
+  await page.keyboard.press("Escape");
+  await expect(menu).toHaveCount(0);
+});

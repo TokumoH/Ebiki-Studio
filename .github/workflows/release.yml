@@ -41,6 +41,7 @@ jobs:
             args: "--target universal-apple-darwin"
             rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
     permissions:
       contents: write
     steps:
@@ -118,6 +119,7 @@ jobs:
     name: Somas SHA-256
     needs: bundle
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     steps:

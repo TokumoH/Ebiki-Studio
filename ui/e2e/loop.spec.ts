@@ -76,3 +76,16 @@ test("régua: arrastar na faixa de cima desenha o loop; bordas ajustam; clique s
   await expect(loopBtn(page)).toContainText("Loop · 2–5");
   await expect(page.getByTestId("bar-beat")).toContainText("007.1");
 });
+
+test("opções de loop aparecem inteiras (não cortadas pela barra) em janela pequena", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 640 });
+  await newProject(page);
+  await page.getByRole("button", { name: "Opções de loop" }).click();
+  const hidden = await page.getByRole("dialog", { name: "Opções de loop" }).evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const pts = [[r.left + r.width / 2, r.top + r.height / 2], [r.left + 4, r.top + 4], [r.right - 4, r.top + 4], [r.left + 4, r.bottom - 4], [r.right - 4, r.bottom - 4]];
+    const out = r.left < 0 || r.top < 0 || r.right > innerWidth || r.bottom > innerHeight;
+    return { out, covered: pts.filter(([x, y]) => !el.contains(document.elementFromPoint(x!, y!))).length };
+  });
+  expect(hidden).toEqual({ out: false, covered: 0 });
+});

@@ -6,6 +6,7 @@ import { run, useSession, newGesture, endGesture } from "../../core/session";
 import { useLive } from "../../core/live";
 import { formatDb, formatPan } from "../../core/format";
 import { Button, Dialog, Fader, InlineRename, Knob, Meter, Toggle } from "../../shared/components";
+import { useShallow } from "zustand/react/shallow";
 import { defaultEffect, EFFECT_LABELS } from "./effectsMeta";
 import { EffectEditor } from "./EffectEditor";
 
@@ -24,7 +25,6 @@ interface StripProps {
   name: string;
   target: StripTarget;
   strip: ChannelStrip;
-  peak: [number, number];
   buses: BusView[];
   selected?: boolean;
   onSelect?: () => void;
@@ -35,7 +35,24 @@ interface StripProps {
   onDelete?: () => void;
 }
 
-function StripView({ name, target, strip, peak, buses, selected, onSelect, isMaster, onRename, onDelete }: StripProps) {
+/**
+ * Medidor ao vivo de um canal: só ele assina a telemetria (com comparação rasa), e o resto do mixer
+ * não re-renderiza a cada leitura (~30 por segundo).
+ */
+function LiveMeter({ target, label }: { target: StripTarget; label: string }) {
+  const peak = useLive(
+    useShallow((s): [number, number] => {
+      const m = s.meters;
+      if (!m) return [0, 0];
+      if (target.kind === "master") return m.master;
+      const list = target.kind === "track" ? m.tracks : m.buses;
+      return list.find((x) => x.id === target.id)?.peak ?? [0, 0];
+    }),
+  );
+  return <Meter height={120} label={label} peak={peak} />;
+}
+
+function StripView({ name, target, strip, buses, selected, onSelect, isMaster, onRename, onDelete }: StripProps) {
   const vol = useGesture();
   const pan = useGesture();
   const [editing, setEditing] = useState<EffectSlot | null>(null);
@@ -118,7 +135,7 @@ function StripView({ name, target, strip, peak, buses, selected, onSelect, isMas
       ) : null}
       <div className="strip-fader">
         <Fader height={120} label={`Volume ${name}`} db={strip.volume} onChange={(db, end) => (end ? (vol.end(), void run(() => api.mixerEdit(target, { op: "volume", value: db }))) : void run(() => api.mixerEdit(target, { op: "volume", value: db }, vol.id())))} />
-        <Meter height={120} label={`Nível ${name}`} peak={peak} />
+        <LiveMeter target={target} label={`Nível ${name}`} />
       </div>
       <div className="strip-value mono">
         {formatDb(strip.volume)} dB · {formatPan(strip.pan)}
@@ -182,14 +199,12 @@ export function MixerPanel() {
   const session = useSession((s) => s.session);
   const selected = useSession((s) => s.selectedTrackId);
   const select = useSession((s) => s.select);
-  const meters = useLive((s) => s.meters);
   if (!session) return null;
-  const peakOf = (id: string, list: { id: string; peak: [number, number] }[] | undefined): [number, number] => list?.find((m) => m.id === id)?.peak ?? [0, 0];
   return (
     <div className="mixer" aria-label="Mixer" data-tour="mixer">
       <div className="mixer-group">
         {session.tracks.map((t) => (
-          <StripView key={t.id} name={t.name} target={{ kind: "track", id: t.id }} strip={t.strip} peak={peakOf(t.id, meters?.tracks)} buses={session.buses} selected={t.id === selected} onSelect={() => select({ trackId: t.id })} />
+          <StripView key={t.id} name={t.name} target={{ kind: "track", id: t.id }} strip={t.strip} buses={session.buses} selected={t.id === selected} onSelect={() => select({ trackId: t.id })} />
         ))}
       </div>
       <div className="mixer-sep" />
@@ -200,7 +215,6 @@ export function MixerPanel() {
             name={b.name}
             target={{ kind: "bus", id: b.id }}
             strip={b.strip}
-            peak={peakOf(b.id, meters?.buses)}
             buses={[]}
             onRename={(n) => void run(() => api.busRename(b.id, n))}
             onDelete={() => void run(() => api.busDelete(b.id))}
@@ -213,7 +227,7 @@ export function MixerPanel() {
         </div>
       </div>
       <div className="mixer-sep" />
-      <StripView name="Master" target={{ kind: "master" }} strip={session.master} peak={meters?.master ?? [0, 0]} buses={[]} isMaster />
+      <StripView name="Master" target={{ kind: "master" }} strip={session.master} buses={[]} isMaster />
     </div>
   );
 }

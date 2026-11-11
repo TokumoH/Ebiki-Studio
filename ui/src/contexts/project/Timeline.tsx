@@ -8,12 +8,19 @@ import { Button, EmptyState, Toggle } from "../../shared/components";
 import { gridLines, snapToBeat, PPQ } from "./grid";
 import { ClipView, type ClipHandle } from "./ClipView";
 import { ClipContextMenu, clipMenuItems } from "./ClipContextMenu";
-import { useClipViewMode } from "./spectrogramCache";
+import { clearSpectrogramCache, useClipViewMode } from "./spectrogramCache";
+import { clearWaveformCache } from "./waveformCache";
 import { canSplitAt, fadeFromPx, msToFrames, overlappingNeighbor, trimEndTo, trimStartTo } from "./clipEdit";
 import { crossfadeWithNeighbor, findClip, normalizeClip, setPolarity, setReversed, splitAtCursor } from "./clipActions";
 import { TrackOrderButtons } from "./TrackOrderButtons";
 import { anchoredScrollLeft, trackIndexAt, useTimelineView, wheelFactor } from "./timelineView";
 import { setLoop } from "../../core/loop";
+
+/** Cursor de reprodução: só ele assina a posição (a timeline inteira não re-renderiza a cada quadro). */
+function Playhead({ pxPerTick }: { pxPerTick: number }) {
+  const tick = useLive((s) => s.transport?.tick ?? 0);
+  return <div className="playhead" style={{ left: tick * pxPerTick }} />;
+}
 
 /** Altura (px) da faixa de cima da régua onde arrastar desenha o loop. */
 const LOOP_BAND = 10;
@@ -140,13 +147,21 @@ export function Timeline() {
   const selectedTrackId = useSession((s) => s.selectedTrackId);
   const selectedClipId = useSession((s) => s.selectedClipId);
   const select = useSession((s) => s.select);
-  const tick = useLive((s) => s.transport?.tick ?? 0);
   const { pxPerBeat, zoomIn, zoomOut, zoomBy, scaleHeights } = useTimelineView();
   const customHeights = useTimelineView((v) => v.heights);
   const baseHeight = useTimelineView((v) => v.baseHeight);
   const heights = useMemo(() => (session ? session.tracks.map((t) => customHeights[t.id] ?? baseHeight) : []), [session, customHeights, baseHeight]);
   // zoom pela roda: o tique sob o mouse e sua distância à borda, para manter o ponto parado
   const zoomAnchor = useRef<{ tick: number; offset: number } | null>(null);
+  // caches de forma de onda/espectrograma pertencem ao projeto: limpa ao trocar ou fechar o projeto
+  const projectId = session?.project.id;
+  useEffect(
+    () => () => {
+      clearWaveformCache();
+      clearSpectrogramCache();
+    },
+    [projectId],
+  );
   // loop sendo desenhado/ajustado na régua (prévia local até soltar)
   const [loopDraft, setLoopDraft] = useState<[number, number] | null>(null);
   const [scroll, setScroll] = useState({ left: 0, top: 0, width: 1200 });
@@ -300,11 +315,9 @@ export function Timeline() {
     void applyHandle(s, c, handle, value);
   };
 
-  const openMenu = (clipId: string, x: number, y: number) => {
-    const el = lanesRef.current?.parentElement;
-    const r = el?.getBoundingClientRect();
-    setMenu({ clipId, x: x - (r?.left ?? 0), y: y - (r?.top ?? 0) });
-  };
+  // coordenadas da tela: o menu é desenhado no body (os painéis cortariam o que transborda)
+  const openMenu = (clipId: string, x: number, y: number) => setMenu({ clipId, x, y });
+
 
   if (!session) return null;
   const totalWidth = totalTicks * pxPerTick;
@@ -418,7 +431,7 @@ export function Timeline() {
                 {l.isBar ? l.bar : ""}
               </div>
             ))}
-          <div className="playhead" style={{ left: tick * pxPerTick }} />
+          <Playhead pxPerTick={pxPerTick} />
         </div>
       </div>
       <div className="track-headers" ref={headersRef} data-scroll-sync="lanes">
@@ -467,7 +480,7 @@ export function Timeline() {
                 })}
               </div>
             ))}
-            <div className="playhead" style={{ left: tick * pxPerTick }} />
+            <Playhead pxPerTick={pxPerTick} />
           </div>
         )}
       </div>
@@ -481,7 +494,7 @@ export function Timeline() {
             document.querySelector<HTMLElement>(".timeline")?.focus();
           }}
           items={clipMenuItems(menuClip.clip, {
-            canSplit: canSplitAt(menuClip.clip, Math.round(tick)),
+            canSplit: canSplitAt(menuClip.clip, Math.round(useLive.getState().transport?.tick ?? 0)),
             hasOverlap: overlappingNeighbor(menuClip.track, menuClip.clip.id) !== null,
             split: () => void splitAtCursor(menuClip.clip.id),
             normalize: () => void normalizeClip(menuClip.clip.id),

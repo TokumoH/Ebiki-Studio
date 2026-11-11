@@ -46,7 +46,7 @@
 .clip-handle--trim:hover, .clip[aria-selected="true"] .clip-handle--trim { background: color-mix(in srgb, var(--clip-sel) 35%, transparent); }
 .clip-handle--fade { top: 0; width: 8px; height: 8px; border-radius: 2px; background: var(--clip-sel); cursor: col-resize; opacity: 0; }
 .clip:hover .clip-handle--fade, .clip[aria-selected="true"] .clip-handle--fade, .clip-handle--fade:focus-visible { opacity: 1; }
-.clip-menu { position: absolute; z-index: 20; min-width: 240px; padding: 4px 0; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+.clip-menu { position: fixed; z-index: var(--z-menu); min-width: 240px; padding: 4px 0; background: var(--bg-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); box-shadow: 0 8px 24px rgba(0,0,0,.35); }
 .clip-menu-item { display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 6px; padding: 5px 10px; cursor: pointer; font-size: var(--text-sm); }
 .clip-menu-item:hover, .clip-menu-item:focus { background: var(--panel-2); outline: none; }
 .clip-menu-item[aria-disabled="true"] { opacity: .45; cursor: default; }

@@ -422,3 +422,59 @@ fn opening_collects_unreferenced_media_but_keeps_backup_references() {
     );
     assert!(!orphan.exists() && !orphan2.exists(), "lixo apagado");
 }
+
+#[test]
+fn opening_removes_caches_of_audio_no_longer_referenced() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    let v = new_project(&mut st, dir.path());
+    let root = std::path::PathBuf::from(&v.project.root);
+    let kept = impulse_wav(dir.path(), "kept.wav", 0, 500);
+    let v = st.import_audio(&[kept], None, Tick(0)).unwrap();
+    let kept_hash = v.sources[0].content_hash.clone();
+    let in_backup = impulse_wav(dir.path(), "bk.wav", 7, 600);
+    let v = st.import_audio(&[in_backup], None, Tick(0)).unwrap();
+    let backup_hash = v.sources[1].content_hash.clone();
+    st.autosave().unwrap(); // o autosave ainda referencia bk.wav
+    st.undo().unwrap();
+    st.save().unwrap();
+    st.close().unwrap();
+
+    let orphan_hash = "f".repeat(64);
+    let file = |sub: &str, name: String| {
+        let p = root.join(sub).join(name);
+        std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+        std::fs::write(&p, b"x").unwrap();
+        p
+    };
+    let kept_peaks = file("cache/peaks", format!("{kept_hash}-256.peaks"));
+    let kept_spec = file(
+        "cache/spectrogram",
+        format!("{kept_hash}-2048-512-256.spec"),
+    );
+    let backup_peaks = file("cache/peaks", format!("{backup_hash}-256.peaks"));
+    let orphan_peaks = file("cache/peaks", format!("{orphan_hash}-256.peaks"));
+    let orphan_spec = file(
+        "cache/spectrogram",
+        format!("{orphan_hash}-2048-512-256.spec"),
+    );
+    let unknown = file("cache/peaks", "anotacoes.txt".into());
+
+    st.open_project(&root).unwrap();
+    assert!(
+        kept_peaks.exists() && kept_spec.exists(),
+        "cache de fonte do projeto mantido"
+    );
+    assert!(
+        backup_peaks.exists(),
+        "cache de fonte só do autosave mantido"
+    );
+    assert!(
+        !orphan_peaks.exists() && !orphan_spec.exists(),
+        "cache de áudio sem fonte apagado"
+    );
+    assert!(
+        unknown.exists(),
+        "arquivo de nome desconhecido não é tocado"
+    );
+}

@@ -108,7 +108,6 @@ export const api = {
   exportStems: (dir: string, settings: ExportSettings) => call(z.string().array(), "export_stems", { dir, settings }),
 };
 
-export type Api = typeof api;
 
 // ---- Harmonia e bases (Fases 4–5) ----
 // (import no fim do arquivo de propósito: seção só acrescentada, para facilitar o merge)
@@ -156,7 +155,6 @@ export const compositionApi = {
   synthSetSoundfont: (path: string | null) => call(S.SynthStatus, "synth_set_soundfont", { path }),
 };
 
-export type CompositionApi = typeof compositionApi;
 
 // ------------------------------------------------------------------------------------------------
 // Música (Fases 6–8): partituras, letra, afinação, afinador e time-stretch (commands_music.rs).
@@ -214,7 +212,6 @@ export const musicApi = {
   clipTimeStretch: (clipId: string, sourceBpm: number, targetBpm: number | null) => call(Session, "clip_time_stretch", { req: { clipId, sourceBpm, targetBpm } }),
 };
 
-export type MusicApi = typeof musicApi;
 
 // ------------------------------------------------------------------------------------------------
 // Edição / pós-produção (Fase 3, commands_edit.rs). Seção só acrescentada, para facilitar o merge.
@@ -233,4 +230,3 @@ export const editApi = {
   sourceSpectrogram: async (sourceId: string, params?: SpectrogramRequest): Promise<Spectrogram> => parseSpectrogram(await binary("source_spectrogram", { sourceId, params: params ?? null })),
 };
 
-export type EditApi = typeof editApi;

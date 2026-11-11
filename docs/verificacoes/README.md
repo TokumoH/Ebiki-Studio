@@ -52,6 +52,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-10-04-loop-configuravel.md](VER-2026-11-10-04-loop-configuravel.md) | Loop configurável (opções, projeto inteiro, régua) |
 | [VER-2026-11-10-05-menu-da-logo-e-entrada-recolhivel.md](VER-2026-11-10-05-menu-da-logo-e-entrada-recolhivel.md) | Menu da logo e entrada de áudio recolhível |
 | [VER-2026-11-10-06-compassos-do-mapa-de-tempo.md](VER-2026-11-10-06-compassos-do-mapa-de-tempo.md) | Mapa de tempo com a mesma numeração de compassos da régua |
+| [VER-2026-11-11-01-varredura-4.md](VER-2026-11-11-01-varredura-4.md) | Correções da varredura 4 (popovers, renders, caches, CI, docs) |
 
 ## Lógica
 

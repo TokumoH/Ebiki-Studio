@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Clip } from "../../ipc/types";
 
 export interface ClipMenuItem {
@@ -24,8 +25,25 @@ export function clipMenuItems(clip: Clip, a: { canSplit: boolean; hasOverlap: bo
 }
 
 /** Menu de contexto acessível (setas, Home/End, Enter/Espaço, Esc). */
+/**
+ * Posição do menu (coordenadas da tela) dentro da janela: abre para baixo/direita do ponteiro e vira
+ * para cima/esquerda quando não cabe.
+ */
+export function menuPosition(x: number, y: number, size: { width: number; height: number }, viewport: { width: number; height: number }) {
+  const m = 8;
+  const left = x + size.width + m <= viewport.width ? x : Math.max(m, x - size.width);
+  const top = y + size.height + m <= viewport.height ? y : Math.max(m, y - size.height);
+  return { left, top };
+}
+
+/** Menu de contexto do clipe. `x`/`y` em coordenadas da tela; vai para o body (painéis cortariam). */
 export function ClipContextMenu({ x, y, items, onClose, label }: { x: number; y: number; items: ClipMenuItem[]; onClose: () => void; label: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  useLayoutEffect(() => {
+    const r = ref.current?.getBoundingClientRect();
+    if (r) setPos(menuPosition(x, y, { width: r.width, height: r.height }, { width: window.innerWidth, height: window.innerHeight }));
+  }, [x, y]);
   useEffect(() => {
     ref.current?.querySelector<HTMLElement>('[role^="menuitem"]:not([aria-disabled="true"])')?.focus();
     const away = (e: PointerEvent) => {
@@ -42,13 +60,13 @@ export function ClipContextMenu({ x, y, items, onClose, label }: { x: number; y:
     const next = dir === "first" ? 0 : dir === "last" ? list.length - 1 : (i + dir + list.length) % list.length;
     list[next]?.focus();
   };
-  return (
+  return createPortal(
     <div
       ref={ref}
       className="clip-menu"
       role="menu"
       aria-label={label}
-      style={{ left: x, top: y }}
+      style={pos ?? { left: x, top: y, opacity: 0 }}
       onKeyDown={(e) => {
         const keys: Record<string, () => void> = { ArrowDown: () => move(1), ArrowUp: () => move(-1), Home: () => move("first"), End: () => move("last"), Escape: onClose, Tab: onClose };
         const k = keys[e.key];
@@ -85,6 +103,7 @@ export function ClipContextMenu({ x, y, items, onClose, label }: { x: number; y:
           {it.shortcut ? <kbd className="clip-menu-kbd">{it.shortcut}</kbd> : null}
         </div>
       ))}
-    </div>
+    </div>,
+    document.body,
   );
 }

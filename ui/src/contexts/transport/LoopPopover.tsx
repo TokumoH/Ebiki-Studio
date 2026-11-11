@@ -1,5 +1,6 @@
 // Opções de loop (mockup 10): 4 compassos a partir do cursor, projeto inteiro ou compassos X até Y.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { SessionView } from "../../ipc/types";
 import { loopLabel, loopRangeBars, loopRangeFromCursor, projectLoopRange, tickToBar } from "../../core/bars";
 import { useLive } from "../../core/live";
@@ -7,6 +8,14 @@ import { Button } from "../../shared/components";
 import { setLoop, useLoopUi } from "../../core/loop";
 
 type Choice = "cursor" | "project" | "bars";
+
+const WIDTH = 330;
+
+/** Posição fixa abaixo do botão, presa à janela (o popover vai para o body: a barra corta o que transborda). */
+export function popoverPosition(anchor: { left: number; bottom: number; width: number }, viewportWidth: number) {
+  const left = Math.min(Math.max(8, anchor.left + anchor.width - WIDTH), Math.max(8, viewportWidth - WIDTH - 8));
+  return { top: anchor.bottom + 6, left };
+}
 
 const lastClipEnd = (s: SessionView) => Math.max(0, ...s.tracks.flatMap((t) => t.clips.map((c) => c.endTick)));
 
@@ -18,6 +27,16 @@ export function LoopPopover({ session, anchor }: { session: SessionView; anchor:
   const [from, setFrom] = useState(() => (range ? tickToBar(session.tempo, range[0]) : 1));
   const [to, setTo] = useState(() => (range ? tickToBar(session.tempo, range[1] - 1) : 4));
   const box = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const r = anchor?.getBoundingClientRect();
+      if (r) setPos(popoverPosition(r, window.innerWidth));
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [anchor]);
 
   // fecha com Esc ou clique fora (o botão ▾ alterna sozinho)
   useEffect(() => {
@@ -57,8 +76,8 @@ export function LoopPopover({ session, anchor }: { session: SessionView; anchor:
     }
   };
 
-  return (
-    <div ref={box} className="loop-popover" role="dialog" aria-label="Opções de loop">
+  return createPortal(
+    <div ref={box} className="loop-popover" role="dialog" aria-label="Opções de loop" style={pos ? { top: pos.top, left: pos.left } : { opacity: 0 }}>
       <strong>Loop</strong>
       <div role="radiogroup" aria-label="Trecho do loop" className="loop-options">
         <label>
@@ -85,6 +104,7 @@ export function LoopPopover({ session, anchor }: { session: SessionView; anchor:
           Aplicar{preview ? ` (${loopLabel(session.tempo, preview)})` : ""}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

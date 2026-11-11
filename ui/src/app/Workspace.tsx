@@ -57,7 +57,8 @@ export function Workspace() {
   const session = useSession((s) => s.session)!;
   const busy = useSession((s) => s.busy);
   const { theme } = useTheme();
-  const meters = useLive((s) => s.meters);
+  // só o número de falhas de buffer: assinar o objeto de medidores re-renderizava o Workspace ~30x/s
+  const xruns = useLive((s) => s.meters?.xruns ?? 0);
   const selectedTrackId = useSession((s) => s.selectedTrackId);
   const selectedClipId = useSession((s) => s.selectedClipId);
   const openPanels = useDockState((s) => s.open);
@@ -284,7 +285,7 @@ export function Workspace() {
         </span>
         <span className="mono" data-tip="status.format">{session.project.sampleRate / 1000} kHz · {session.project.bitDepth} bits</span>
         {audio?.bufferSize ? <span className="mono" data-tip="status.buffer">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs?.toFixed(1) ?? "?"} ms</span> : null}
-        {meters && meters.xruns > 0 ? <span className="warn">{meters.xruns} falha(s) de buffer — aumente o buffer</span> : null}
+        {xruns > 0 ? <span className="warn">{xruns} falha(s) de buffer — aumente o buffer</span> : null}
         <span style={{ flex: 1 }} />
         {updateNotice ? (
           <button type="button" className="statusbar-update" onClick={showUpdate}>

@@ -256,17 +256,31 @@ impl Studio {
             .iter()
             .filter_map(|s| safe_join(root, &s.rel_path).ok())
             .collect();
+        // caches (picos, espectrogramas) são nomeados pelo hash do conteúdo da fonte
+        let mut hashes: std::collections::HashSet<String> = project
+            .sources()
+            .iter()
+            .map(|s| s.content_hash.clone())
+            .collect();
         let Ok(backups) = list_backups(&root.join("backups")) else {
             return;
         };
         for b in backups {
             match self.deps.repo.load(&b) {
-                Ok(s) => referenced.extend(
-                    s.project
-                        .sources()
-                        .iter()
-                        .filter_map(|src| safe_join(root, &src.rel_path).ok()),
-                ),
+                Ok(s) => {
+                    referenced.extend(
+                        s.project
+                            .sources()
+                            .iter()
+                            .filter_map(|src| safe_join(root, &src.rel_path).ok()),
+                    );
+                    hashes.extend(
+                        s.project
+                            .sources()
+                            .iter()
+                            .map(|src| src.content_hash.clone()),
+                    );
+                }
                 // backup ilegível: na dúvida, não apaga nada
                 Err(_) => return,
             }
@@ -274,6 +288,13 @@ impl Studio {
         for dir in MEDIA_DIRS {
             for f in list_files(&root.join(dir)) {
                 if !referenced.contains(&f) {
+                    let _ = std::fs::remove_file(&f);
+                }
+            }
+        }
+        for dir in CACHE_DIRS {
+            for f in list_files(&root.join(dir)) {
+                if cache_hash(&f).is_some_and(|h| !hashes.contains(h)) {
                     let _ = std::fs::remove_file(&f);
                 }
             }
@@ -1216,6 +1237,17 @@ const MEDIA_DIRS: [&str; 4] = [
     crate::music_support::RENDERED_DIR,
     crate::composition::GENERATED_AUDIO_DIR,
 ];
+
+/// Caches regeneráveis nomeados `<hash-do-conteúdo>-<parâmetros>.<ext>` (picos e espectrogramas).
+const CACHE_DIRS: [&str; 2] = ["cache/peaks", "cache/spectrogram"];
+
+/// Hash de conteúdo (64 hexadecimais) no início do nome de um arquivo de cache; `None` para nomes
+/// desconhecidos, que nunca são apagados.
+fn cache_hash(path: &Path) -> Option<&str> {
+    let name = path.file_name()?.to_str()?;
+    let hash = name.split(['-', '.']).next()?;
+    (hash.len() == 64 && hash.bytes().all(|b| b.is_ascii_hexdigit())).then_some(hash)
+}
 
 /// Arquivos regulares de uma pasta (vazio se a pasta não existir).
 fn list_files(dir: &Path) -> std::collections::HashSet<PathBuf> {
