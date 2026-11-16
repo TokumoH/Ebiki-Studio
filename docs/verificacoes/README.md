@@ -55,6 +55,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-11-01-varredura-4.md](VER-2026-11-11-01-varredura-4.md) | Correções da varredura 4 (popovers, renders, caches, CI, docs) |
 | [VER-2026-11-11-02-readme-por-modulo.md](VER-2026-11-11-02-readme-por-modulo.md) | README por módulo e verificador automático |
 | [VER-2026-11-11-03-release-v0-3-0.md](VER-2026-11-11-03-release-v0-3-0.md) | Versão 0.3.0 (versão e notas da release) |
+| [VER-2026-11-16-01-varredura-5-ux.md](VER-2026-11-16-01-varredura-5-ux.md) | Varredura 5 (UX): diagnósticos e sugestões aguardando aprovação |
 
 ## Lógica
 
