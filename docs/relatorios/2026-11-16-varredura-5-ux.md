@@ -7,7 +7,7 @@
 | Data | 2026-11-16 |
 | Usuário responsável | TokumoH ("corrija bugs… áudio baixo… configs de microfone e fone… a linha sai da tela… faça uma varredura priorizando o UX") |
 | Versão analisada | v0.3.0 (`f4681e3`) |
-| Status | **sugestões aguardando aprovação** (nada de código alterado) |
+| Status | **implementado** (S1, S2 e S3 aprovados em 2026-11-16; ver seção 5) |
 | Mockup | Mockup 11 — configurações de áudio (microfone × fone) e "Seguir reprodução" |
 
 ## 1. Pedidos do usuário — diagnóstico
@@ -138,6 +138,34 @@ Prioridade sugerida:
   implementação.
 
 ---
+
+## 5. Fechamento (2026-11-17)
+
+Todas as sugestões foram implementadas, com dupla verificação e registro:
+
+| Sugestão / itens | Registro |
+|---|---|
+| S1 — microfone × fone, ganho de entrada, Testar som | VER-2026-11-16-02 |
+| S2 — seguir reprodução; UX-01 | VER-2026-11-16-03 |
+| UX-02, UX-03, UX-07 | VER-2026-11-17-01 |
+| UX-05, UX-09, UX-12, UX-17, UX-21 | VER-2026-11-17-02 |
+| UX-06, UX-10, UX-11 | VER-2026-11-17-03 |
+| UX-04, UX-08 | VER-2026-11-17-04 |
+| UX-13, UX-14, UX-15, UX-16 | VER-2026-11-17-05 |
+| UX-19, UX-20, UX-22, UX-23 | VER-2026-11-17-06 |
+| Integração do S1, UX-18, corrida do seguir | VER-2026-11-17-07 |
+
+**Fica para decisão do usuário:**
+
+- "Mostrar na pasta" após exportar: exige ampliar a permissão do opener, hoje restrita à página de releases (ADR-0034).
+- Progresso real por arquivo na importação: exige evento novo do núcleo.
+
+**Não verificado neste ambiente:** som real (ganho, Testar som e latência) num Windows/macOS com placa de som.
+
+**Estado final:**
+
+- Rust: fmt/clippy limpos; 67 suítes, 666 testes;
+- UI: Vitest 52 arquivos / 341 testes; Playwright 78/78.
 
 ## Anexo — achados detalhados da varredura UX
 

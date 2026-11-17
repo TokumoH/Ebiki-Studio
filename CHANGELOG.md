@@ -3,6 +3,40 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Novidades
+
+- **Microfone × fone nas Configurações de áudio:** blocos "Fone / alto-falantes — o que você ouve" e
+  "Microfone / interface — o que você grava".
+  - **Testar som** toca um tom curto no fone.
+  - **Ganho de entrada** de 0 a +24 dB.
+  - Medidores com faixa verde (−18 a −6 dB) e aviso de sinal baixo ou alto.
+  - "Ouvir o microfone no fone" começa em 0 dB.
+  - O microfone é escolhido num lugar só.
+- **Seguir reprodução:** o Arranjo vira a página quando a linha sai da tela. Botão ⇥ Seguir, tecla F
+  ou *Exibir › Seguir reprodução*. Rolar à mão pausa até a linha voltar a aparecer.
+- **BPM editável** no transporte (clique no andamento).
+- **Exportar o trecho do loop**; o aviso mostra onde o arquivo foi salvo.
+- **Gravar sem faixa armada:** R arma a faixa selecionada; sem microfone, um aviso leva ao painel Gravação.
+- **Editor de atalhos:** avisa tecla repetida, *Restaurar padrões*, Espaço/⌘ em PT-BR. Novos atalhos:
+  End (fim), Ctrl+N, Ctrl+O e Delete (excluir clipe) em qualquer painel.
+- Clicar na faixa ou num clipe posiciona o cursor.
+- Remover faixa mostra *Desfazer* no aviso.
+- A barra de status mostra fone e microfone e abre as configurações.
+
+### Corrigido
+
+- **Espaço** voltava a acionar o último botão clicado (metrônomo, exportar…) em vez de tocar/pausar.
+- Barra superior quebrada em janelas estreitas ou com zoom alto. Painel de baixo ocupando quase toda a tela em
+  janelas baixas. Botões dos diálogos altos fora da tela.
+- M/S do Mixer escondidos no tamanho padrão.
+- Acessibilidade: foco preso nos diálogos (com ✕ no cabeçalho), contraste AA nos dois temas, tutorial
+  pelo teclado sem disparar atalhos por baixo, erros anunciados como alerta.
+- Indicador de "trabalhando" ao importar, abrir e criar projeto.
+- Números com vírgula decimal e rótulos sem maiúsculas. Metrônomo da Gravação mostra Ligado/Desligado.
+  Abas do painel em PT-BR.
+
 ## [0.3.0] - 2026-11-11
 
 Legendas em todo o app, zoom pela roda do mouse, loop configurável e menu na logo.
