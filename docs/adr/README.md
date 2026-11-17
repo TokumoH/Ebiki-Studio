@@ -38,5 +38,6 @@ Gerado por `scripts/adr_index.py`.
 | [0034](0034-atualizacao-do-app-sob-demanda-e-assinada.md) | Atualização do app sob demanda e assinada | Aceita (revê o item "Auto-update" de *Fora do escopo* nos requisitos) |
 | [0035](0035-ouvir-entrada-fora-do-master.md) | "Ouvir entrada" somado fora do master, com estado de dispositivo na aplicação | Aceita |
 | [0036](0036-entrada-de-notas-por-clique-e-por-texto.md) | Entrada de notas por clique na pauta e por texto corrido | Aceita |
+| [0037](0037-mostrar-na-pasta-apenas-arquivos-exportados.md) | "Mostrar na pasta" só para arquivos exportados pelo app | Aceita (decisão do usuário em 2026-11-17) |
 
 Números não usados: 0015, 0024 (reservados durante o desenvolvimento em paralelo e nunca publicados).

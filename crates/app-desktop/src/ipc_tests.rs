@@ -184,6 +184,17 @@ fn commands_accept_the_ui_payloads() {
         json!({ "dir": dir.path().join("stems").to_string_lossy(), "settings": { "format": "wav", "bitDepth": 16, "mp3Kbps": null, "vorbisQuality": 0.6, "normalize": false } }),
     );
     assert_eq!(stems.as_array().unwrap().len(), 1);
+    // "Mostrar na pasta" recusa o que o app não exportou nesta execução (pasta, outro arquivo, inexistente)
+    let other = dir.path().join("nao-exportado.wav");
+    tone(&other);
+    for p in [
+        other.to_string_lossy().into_owned(),
+        d.clone(),
+        "/etc/passwd".into(),
+    ] {
+        let err = call(&w, "export_reveal", json!({ "path": p })).unwrap_err();
+        assert_eq!(err["code"], "app.reveal_denied", "{p}");
+    }
 
     // análise de mixagem roda fora do lock do estúdio e devolve medidas por canal
     let report = ok(&w, "mix_analyze", json!({ "targetLufs": -14.0 }));

@@ -3,6 +3,13 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Novidades
+
+- **Mostrar na pasta** no aviso de exportação: abre o gerenciador de arquivos com o arquivo exportado
+  selecionado (só arquivos que o próprio app exportou — ADR-0037).
+
 ## [0.4.0] - 2026-11-17
 
 Microfone e fone separados (com ganho e teste de som), a vista segue a reprodução e uma rodada grande de

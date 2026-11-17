@@ -405,6 +405,10 @@ export function createMockTransport(): Transport {
       (globalThis as { __ebikiLastExport?: unknown }).__ebikiLastExport = a;
       return null;
     },
+    export_reveal: (a) => {
+      (globalThis as { __ebikiLastReveal?: unknown }).__ebikiLastReveal = a.path;
+      return null;
+    },
     export_stems: (a) => s().tracks.map((t, i) => `${a.dir}/${String(i + 1).padStart(2, "0")} - ${t.name}.wav`),
   };
 

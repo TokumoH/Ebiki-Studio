@@ -66,6 +66,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-17-06-ux-exportar-bpm-faixa-nomes.md](VER-2026-11-17-06-ux-exportar-bpm-faixa-nomes.md) | Exportar trecho, BPM editável, remover faixa com desfazer e nomes (UX-19, UX-20, UX-22, UX-23) |
 | [VER-2026-11-17-07-integracao-s1-status-e-seguir.md](VER-2026-11-17-07-integracao-s1-status-e-seguir.md) | Integração do S1, barra de status (UX-18) e corrida do seguir |
 | [VER-2026-11-17-08-release-v0-4-0.md](VER-2026-11-17-08-release-v0-4-0.md) | Versão 0.4.0 (versão e notas da release) |
+| [VER-2026-11-17-09-mostrar-na-pasta.md](VER-2026-11-17-09-mostrar-na-pasta.md) | "Mostrar na pasta" após exportar (ADR-0037) |
 
 ## Lógica
 

@@ -109,6 +109,8 @@ export const api = {
   // exportação
   exportFormats: () => call(S.ExportFormat.array(), "export_formats"),
   exportMix: (path: string, settings: ExportSettings, range: [number, number] | null) => call(Void, "export_mix", { path, settings, range }),
+  /** Abre o gerenciador de arquivos no arquivo exportado (só arquivos exportados nesta execução). */
+  exportReveal: (path: string) => call(Void, "export_reveal", { path }),
   exportStems: (dir: string, settings: ExportSettings) => call(z.string().array(), "export_stems", { dir, settings }),
 };
 

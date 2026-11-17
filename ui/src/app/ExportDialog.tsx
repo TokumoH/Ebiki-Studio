@@ -11,6 +11,12 @@ import { loopLabel } from "../core/bars";
 
 const LABELS: Record<ExportFormat, string> = { wav: "WAV", aiff: "AIFF", flac: "FLAC", mp3: "MP3", ogg: "OGG", aac: "AAC" };
 
+/** Ação do aviso: abre a pasta com o arquivo exportado selecionado. */
+const reveal = (path: string) => ({
+  label: "Mostrar na pasta",
+  run: () => void api.exportReveal(path).catch((e) => notify.error(errorMessage(e))),
+});
+
 export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const session = useSession((s) => s.session);
   const [formats, setFormats] = useState<ExportFormat[]>(["wav"]);
@@ -33,15 +39,12 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
         const dir = (await transport().pickOpen({ directory: true, title: "Pasta para os stems" }))?.[0];
         if (!dir) return;
         const files = await api.exportStems(dir, s);
-        notify.success(`${files.length} stems exportados.`);
+        notify.success(`${files.length} stems exportados em ${dir}`, files[0] ? reveal(files[0]) : undefined);
       } else {
         const path = await transport().pickSave({ defaultPath: `${session.project.name}.${s.format === "ogg" ? "ogg" : s.format}`, filters: [{ name: LABELS[s.format], extensions: [s.format] }], title: "Exportar mixagem" });
         if (!path) return;
         await api.exportMix(path, s, range);
-        notify.success(`Mixagem exportada em ${path}`, {
-          label: "Copiar caminho",
-          run: () => void navigator.clipboard?.writeText(path).catch(() => undefined),
-        });
+        notify.success(`Mixagem exportada em ${path}`, reveal(path));
       }
       onClose();
     } catch (e) {

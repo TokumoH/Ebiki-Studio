@@ -598,7 +598,9 @@ pub async fn export_mix(
     let ext = settings.format.extension();
     // AIFF aceita também .aif
     let file = output_file(&path, &[ext, if ext == "aiff" { "aif" } else { ext }])?;
-    lock(&state.studio).export_mix(&file, &settings, range.map(|(a, b)| (Tick(a), Tick(b))))
+    lock(&state.studio).export_mix(&file, &settings, range.map(|(a, b)| (Tick(a), Tick(b))))?;
+    state.exported.record(&file);
+    Ok(())
 }
 
 #[tauri::command]
@@ -608,11 +610,35 @@ pub async fn export_stems(
     settings: ExportSettings,
 ) -> Res<Vec<String>> {
     let d = user_path(&dir)?;
-    Ok(lock(&state.studio)
-        .export_stems(&d, &settings)?
+    let files = lock(&state.studio).export_stems(&d, &settings)?;
+    for f in &files {
+        state.exported.record(f);
+    }
+    Ok(files
         .into_iter()
         .map(|p| p.to_string_lossy().into_owned())
         .collect())
+}
+
+/// "Mostrar na pasta": abre o gerenciador de arquivos com o arquivo selecionado — só para arquivos
+/// exportados nesta execução (a interface não revela caminhos arbitrários).
+#[tauri::command]
+pub async fn export_reveal<R: tauri::Runtime>(
+    app: tauri::AppHandle<R>,
+    state: State<'_, AppState>,
+    path: String,
+) -> Res<()> {
+    use tauri_plugin_opener::OpenerExt;
+    let file = std::path::PathBuf::from(&path);
+    if !state.exported.allows(&file) {
+        return Err(AppError::new(
+            "app.reveal_denied",
+            "Só dá para mostrar arquivos exportados nesta sessão.",
+        ));
+    }
+    app.opener()
+        .reveal_item_in_dir(&file)
+        .map_err(|e| AppError::new("app.reveal", e.to_string()))
 }
 
 #[cfg(test)]

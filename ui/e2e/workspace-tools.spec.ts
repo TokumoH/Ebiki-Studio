@@ -218,7 +218,8 @@ test("exportar: trecho do loop e aviso com o caminho (UX-19)", async ({ page }) 
   await dialog.getByRole("button", { name: "Exportar", exact: true }).click();
   const toasts = page.locator(".toasts").getByRole("status");
   await expect(toasts).toContainText("Mixagem exportada em");
-  await expect(toasts.getByRole("button", { name: "Copiar caminho" })).toBeVisible();
+  await toasts.getByRole("button", { name: "Mostrar na pasta" }).click();
+  await expect.poll(() => page.evaluate(() => (globalThis as { __ebikiLastReveal?: string }).__ebikiLastReveal)).toMatch(/Exportar\.wav$/);
   const sent = await page.evaluate(() => (globalThis as { __ebikiLastExport?: { range: [number, number] | null } }).__ebikiLastExport);
   expect(sent?.range).toEqual([0, 960 * 4 * 4]);
 });

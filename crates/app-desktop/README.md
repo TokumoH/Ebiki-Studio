@@ -79,6 +79,7 @@ Toda a composição num lugar: fácil ver o que cada comando expõe e com quais 
 | [src/ipc_args.rs](src/ipc_args.rs) | Validação comum dos argumentos recebidos pela IPC (compartilhada por todos os módulos de comandos). |
 | [src/ipc_tests.rs](src/ipc_tests.rs) | Testes de IPC com o runtime simulado do Tauri: os comandos são chamados com o MESMO JSON que a UI |
 | [src/main.rs](src/main.rs) | Ebiki Studio — ponto de entrada do aplicativo desktop. |
+| [src/exported.rs](src/exported.rs) | Arquivos exportados nesta execução: "Mostrar na pasta" só revela estes (ADR-0037). |
 | [src/state.rs](src/state.rs) | Estado global do app (composition root). |
 | [src/updates.rs](src/updates.rs) | Atualização do app (ADR-0034). A verificação, o download e a validação da assinatura são do |
 

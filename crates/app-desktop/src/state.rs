@@ -19,6 +19,8 @@ pub struct AppState {
     pub synth: Arc<ConfigurableSynthRenderer>,
     /// Biblioteca de composição (harmonia + bases); aberta na primeira chamada.
     pub composer: Mutex<Option<Composer>>,
+    /// Arquivos exportados nesta execução ("Mostrar na pasta" só revela estes).
+    pub exported: crate::exported::ExportedFiles,
 }
 
 impl AppState {
@@ -46,6 +48,7 @@ impl AppState {
             library: Mutex::new(library),
             synth,
             composer: Mutex::new(None),
+            exported: Default::default(),
         }
     }
 }

@@ -12,6 +12,7 @@ pub fn app_context<R: tauri::Runtime>() -> tauri::Context<R> {
     tauri::generate_context!()
 }
 
+mod exported;
 #[cfg(test)]
 mod ipc_tests;
 mod state;
@@ -146,6 +147,7 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
         commands::export_formats,
         commands::export_mix,
         commands::export_stems,
+        commands::export_reveal,
         commands_music::score_list,
         commands_music::score_create,
         commands_music::score_create_from_chords,

@@ -170,7 +170,7 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
 Opções: normalizar para −1 dBFS e **stems** (um arquivo por faixa). AAC ainda não é suportado na
 exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 **Trecho:** projeto inteiro ou, com o loop ligado, só o *trecho do loop*. Ao terminar, o aviso mostra onde
-o arquivo foi salvo (com *Copiar caminho*).
+o arquivo foi salvo, com **Mostrar na pasta** (abre o gerenciador de arquivos com o arquivo selecionado).
 
 ## 7. Harmonia e composição
 
