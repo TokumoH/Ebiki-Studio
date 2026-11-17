@@ -17,6 +17,8 @@ export interface MenuContext {
   statusBar: boolean;
   /** Legendas ao passar o mouse ligadas. */
   tooltips: boolean;
+  /** Seguir reprodução ligado. */
+  follow: boolean;
   metronome: boolean;
   loop: boolean;
   hasSelectedTrack: boolean;
@@ -114,6 +116,7 @@ export function buildMenus(c: MenuContext): MenuDef[] {
         item("zoomIn", "Aproximar"),
         item("zoomOut", "Afastar"),
         item("zoomReset", "Zoom padrão"),
+        item("toggleFollow", "Seguir reprodução", { checked: c.follow }),
         sep,
         { kind: "submenu", id: "exibir-paineis", label: "Painéis", items: panelItems("view") },
         item("toggleSpectrum", "Espectrograma na faixa selecionada", { checked: c.selectedTrackSpectrum, disabled: !c.hasSelectedTrack }),

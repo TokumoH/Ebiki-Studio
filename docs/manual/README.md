@@ -108,6 +108,10 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
   selecionado. Navegue com as setas, **Enter** executa, **Esc** fecha.
 - **Teclado nas alças:** com o clipe selecionado, **Tab** até uma borda/alça e use **←/→**
   (cortar: 1/16 de tempo, **Shift** = 1 tempo; fades: 10 ms, **Shift** = 100 ms).
+- **Seguir reprodução** (botão **⇥ Seguir**, tecla **F**, *Exibir › Seguir reprodução*; ligado por
+  padrão): ao tocar ou gravar, quando a linha passa de 90% da tela o Arranjo vira a página e a deixa
+  perto da borda esquerda; no fim do loop volta ao início dele. Rolar a vista à mão durante a
+  reprodução pausa o seguir até a linha voltar a aparecer ou até o próximo ▶.
 
 ## 4. Gravação
 
@@ -237,6 +241,7 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 | Metrônomo | C |
 | Loop | L |
 | Início | Home |
+| Seguir reprodução (liga/desliga) | F |
 | Dividir clipe no cursor | S |
 | Menu do clipe selecionado | Menu ou Shift+F10 |
 | Central de ajuda | F1 |

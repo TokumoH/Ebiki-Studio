@@ -1,4 +1,4 @@
-import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, saveShortcut } from "./shortcuts";
+import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, noteKeyboardNavigation, notePointerDown, saveShortcut } from "./shortcuts";
 
 it("normaliza combinações", () => {
   expect(eventKeys({ key: "z", ctrlKey: true, metaKey: false, shiftKey: true, altKey: false })).toBe("Ctrl+Shift+Z");
@@ -29,4 +29,17 @@ it("atalhos são editáveis e persistem", () => {
   expect(loadShortcuts().find((s) => s.id === "metronome")?.keys).toBe("M");
   localStorage.clear();
   expect(loadShortcuts().find((s) => s.id === "metronome")?.keys).toBe("C");
+});
+
+it("botão focado pelo clique do mouse: Espaço/Enter voltam a ser do atalho global (UX-01)", () => {
+  const button = document.createElement("button");
+  const icon = document.createElement("span");
+  button.appendChild(icon);
+  notePointerDown(icon);
+  expect(isActivationKey("Space", button)).toBe(false);
+  expect(isActivationKey("Enter", button)).toBe(false);
+  noteKeyboardNavigation();
+  expect(isActivationKey("Space", button)).toBe(true);
+  notePointerDown(document.body);
+  expect(isActivationKey("Space", button)).toBe(true);
 });

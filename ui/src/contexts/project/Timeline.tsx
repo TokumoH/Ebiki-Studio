@@ -15,6 +15,7 @@ import { crossfadeWithNeighbor, findClip, normalizeClip, setPolarity, setReverse
 import { TrackOrderButtons } from "./TrackOrderButtons";
 import { anchoredScrollLeft, trackIndexAt, useTimelineView, wheelFactor } from "./timelineView";
 import { setLoop } from "../../core/loop";
+import { followScrollLeft, isRolling, useFollow } from "../../core/follow";
 
 /** Cursor de reprodução: só ele assina a posição (a timeline inteira não re-renderiza a cada quadro). */
 function Playhead({ pxPerTick }: { pxPerTick: number }) {
@@ -181,11 +182,47 @@ export function Timeline() {
   const lines = useMemo(() => (session ? gridLines(session.tempo, visibleFrom - PPQ * 4, visibleTo + PPQ * 4) : []), [session, visibleFrom, visibleTo]);
   const showBeats = pxPerBeat >= 18;
 
+  // rolagem feita pelo app (seguir reprodução, zoom ancorado): não conta como rolagem manual
+  const autoScroll = useRef<number | null>(null);
+  const lastLeft = useRef(0);
+  const setScrollLeft = (el: HTMLDivElement, left: number) => {
+    autoScroll.current = Math.min(left, Math.max(0, el.scrollWidth - el.clientWidth));
+    el.scrollLeft = left;
+  };
+
   const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget;
     if (headersRef.current) headersRef.current.scrollTop = el.scrollTop;
     setScroll({ left: el.scrollLeft, top: el.scrollTop, width: el.clientWidth });
+    const expected = autoScroll.current;
+    if (expected !== null && Math.abs(el.scrollLeft - expected) <= 2) autoScroll.current = null;
+    else if (el.scrollLeft !== lastLeft.current && isRolling(useLive.getState().transport?.state)) useFollow.getState().suspend();
+    lastLeft.current = el.scrollLeft;
   }, []);
+
+  // Seguir reprodução: vira a página quando a linha sai da vista. Assina a telemetria fora do render
+  // (a timeline não re-renderiza a 30 Hz). Novo ▶ ou a linha de volta à vista tiram a pausa manual.
+  const pxPerTickRef = useRef(pxPerTick);
+  pxPerTickRef.current = pxPerTick;
+  useEffect(() => {
+    let wasRolling = isRolling(useLive.getState().transport?.state);
+    return useLive.subscribe((s) => {
+      const t = s.transport;
+      const el = lanesRef.current;
+      if (!t || !el) return;
+      const rolling = isRolling(t.state);
+      const f = useFollow.getState();
+      if (rolling && !wasRolling) f.resume();
+      wasRolling = rolling;
+      if (!rolling || !f.enabled) return;
+      const target = followScrollLeft(t.tick * pxPerTickRef.current, el.scrollLeft, el.clientWidth);
+      if (target === null) {
+        f.resume();
+        return;
+      }
+      if (!useFollow.getState().suspended) setScrollLeft(el, target);
+    });
+  }, [session === null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Ctrl/⌘+roda (ou pinça): zoom no tempo, centrado no mouse · Alt+roda: altura das faixas ·
   // Shift+roda: rolagem lateral. Ouvinte nativo não passivo: bloqueia o zoom da página do navegador.
@@ -216,7 +253,7 @@ export function Timeline() {
     const el = lanesRef.current;
     if (!a || !el) return;
     zoomAnchor.current = null;
-    el.scrollLeft = anchoredScrollLeft(a.tick, pxPerBeat / PPQ, a.offset);
+    setScrollLeft(el, anchoredScrollLeft(a.tick, pxPerBeat / PPQ, a.offset));
   }, [pxPerBeat]);
 
   const xToTick = (clientX: number) => {

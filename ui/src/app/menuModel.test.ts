@@ -14,6 +14,7 @@ const base: MenuContext = {
   openPanels: ["timeline", "mixer"],
   statusBar: true,
   tooltips: true,
+  follow: true,
   metronome: false,
   loop: true,
   hasSelectedTrack: false,

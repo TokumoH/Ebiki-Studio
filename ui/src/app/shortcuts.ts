@@ -23,6 +23,7 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: "zoomIn", label: "Aproximar (zoom)", keys: "Ctrl+=" },
   { id: "zoomOut", label: "Afastar (zoom)", keys: "Ctrl+-" },
   { id: "zoomReset", label: "Zoom padrão", keys: "Ctrl+0" },
+  { id: "toggleFollow", label: "Seguir reprodução", keys: "F" },
   { id: "fullscreen", label: "Tela cheia", keys: "F11" },
   { id: "help", label: "Central de ajuda", keys: "F1" },
   { id: "shortcutsDialog", label: "Atalhos de teclado", keys: "Ctrl+/" },
@@ -46,10 +47,25 @@ export function isTypingTarget(t: EventTarget | null): boolean {
 
 const ACTIVATION_ROLES = ["button", "menuitem", "menuitemcheckbox", "menuitemradio", "option", "tab", "checkbox", "radio", "switch", "link"];
 
-/** Enter/Espaço num controle focado pertencem ao controle (ativação por teclado), não ao atalho global. */
+// Controle que ganhou foco por clique do mouse: Espaço/Enter nele são do atalho global (tocar/parar),
+// como nos DAWs; só quem chegou ao controle pelo teclado (Tab) o ativa com Espaço/Enter.
+let pointerFocused: Element | null = null;
+
+/** Registra o clique (pointerdown) para `isActivationKey` saber que o foco veio do mouse. */
+export function notePointerDown(target: EventTarget | null) {
+  pointerFocused = target instanceof Element ? target : null;
+}
+
+/** Navegação por teclado (Tab, setas em menus): o foco seguinte é intencional. */
+export function noteKeyboardNavigation() {
+  pointerFocused = null;
+}
+
+/** Enter/Espaço num controle focado pelo teclado pertencem ao controle, não ao atalho global. */
 export function isActivationKey(keys: string, t: EventTarget | null): boolean {
   if (keys !== "Enter" && keys !== "Space") return false;
   if (!(t instanceof HTMLElement)) return false;
+  if (pointerFocused && (pointerFocused === t || t.contains(pointerFocused))) return false;
   if (["BUTTON", "A", "SUMMARY"].includes(t.tagName)) return true;
   return ACTIVATION_ROLES.includes(t.getAttribute("role") ?? "");
 }

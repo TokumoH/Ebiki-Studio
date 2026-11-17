@@ -101,6 +101,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
   "transport.metronome": e("Metrônomo", "Clique no tempo durante a reprodução e a gravação. Volume, subdivisão e contagem no painel Gravação.", "C", [/^Metrônomo$/]),
   "transport.loop": e("Loop", "Repete um trecho na reprodução. ▾ escolhe o trecho: 4 compassos, projeto inteiro ou compassos X–Y. Na gravação o loop é ignorado.", "L", [/^Loop$/]),
   "transport.loopMenu": e("Opções de loop", "Escolha o trecho do loop. Também dá para arrastar na faixa de cima da régua.", undefined, [/^Opções de loop$/]),
+  "transport.follow": e("Seguir reprodução", "Quando a linha de reprodução sai da tela, o Arranjo vira a página. Rolar a vista à mão pausa até a linha voltar a aparecer ou até o próximo ▶.", "F", [/^Seguir reprodução$/]),
   "transport.loopBars": e("Compassos do loop", "Do primeiro ao último compasso (inclusive) — mesma numeração da régua.", undefined, [/^(Primeiro|Último) compasso do loop$/]),
   "transport.position": e("Posição", "Compasso.tempo.tique e tempo decorrido do cursor."),
   "transport.tempo": e("Andamento e compasso", "BPM e fórmula de compasso no cursor. Mude no painel Mapa de tempo."),

@@ -59,8 +59,11 @@ test("Gravação: o bloco Entrada de áudio recolhe para uma linha de resumo e l
   expect(await page.evaluate(() => localStorage.getItem("ebiki.recording.inputCollapsed"))).toBe("1");
   // o painel de faixas continua lá, mais perto do topo
   await expect(page.getByRole("heading", { name: "Faixas" })).toBeVisible();
-  // teclado abre de novo
+  // teclado abre de novo (chegando ao botão pelo Tab; depois de um clique, Enter é do atalho global — UX-01)
   await toggle.focus();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  await expect(toggle).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(section.getByLabel("Dispositivo de entrada da gravação")).toBeVisible();
 });

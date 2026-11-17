@@ -25,7 +25,8 @@ import { AudioSettingsDialog } from "./AudioSettingsDialog";
 import { ExportDialog } from "./ExportDialog";
 import { ShortcutsDialog } from "./ShortcutsDialog";
 import { CloseProjectDialog, closeProject } from "./CloseProjectDialog";
-import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, type Shortcut } from "./shortcuts";
+import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, noteKeyboardNavigation, notePointerDown, type Shortcut } from "./shortcuts";
+import { useFollow } from "../core/follow";
 
 const AUDIO_EXT = ["wav", "wave", "aif", "aiff", "flac", "mp3", "ogg", "oga", "m4a", "aac", "mp4"];
 
@@ -67,6 +68,7 @@ export function Workspace() {
   const [dialog, setDialog] = useState<"audio" | "export" | "shortcuts" | "close" | "help" | "about" | null>(null);
   const [statusBar, setStatusBar] = useState(true);
   const tooltipsOn = useTooltipPrefs((s) => s.enabled);
+  const followOn = useFollow((s) => s.enabled);
   const [shortcutList, setShortcutList] = useState<Shortcut[]>(loadShortcuts);
   const shortcuts = useRef(shortcutList);
   shortcuts.current = shortcutList;
@@ -133,6 +135,7 @@ export function Workspace() {
       zoomIn: () => useTimelineView.getState().zoomIn(),
       zoomOut: () => useTimelineView.getState().zoomOut(),
       zoomReset: () => useTimelineView.getState().resetZoom(),
+      toggleFollow: () => useFollow.getState().toggle(),
       toggleSpectrum: () => {
         const id = useSession.getState().selectedTrackId;
         if (id) useClipViewMode.getState().toggle(id);
@@ -184,8 +187,19 @@ export function Workspace() {
       e.preventDefault();
       actions.current[sc.id]?.();
     };
+    // UX-01: lembra se o foco veio do mouse ou do teclado (captura: antes dos componentes)
+    const onPointer = (e: PointerEvent) => notePointerDown(e.target);
+    const onNav = (e: KeyboardEvent) => {
+      if (e.key === "Tab" || e.key.startsWith("Arrow")) noteKeyboardNavigation();
+    };
+    window.addEventListener("pointerdown", onPointer, true);
+    window.addEventListener("keydown", onNav, true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("pointerdown", onPointer, true);
+      window.removeEventListener("keydown", onNav, true);
+      window.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   // arrastar arquivos de áudio do sistema para a janela importa na faixa selecionada (ou em faixas novas)
@@ -226,6 +240,7 @@ export function Workspace() {
     openPanels,
     statusBar,
     tooltips: tooltipsOn,
+    follow: followOn,
     metronome: session.recording.metronome.enabled,
     loop: session.recording.loopRange !== null,
     hasSelectedTrack: Boolean(selectedTrack),

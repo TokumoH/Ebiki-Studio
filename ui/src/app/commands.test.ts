@@ -22,6 +22,7 @@ const ctx: MenuContext = {
   openPanels: [],
   statusBar: true,
   tooltips: true,
+  follow: true,
   metronome: false,
   loop: false,
   hasSelectedTrack: true,

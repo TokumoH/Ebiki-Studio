@@ -47,6 +47,8 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | [format.ts](format.ts) | Formatação de valores musicais e de áudio para exibição. |
 | [glossary.ts](glossary.ts) | Glossário das legendas ao passar o mouse (mockup 9): um texto curto por setor, efeito, parâmetro e |
 | [live.ts](live.ts) | Telemetria do núcleo (posição e medidores, ~30 Hz). |
+| [follow.ts](follow.ts) | Seguir reprodução (timeline, transporte e menu Exibir): `followScrollLeft` vira a página quando a linha sai da vista; liga/desliga lembrado, pausa ao rolar à mão |
+| [follow.test.ts](follow.test.ts) | Testes de `followScrollLeft`, `isRolling` e do estado liga/desliga/pausa |
 | [loop.ts](loop.ts) | Loop (compartilhado pelo transporte e pelo arranjo — por isso fica em core): liga/desliga lembrando |
 | [session.ts](session.ts) | Estado de aplicação: projeção da sessão vinda do núcleo (fonte da verdade continua no Rust). |
 | [theme.ts](theme.ts) | Tema claro/escuro: estado, preferência guardada e aplicação no documento. |

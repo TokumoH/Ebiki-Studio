@@ -8,12 +8,15 @@ import { Button, Toggle } from "../../shared/components";
 import { loopLabel } from "../../core/bars";
 import { LoopPopover } from "./LoopPopover";
 import { toggleLoop, useLoopUi } from "../../core/loop";
+import { useFollow } from "../../core/follow";
 import "./transport.css";
 
 export function TransportBar() {
   const session = useSession((s) => s.session);
   const t = useLive((s) => s.transport);
   const loopOpen = useLoopUi((u) => u.open);
+  const follow = useFollow((f) => f.enabled);
+  const toggleFollow = useFollow((f) => f.toggle);
   const setLoopOpen = useLoopUi((u) => u.setOpen);
   const loopMenuBtn = useRef<HTMLButtonElement>(null);
   if (!session) return null;
@@ -70,6 +73,9 @@ export function TransportBar() {
         </button>
         {loopOpen ? <LoopPopover session={session} anchor={loopMenuBtn.current} /> : null}
       </span>
+      <Toggle pressed={follow} onChange={() => toggleFollow()} aria-label="Seguir reprodução">
+        ⇥ Seguir
+      </Toggle>
       {state === "countin" ? <span className="badge-rec">Contagem…</span> : state === "recording" ? <span className="badge-rec">● Gravando</span> : null}
     </div>
   );

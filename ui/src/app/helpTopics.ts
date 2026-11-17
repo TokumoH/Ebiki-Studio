@@ -23,6 +23,7 @@ export const HELP_TOPICS: HelpTopic[] = [
       "A logo no canto superior abre o essencial: salvar, exportar, configurações de áudio, legendas, atualizações e ajuda.",
       "Arquivo › Configurações de áudio: escolha entrada, saída e buffer. Sem dispositivo, o app funciona em modo silencioso.",
       "Importe áudios com Arquivo › Importar (Ctrl+I) ou arrastando arquivos para a janela.",
+      "Ao tocar, o Arranjo segue a linha de reprodução e vira a página quando ela sai da tela. Desligue em ⇥ Seguir (F) ou Exibir › Seguir reprodução; rolar à mão pausa até a linha voltar a aparecer.",
       "Salve com Ctrl+S. O autosave guarda uma cópia a cada 2 minutos e oferece recuperação se o app fechar sem salvar.",
       "Dúvida sobre um botão, efeito ou parâmetro? Pare o mouse em cima dele: a legenda explica (desligue em Exibir › Legendas).",
     ],
