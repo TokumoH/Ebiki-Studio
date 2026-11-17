@@ -62,11 +62,12 @@ export function TransportBar() {
         </span>
       </div>
       <Toggle pressed={rec.metronome.enabled} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, enabled: v }))} title="Metrônomo (C)" aria-label="Metrônomo">
-        Metrônomo
+        <span aria-hidden="true">♩</span>
+        <span className="tb-label"> Metrônomo</span>
       </Toggle>
       <span className={`loop-group${rec.loopRange ? " loop-group--on" : ""}`}>
         <Toggle pressed={rec.loopRange !== null} onChange={() => void toggleLoop()} aria-label="Loop">
-          ⟲ Loop{rec.loopRange ? ` · ${loopLabel(session.tempo, rec.loopRange)}` : ""}
+          ⟲ Loop{rec.loopRange ? <span className="tb-label">{` · ${loopLabel(session.tempo, rec.loopRange)}`}</span> : null}
         </Toggle>
         <button ref={loopMenuBtn} type="button" className="btn btn--sm loop-more" aria-label="Opções de loop" aria-haspopup="dialog" aria-expanded={loopOpen} onClick={() => setLoopOpen(!loopOpen)}>
           ▾
@@ -74,7 +75,8 @@ export function TransportBar() {
         {loopOpen ? <LoopPopover session={session} anchor={loopMenuBtn.current} /> : null}
       </span>
       <Toggle pressed={follow} onChange={() => toggleFollow()} aria-label="Seguir reprodução">
-        ⇥ Seguir
+        <span aria-hidden="true">⇥</span>
+        <span className="tb-label"> Seguir</span>
       </Toggle>
       {state === "countin" ? <span className="badge-rec">Contagem…</span> : state === "recording" ? <span className="badge-rec">● Gravando</span> : null}
     </div>

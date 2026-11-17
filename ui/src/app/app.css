@@ -12,6 +12,11 @@
 .project-name { display: flex; align-items: center; min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--fg-muted); }
 .dirty { color: var(--accent); }
 .topbar .sep { width: 1px; height: 24px; background: var(--line); flex: none; }
+.topbar > .btn { flex-shrink: 0; }
+/* Importar/Exportar também estão no menu da logo, em Arquivo e nos atalhos (Ctrl+I / Ctrl+E) */
+@media (max-width: 900px) { .topbar .tb-secondary { display: none; } }
+/* o nome do projeto também aparece no menu da logo */
+@media (max-width: 720px) { .menubar-row .project-name { display: none; } }
 .statusbar { height: 24px; box-sizing: border-box; display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-3); border-top: 1px solid var(--line); background: var(--bg-raised); font-size: var(--text-xs); color: var(--fg-muted); white-space: nowrap; overflow: hidden; }
 .statusbar .warn { color: var(--warn); }
 .dock { height: 100%; }

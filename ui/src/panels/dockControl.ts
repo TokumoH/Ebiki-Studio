@@ -70,6 +70,15 @@ export function togglePanel(id: string): boolean {
   return dock?.getPanel(id) ? closePanel(id) : openPanel(id);
 }
 
+/**
+ * Altura inicial do grupo de baixo (UX-03): metade da área dos painéis, entre 120 e 330 px — o Arranjo
+ * continua com a maior parte da tela em janelas baixas ou com zoom alto.
+ */
+export function bottomDockHeight(dockHeight: number): number {
+  if (!(dockHeight > 0)) return 330;
+  return Math.round(Math.min(330, Math.max(120, dockHeight * 0.5)));
+}
+
 /** Monta o layout padrão: painéis principais em cima, os demais em abas embaixo. */
 export function buildDefaultLayout(api: DockviewApi) {
   const main = PANEL_CATALOG.filter((p) => p.area === "main");
@@ -85,7 +94,7 @@ export function buildDefaultLayout(api: DockviewApi) {
       inactive: i > 0,
     });
   });
-  api.getPanel(bottom[0]!.id)?.group?.api.setSize({ height: 330 });
+  api.getPanel(bottom[0]!.id)?.group?.api.setSize({ height: bottomDockHeight(api.height) });
 }
 
 /** Volta ao layout padrão (menu Exibir › Restaurar layout padrão). */

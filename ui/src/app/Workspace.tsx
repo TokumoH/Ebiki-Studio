@@ -281,10 +281,10 @@ export function Workspace() {
           <span className="sep" />
           <TransportBar />
           <span style={{ flex: 1 }} />
-          <Button size="sm" onClick={() => void importAudio(useSession.getState().selectedTrackId)} title="Importar áudio (Ctrl+I)">
+          <Button size="sm" className="tb-secondary" onClick={() => void importAudio(useSession.getState().selectedTrackId)} title="Importar áudio (Ctrl+I)">
             Importar
           </Button>
-          <Button size="sm" onClick={() => setDialog("export")} title="Exportar (Ctrl+E)">
+          <Button size="sm" className="tb-secondary" onClick={() => setDialog("export")} title="Exportar (Ctrl+E)">
             Exportar
           </Button>
           <Button size="sm" variant="primary" onClick={() => void run(() => api.projectSave(), { success: "Projeto salvo." })} title="Salvar (Ctrl+S)">

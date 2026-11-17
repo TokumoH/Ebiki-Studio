@@ -1,4 +1,9 @@
 .transport { display: flex; align-items: center; gap: var(--space-1); min-width: 0; flex-wrap: nowrap; }
+/* UX-02: em janela estreita (ou zoom alto) nada encolhe até sumir; os rótulos viram só ícone */
+.transport > *, .loop-group > * { flex-shrink: 0; }
+.transport .btn, .transport-display { white-space: nowrap; }
+@media (max-width: 1100px) { .transport .tb-label { display: none; } }
+@media (max-width: 760px) { .transport-display[data-tip="transport.tempo"] { display: none; } }
 .transport-display { display: flex; flex-direction: column; align-items: flex-start; padding: 0 var(--space-3); border-left: 1px solid var(--line); line-height: 1.1; font-size: var(--text-xs); color: var(--fg-muted); }
 .transport-display .big { font-size: var(--text-lg); color: var(--fg); white-space: nowrap; }
 .badge-rec { color: var(--rec); font-weight: 600; margin-left: var(--space-2); animation: blink 1s steps(2) infinite; white-space: nowrap; }
@@ -6,7 +11,7 @@
 /* loop: botão + opções */
 .loop-group { position: relative; display: inline-flex; }
 .loop-group > .btn:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.loop-more { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; padding: 0 6px; }
+.loop-more { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 0; padding: 0 6px; min-width: 24px; }
 .loop-group--on .loop-more { color: var(--accent); }
 .loop-popover { position: fixed; z-index: var(--z-menu); width: 330px; background: var(--panel-2); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: 0 18px 40px rgb(0 0 0 / 0.5); padding: var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--text-sm); }
 .loop-options { display: flex; flex-direction: column; gap: 8px; }

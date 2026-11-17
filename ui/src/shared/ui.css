@@ -50,7 +50,7 @@
 .dialog {
   width: min(560px, calc(100vw - 32px));
   max-height: calc(100vh - 32px);
-  overflow: auto;
+  overflow: hidden; /* UX-07: só o corpo rola; título e botões ficam sempre à vista */
   background: var(--panel);
   border: 1px solid var(--line-strong);
   border-radius: var(--radius);
@@ -58,9 +58,9 @@
   display: flex;
   flex-direction: column;
 }
-.dialog header { padding: var(--space-4); border-bottom: 1px solid var(--line); font-size: var(--text-lg); font-weight: 600; }
-.dialog .dialog-body { padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
-.dialog footer { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: var(--space-2); }
+.dialog header { flex: none; padding: var(--space-4); border-bottom: 1px solid var(--line); font-size: var(--text-lg); font-weight: 600; }
+.dialog .dialog-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.dialog footer { flex: none; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: var(--space-2); }
 
 .toasts { position: fixed; right: var(--space-4); bottom: 40px; display: flex; flex-direction: column; gap: var(--space-2); z-index: var(--z-toast); max-width: min(420px, calc(100vw - 32px)); }
 .toast { background: var(--panel); border: 1px solid var(--line-strong); border-left: 3px solid var(--fg-muted); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); box-shadow: var(--shadow); display: flex; gap: var(--space-2); align-items: start; }

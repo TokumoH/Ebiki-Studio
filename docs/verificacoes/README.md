@@ -57,6 +57,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-11-03-release-v0-3-0.md](VER-2026-11-11-03-release-v0-3-0.md) | Versão 0.3.0 (versão e notas da release) |
 | [VER-2026-11-16-01-varredura-5-ux.md](VER-2026-11-16-01-varredura-5-ux.md) | Varredura 5 (UX): diagnósticos e sugestões aguardando aprovação |
 | [VER-2026-11-16-03-seguir-reproducao-e-espaco.md](VER-2026-11-16-03-seguir-reproducao-e-espaco.md) | Seguir reprodução (S2) e Espaço após clique (UX-01) |
+| [VER-2026-11-17-01-ux-barra-dock-dialogos.md](VER-2026-11-17-01-ux-barra-dock-dialogos.md) | Barra superior, dock e diálogos em telas pequenas (UX-02, UX-03, UX-07) |
 
 ## Lógica
 
