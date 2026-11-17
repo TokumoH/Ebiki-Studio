@@ -43,7 +43,7 @@ test("sem versão nova e sem internet: mensagens claras, nada é verificado sozi
   const dialog = page.getByRole("dialog", { name: "Atualizações" });
   await expect(dialog).toContainText("Você está na versão mais recente");
   await page.evaluate(() => localStorage.setItem("ebiki.mock.update", "offline"));
-  await dialog.getByRole("button", { name: "Fechar" }).click();
+  await dialog.getByRole("button", { name: "Fechar", exact: true }).click();
   await checkFromMenu(page);
   await expect(dialog).toContainText("Sem conexão com a internet");
 });

@@ -130,7 +130,7 @@ test("bases: filtros, SoundFont e sem estouro em 1280×720", async ({ page }) =>
   await expect(sf.getByLabel("Estado do sintetizador")).toContainText("SoundFont: Banco simulado");
   await sf.getByRole("button", { name: "Usar sintetizador simples" }).click();
   await expect(sf.getByLabel("Estado do sintetizador")).toContainText("Sintetizador simples");
-  await sf.getByRole("button", { name: "Fechar" }).click();
+  await sf.getByRole("button", { name: "Fechar", exact: true }).click();
   for (const tab of ["Harmonia", "Bases"]) {
     await openTab(page, tab);
     await noHorizontalOverflow(page);

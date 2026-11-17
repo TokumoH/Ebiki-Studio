@@ -109,3 +109,36 @@ test("menu da logo: cabeçalho do projeto e atalhos para exportar e configuraç�
   await m.getByRole("menuitem", { name: "Configurações de áudio…" }).click();
   await expect(page.getByRole("dialog", { name: "Configurações de áudio" })).toBeVisible();
 });
+
+test("tutorial: Enter avança e os atalhos do app não disparam por baixo (UX-11)", async ({ page }) => {
+  await newProject(page, "TourTeclas");
+  await menu(page, "Ajuda").click();
+  await page.getByRole("menuitem", { name: "Tutorial de início" }).click();
+  const card = (n: number) => page.getByRole("dialog", { name: `Tutorial: passo ${n} de 7` });
+  await expect(card(1)).toBeVisible();
+  await page.getByRole("dialog", { name: /Tutorial/ }).focus();
+  await page.keyboard.press("Enter");
+  await expect(card(2)).toBeVisible();
+  await page.keyboard.press("Space");
+  await page.keyboard.press("r");
+  await page.waitForTimeout(400);
+  await expect(page.getByRole("button", { name: "Tocar", exact: true })).toHaveCount(1); // não começou a tocar
+  await expect(page.locator(".badge-rec")).toHaveCount(0);
+  await expect(card(2)).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByTestId("tour")).toHaveCount(0);
+});
+
+test("diálogo prende o foco: Tab não sai para a tela de trás (UX-06)", async ({ page }) => {
+  await newProject(page, "Foco");
+  await page.locator("body").click({ position: { x: 5, y: 300 } });
+  await page.keyboard.press("Control+e");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  for (let i = 0; i < 25; i++) {
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => !!document.activeElement?.closest("[role=dialog]"))).toBe(true);
+  }
+  await dialog.getByRole("button", { name: "Fechar diálogo" }).click();
+  await expect(dialog).toHaveCount(0);
+});

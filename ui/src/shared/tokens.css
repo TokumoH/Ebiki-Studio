@@ -17,7 +17,7 @@
   --line-strong: #40395c;
   --fg: #eee7f2;
   --fg-muted: #a7a1bb;
-  --fg-faint: #8a83a2;
+  --fg-faint: #958eac; /* UX-10: ≥ 4,5:1 também sobre --panel-2 */
   --accent: #f4a3b6;
   --accent-fg: #2b0f18;
   --accent-soft: #3e2431;
@@ -66,7 +66,7 @@
   --line-strong: #c6bbad;
   --fg: #1d2430;
   --fg-muted: #566173;
-  --fg-faint: #7d8796;
+  --fg-faint: #57606f; /* UX-10: texto AA (era #7d8796, 3,2:1) */
   --accent: #ab4e25;
   --accent-fg: #ffffff;
   --accent-soft: #f5dfd1;
@@ -74,8 +74,8 @@
   --rec: #d93a3f;
   --solo: #d9a92a;
   --mute: #3f6fd8;
-  --ok: #2f9e6c;
-  --warn: #c27c16;
+  --ok: #1a6e49; /* UX-10: texto AA (era #2f9e6c, 2,9:1); medidores seguem em --meter-low */
+  --warn: #7d5000; /* UX-10: texto AA (era #c27c16, 3,0:1) */
   --crit: #d94848;
   --meter-low: #2f9e6c;
   --meter-mid: #c9a227;

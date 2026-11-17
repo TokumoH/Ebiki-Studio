@@ -163,10 +163,19 @@ export function Tutorial() {
     if (!step) return;
     card.current?.focus();
     const onKey = (e: KeyboardEvent) => {
+      const onButton = e.target instanceof HTMLButtonElement && (card.current?.contains(e.target) ?? false);
       if (e.key === "Escape") finish();
-      else if (e.key === "ArrowRight") (step < TOUR_STEPS.length ? start(step + 1) : finish());
+      else if (e.key === "ArrowRight" || (e.key === "Enter" && !onButton)) (step < TOUR_STEPS.length ? start(step + 1) : finish());
       else if (e.key === "ArrowLeft" && step > 1) start(step - 1);
-      else return;
+      else {
+        // UX-11: com o tutorial aberto, os atalhos do app (Espaço, R, Delete…) não disparam por baixo;
+        // Tab e Espaço/Enter nos botões do cartão seguem normais
+        if (e.key !== "Tab") {
+          e.stopImmediatePropagation();
+          if (!onButton) e.preventDefault();
+        }
+        return;
+      }
       e.preventDefault();
       e.stopImmediatePropagation();
     };

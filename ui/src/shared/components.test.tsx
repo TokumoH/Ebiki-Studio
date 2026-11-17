@@ -158,3 +158,32 @@ describe("InlineRename", () => {
     expect(commits).toEqual([]);
   });
 });
+
+describe("Dialog: foco preso e botão fechar (UX-06)", () => {
+  it("Tab no último volta ao primeiro; Shift+Tab no primeiro vai ao último; ✕ fecha", () => {
+    const onClose = vi.fn();
+    render(
+      <>
+        <button>atrás</button>
+        <Dialog title="Prender" open onClose={onClose} footer={<button>OK</button>}>
+          <input aria-label="campo" />
+        </Dialog>
+      </>,
+    );
+    const campo = screen.getByLabelText("campo");
+    expect(document.activeElement).toBe(campo);
+    const close = screen.getByRole("button", { name: "Fechar diálogo" });
+    const ok = screen.getByRole("button", { name: "OK" });
+    // ordem: ✕ (cabeçalho), campo, OK
+    ok.focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(close);
+    fireEvent.keyDown(window, { key: "Tab", shiftKey: true });
+    expect(document.activeElement).toBe(ok);
+    screen.getByRole("button", { name: "atrás" }).focus();
+    fireEvent.keyDown(window, { key: "Tab" });
+    expect(document.activeElement).toBe(close);
+    fireEvent.click(close);
+    expect(onClose).toHaveBeenCalled();
+  });
+});

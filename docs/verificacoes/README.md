@@ -59,6 +59,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-16-03-seguir-reproducao-e-espaco.md](VER-2026-11-16-03-seguir-reproducao-e-espaco.md) | Seguir reprodução (S2) e Espaço após clique (UX-01) |
 | [VER-2026-11-17-01-ux-barra-dock-dialogos.md](VER-2026-11-17-01-ux-barra-dock-dialogos.md) | Barra superior, dock e diálogos em telas pequenas (UX-02, UX-03, UX-07) |
 | [VER-2026-11-17-02-ux-primeiro-uso-e-avisos.md](VER-2026-11-17-02-ux-primeiro-uso-e-avisos.md) | Primeiro uso e avisos (UX-09, UX-12, UX-05, UX-17, UX-21) |
+| [VER-2026-11-17-03-ux-acessibilidade.md](VER-2026-11-17-03-ux-acessibilidade.md) | Acessibilidade: foco nos diálogos, contraste AA, tutorial (UX-06, UX-10, UX-11) |
 
 ## Lógica
 

@@ -50,6 +50,14 @@ export function Tabs<T extends string>({ value, tabs, onChange, label }: { value
   );
 }
 
+const FOCUSABLE = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex='-1'])";
+
+/** Elementos focáveis visíveis dentro de `root`, na ordem do documento. */
+function focusables(root: HTMLElement): HTMLElement[] {
+  // checkVisibility: pula campos escondidos (display:none, <details> fechado); sem suporte (jsdom), conta todos
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => el.checkVisibility?.() ?? true);
+}
+
 export function Dialog({ title, open, onClose, children, footer, size }: { title: string; open: boolean; onClose: () => void; children: ReactNode; footer?: ReactNode; size?: "lg" }) {
   const id = useId();
   const ref = useRef<HTMLDivElement>(null);
@@ -61,11 +69,28 @@ export function Dialog({ title, open, onClose, children, footer, size }: { title
   useEffect(() => {
     if (!open) return;
     const prev = document.activeElement as HTMLElement | null;
-    ref.current?.querySelector<HTMLElement>("input, select, button, [tabindex]")?.focus();
+    // primeiro campo do conteúdo (o ✕ do cabeçalho fica por último na ordem natural do Tab)
+    const content = ref.current ? focusables(ref.current).filter((el) => !el.classList.contains("dialog-close")) : [];
+    (content[0] ?? ref.current?.querySelector<HTMLElement>(".dialog-close"))?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.stopPropagation();
         closeRef.current();
+      } else if (e.key === "Tab" && ref.current) {
+        // UX-06: o foco circula dentro do diálogo (não vai para a tela atrás do fundo escuro)
+        const items = focusables(ref.current);
+        if (items.length === 0) return;
+        const first = items[0]!;
+        const last = items[items.length - 1]!;
+        const active = document.activeElement;
+        const inside = ref.current.contains(active);
+        if (e.shiftKey && (active === first || !inside)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (active === last || !inside)) {
+          e.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener("keydown", onKey, true);
@@ -82,7 +107,12 @@ export function Dialog({ title, open, onClose, children, footer, size }: { title
   return (
     <div className="dialog-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={size === "lg" ? "dialog dialog--lg" : "dialog"} role="dialog" aria-modal="true" aria-labelledby={id} ref={ref}>
-        <header id={id}>{title}</header>
+        <header>
+          <span id={id}>{title}</span>
+          <button type="button" className="dialog-close" aria-label="Fechar diálogo" title="Fechar (Esc)" onClick={() => closeRef.current()}>
+            ✕
+          </button>
+        </header>
         <div className="dialog-body">{children}</div>
         {footer ? <footer>{footer}</footer> : null}
       </div>

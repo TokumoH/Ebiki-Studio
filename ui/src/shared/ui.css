@@ -58,8 +58,10 @@
   display: flex;
   flex-direction: column;
 }
-.dialog header { flex: none; padding: var(--space-4); border-bottom: 1px solid var(--line); font-size: var(--text-lg); font-weight: 600; }
+.dialog header { flex: none; display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); padding: var(--space-4); border-bottom: 1px solid var(--line); font-size: var(--text-lg); font-weight: 600; }
 .dialog .dialog-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: var(--space-4); display: flex; flex-direction: column; gap: var(--space-3); }
+.dialog-close { flex: none; width: 28px; height: 28px; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--fg-muted); font-size: var(--text-md, 14px); cursor: pointer; }
+.dialog-close:hover { color: var(--fg); border-color: var(--line-strong); }
 .dialog footer { flex: none; padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: var(--space-2); }
 
 .toasts { position: fixed; right: var(--space-4); bottom: 40px; display: flex; flex-direction: column; gap: var(--space-2); z-index: var(--z-toast); max-width: min(420px, calc(100vw - 32px)); }

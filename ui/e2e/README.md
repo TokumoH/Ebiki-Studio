@@ -41,7 +41,7 @@ Testes independentes e por área são fáceis de rodar isoladamente (`npx playwr
 | [audio-settings.spec.ts](audio-settings.spec.ts) | 2 teste(s): configurações de áudio: o foco fica no seletor escolhido enquanto a telemetria chega; configurações  |
 | [composition.spec.ts](composition.spec.ts) | 5 teste(s): harmonia: tom + gênero → ouvir → inserir → desfazer; harmonia: próximo acorde monta sequência e inse |
 | [edit.spec.ts](edit.spec.ts) | Fase 3 — edição: fade pelo inspetor, dividir no cursor (S), menu de contexto e desfazer. |
-| [identity.spec.ts](identity.spec.ts) | 7 teste(s): tela de carregamento com a logo aparece e sai sozinha; menu fixo: Exibir troca o tema e Alt leva o t |
+| [identity.spec.ts](identity.spec.ts) | 9 teste(s): tela de carregamento com a logo aparece e sai sozinha; menu fixo: Exibir troca o tema e Alt leva o t; tutorial: Enter avança e atalhos não disparam por baixo (UX-11); diálogo prende o foco (UX-06) |
 | [layers.spec.ts](layers.spec.ts) | Camadas: diálogos e menus ficam acima dos divisores do dockview (antes um divisor cobria parte dos |
 | [follow.spec.ts](follow.spec.ts) | 3 teste(s): seguir reprodução vira a página; F desliga e rolar à mão pausa; UX-01 — Espaço toca depois de clicar num botão |
 | [first-record.spec.ts](first-record.spec.ts) | 3 teste(s): gravar sem microfone mostra um aviso só com atalho; com microfone arma a faixa selecionada e grava; metrônomo mostra o estado; barra de trabalhando |
