@@ -40,6 +40,8 @@ Ferramentas fora do código do produto, versionadas e reproduzíveis.
 | [adr_index.py](adr_index.py) | Regenera docs/adr/README.md a partir dos arquivos ADR (título e status). |
 | [brand_smooth_edges.py](brand_smooth_edges.py) | Suaviza apenas os contornos: cada conjunto de nível {alfa >= t} é suavizado e re-limiarizado. |
 | [check_readmes.py](check_readmes.py) | Confere a regra de READMEs do CLAUDE.md (§6): todo diretório tem README ou é coberto pelo README do módulo. |
+| [release_latest_json.py](release_latest_json.py) | Monta o `latest.json` do atualizador a partir dos arquivos da release, uma vez, no job final (todas as plataformas ou falha). |
+| [test_release_latest_json.py](test_release_latest_json.py) | Testes: reproduz o `latest.json` da v0.3.0 e recusa release incompleta (caso da v0.4.0). |
 | [ci-local.sh](ci-local.sh) | Executa localmente as mesmas verificações da CI (.github/workflows/ci.yml). |
 
 ## Lógica

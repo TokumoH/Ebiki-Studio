@@ -26,6 +26,7 @@ fi
 
 if [[ "$what" == all || "$what" == docs ]]; then
   step "READMEs (CLAUDE.md §6)"; python3 scripts/check_readmes.py
+  step "latest.json da release"; python3 scripts/test_release_latest_json.py
 fi
 
 if [[ "$what" == all || "$what" == ui ]]; then
