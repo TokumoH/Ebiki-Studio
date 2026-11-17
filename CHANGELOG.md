@@ -3,13 +3,6 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
-
-### Novidades
-
-- **Mostrar na pasta** no aviso de exportação: abre o gerenciador de arquivos com o arquivo exportado
-  selecionado (só arquivos que o próprio app exportou — ADR-0037).
-
 ## [0.4.0] - 2026-11-17
 
 Microfone e fone separados (com ganho e teste de som), a vista segue a reprodução e uma rodada grande de
@@ -27,7 +20,8 @@ melhorias de uso.
 - **Seguir reprodução:** o Arranjo vira a página quando a linha sai da tela. Botão ⇥ Seguir, tecla F
   ou *Exibir › Seguir reprodução*. Rolar à mão pausa até a linha voltar a aparecer.
 - **BPM editável** no transporte (clique no andamento).
-- **Exportar o trecho do loop**; o aviso mostra onde o arquivo foi salvo.
+- **Exportar o trecho do loop**; o aviso mostra onde o arquivo foi salvo e tem **Mostrar na pasta**
+  (abre o gerenciador de arquivos com o arquivo selecionado; só arquivos que o próprio app exportou).
 - **Gravar sem faixa armada:** R arma a faixa selecionada; sem microfone, um aviso leva ao painel Gravação.
 - **Editor de atalhos:** avisa tecla repetida, *Restaurar padrões*, Espaço/⌘ em PT-BR. Novos atalhos:
   End (fim), Ctrl+N, Ctrl+O e Delete (excluir clipe) em qualquer painel.

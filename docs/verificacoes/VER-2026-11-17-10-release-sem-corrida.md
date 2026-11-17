@@ -8,7 +8,7 @@
 | Tipo | correção de CI/release |
 | Data | 2026-11-17 |
 | Usuário responsável | TokumoH ("publique a v0.4.0") |
-| Status | implementado (conserto da release publicada depende da decisão do usuário) |
+| Status | implementado; v0.4.0 refeita com `replace_existing` (decisão do usuário em 2026-11-17: "Refazer a v0.4.0") |
 | Commits | este commit |
 | Arquivos | `.github/workflows/release.yml`, `.github/workflows/ci.yml`, `scripts/release_latest_json.py` (novo), `scripts/test_release_latest_json.py` (novo), `scripts/ci-local.sh`, `scripts/README.md` |
 
@@ -98,4 +98,4 @@ falha listando Windows e macOS.
   seguem a API REST documentada (criar rascunho, baixar asset por id, enviar para `uploads.github.com`, PATCH para
   publicar).
 - `replace_existing` apaga releases e a tag. Só é usado com pedido explícito, no disparo manual.
-- A release v0.4.0 publicada continua quebrada até ser substituída (decisão do usuário).
+- A v0.4.0 refeita inclui o "Mostrar na pasta" (VER-2026-11-17-09), que entrou nas notas da 0.4.0 no lugar de "Não lançado".
