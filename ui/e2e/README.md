@@ -44,6 +44,7 @@ Testes independentes e por área são fáceis de rodar isoladamente (`npx playwr
 | [identity.spec.ts](identity.spec.ts) | 7 teste(s): tela de carregamento com a logo aparece e sai sozinha; menu fixo: Exibir troca o tema e Alt leva o t |
 | [layers.spec.ts](layers.spec.ts) | Camadas: diálogos e menus ficam acima dos divisores do dockview (antes um divisor cobria parte dos |
 | [follow.spec.ts](follow.spec.ts) | 3 teste(s): seguir reprodução vira a página; F desliga e rolar à mão pausa; UX-01 — Espaço toca depois de clicar num botão |
+| [first-record.spec.ts](first-record.spec.ts) | 3 teste(s): gravar sem microfone mostra um aviso só com atalho; com microfone arma a faixa selecionada e grava; metrônomo mostra o estado; barra de trabalhando |
 | [loop.spec.ts](loop.spec.ts) | 4 teste(s): opções de loop: compassos X até Y, projeto inteiro, desligar e religar o mesmo trecho; sem clipes, ' |
 | [music.spec.ts](music.spec.ts) | 5 teste(s): partitura: criar e entrar notas pelo teclado, render alphaTab, validar; letra: colar texto, sincroni |
 | [overflow.spec.ts](overflow.spec.ts) | derivado do catálogo: painéis novos entram na verificação automaticamente |

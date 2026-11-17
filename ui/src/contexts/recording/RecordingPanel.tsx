@@ -97,8 +97,8 @@ export function RecordingPanel() {
       <section className="recording-side">
         <h3 className="has-tip" data-tip="transport.metronome">Metrônomo</h3>
         <div className="row">
-          <Toggle pressed={rec.metronome.enabled} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, enabled: v }))} data-tip="transport.metronome">
-            Ligado
+          <Toggle pressed={rec.metronome.enabled} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, enabled: v }))} data-tip="transport.metronome" aria-label="Metrônomo ligado">
+            {rec.metronome.enabled ? "Ligado" : "Desligado"}
           </Toggle>
           <Toggle pressed={rec.metronome.accentFirstBeat} onChange={(v) => void run(() => api.recordingMetronome({ ...rec.metronome, accentFirstBeat: v }))} data-tip="rec.accent">
             Acentuar 1º tempo

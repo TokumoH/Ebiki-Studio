@@ -62,6 +62,8 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | [menuModel.ts](menuModel.ts) | Modelo do menu principal: função pura do estado da sessão + ações, para a MenuBar desenhar. |
 | [shortcuts.test.ts](shortcuts.test.ts) | Testes: normaliza combinações; não dispara atalho ao digitar |
 | [shortcuts.ts](shortcuts.ts) | Atalhos de teclado padrão de DAW. Ignorados quando o foco está em campos de texto. |
+| [recordPlan.ts](recordPlan.ts) | O que fazer ao apertar Gravar: gravar, armar a faixa selecionada ou explicar o que falta (UX-09) |
+| [recordPlan.test.ts](recordPlan.test.ts) | Testes de `recordPlan` |
 | [splash.ts](splash.ts) | Controle da tela de carregamento definida em index.html (fica fora do React para aparecer já). |
 | [tooltips.test.tsx](tooltips.test.tsx) | chave inexistente não aparece crua para o usuário |
 | [tooltips.ts](tooltips.ts) | Resolvedor das legendas do app: liga a camada genérica (shared/TooltipLayer) ao glossário (core). |

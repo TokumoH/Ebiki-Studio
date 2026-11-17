@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { api } from "../ipc/api";
 import { transport } from "../ipc/transport";
 import type { RecentProject } from "../ipc/types";
-import { errorMessage, run } from "../core/session";
+import { errorMessage, run, useSession } from "../core/session";
 import { notify } from "../core/toasts";
 import { useTheme } from "../core/theme";
 import { Button, Field, Segmented, Dialog } from "../shared/components";
 
 /** Tela inicial: novo projeto, abrir e recentes (com verificação de recuperação de autosave). */
 export function StartScreen() {
+  const busy = useSession((s) => s.busy);
   const [name, setName] = useState("Minha música");
   const [dir, setDir] = useState("");
   const [rate, setRate] = useState(48000);
@@ -49,7 +50,7 @@ export function StartScreen() {
   };
 
   return (
-    <div className="start">
+    <div className="start" aria-busy={busy}>
       <header>
         <div className="brand">
           <span className="brand-mark" role="img" aria-label="Ebiki Studio" /> Ebiki Studio
@@ -84,9 +85,14 @@ export function StartScreen() {
             <Field label="Resolução">
               <Segmented label="Resolução" value={bits} onChange={setBits} options={[{ value: 16, label: "16 bits" }, { value: 24, label: "24 bits" }, { value: 32, label: "32 float" }]} />
             </Field>
-            <Button variant="primary" type="submit" disabled={!!nameError || !dir}>
-              Criar projeto
+            <Button variant="primary" type="submit" disabled={!!nameError || !dir || busy} aria-describedby={!dir || nameError ? "create-why" : undefined}>
+              {busy ? "Abrindo…" : "Criar projeto"}
             </Button>
+            {!dir || nameError ? (
+              <p id="create-why" className="hint" style={{ margin: 0 }}>
+                {nameError ? "Corrija o nome do projeto para continuar." : "Escolha a pasta onde o projeto será criado (botão Escolher…)."}
+              </p>
+            ) : null}
           </form>
         </section>
         <section className="card" aria-labelledby="recent-title">
@@ -94,7 +100,7 @@ export function StartScreen() {
             <h2 id="recent-title" style={{ margin: 0 }}>
               Recentes
             </h2>
-            <Button onClick={() => void pickProject()}>Abrir projeto…</Button>
+            <Button disabled={busy} onClick={() => void pickProject()}>Abrir projeto…</Button>
           </div>
           {recent.length === 0 ? (
             <p style={{ color: "var(--fg-muted)" }}>Nenhum projeto aberto recentemente.</p>

@@ -52,7 +52,8 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | [loop.ts](loop.ts) | Loop (compartilhado pelo transporte e pelo arranjo — por isso fica em core): liga/desliga lembrando |
 | [session.ts](session.ts) | Estado de aplicação: projeção da sessão vinda do núcleo (fonte da verdade continua no Rust). |
 | [theme.ts](theme.ts) | Tema claro/escuro: estado, preferência guardada e aplicação no documento. |
-| [toasts.ts](toasts.ts) | Estado dos avisos temporários (notify.success / notify.error). |
+| [toasts.ts](toasts.ts) | Estado dos avisos temporários (notify.success / notify.error), com ação opcional; aviso igual não empilha. |
+| [toasts.test.ts](toasts.test.ts) | Testes: aviso igual não empilha, ação no aviso, limite de 5 |
 
 ## Lógica
 

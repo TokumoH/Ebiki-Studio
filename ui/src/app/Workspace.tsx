@@ -27,6 +27,8 @@ import { ShortcutsDialog } from "./ShortcutsDialog";
 import { CloseProjectDialog, closeProject } from "./CloseProjectDialog";
 import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, noteKeyboardNavigation, notePointerDown, type Shortcut } from "./shortcuts";
 import { useFollow } from "../core/follow";
+import { recordPlan } from "./recordPlan";
+import { notify } from "../core/toasts";
 
 const AUDIO_EXT = ["wav", "wave", "aif", "aiff", "flac", "mp3", "ogg", "oga", "m4a", "aac", "mp4"];
 
@@ -52,6 +54,29 @@ async function toggleFullscreen() {
   } catch {
     /* sem suporte a tela cheia neste ambiente */
   }
+}
+
+/** Gravar/parar (R e ⏺): sem faixa armada, arma a selecionada ou explica o que falta (UX-09). */
+async function toggleRecord() {
+  const t = useLive.getState().transport;
+  if (t?.state === "recording" || t?.state === "countin") {
+    await run(() => api.stop(false));
+    return;
+  }
+  const st = useSession.getState();
+  const status = useAudio.getState().status;
+  const plan = recordPlan(st.session, st.selectedTrackId, status?.inputName ? (status.inputChannels ?? 0) : 0);
+  if (plan.kind === "setup") {
+    notify.error(plan.message, { label: "Abrir Gravação", run: () => openPanel("recording") });
+    return;
+  }
+  if (plan.kind === "arm") {
+    const tr = st.session!.tracks.find((x) => x.id === plan.trackId)!;
+    const ok = await run(() => api.recordingTrack({ trackId: tr.id, armed: true, input: tr.recording.input ?? { left: 0, right: null } }));
+    if (!ok) return;
+    notify.info(`“${plan.trackName}” armada para gravar (${tr.recording.input ? "entrada da faixa" : "Entrada 1"}).`);
+  }
+  await run(() => api.record(t?.tick ?? 0, (useSession.getState().session?.recording.metronome.countInBars ?? 0) > 0));
 }
 
 export function Workspace() {
@@ -102,10 +127,7 @@ export function Workspace() {
         void run(() => (st === "playing" || st === "recording" ? api.pause() : api.play()));
       },
       stopReturn: () => void run(() => api.stop(true)),
-      record: () => {
-        const t = useLive.getState().transport;
-        void run(() => (t?.state === "recording" || t?.state === "countin" ? api.stop(false) : api.record(t?.tick ?? 0, (useSession.getState().session?.recording.metronome.countInBars ?? 0) > 0)));
-      },
+      record: () => void toggleRecord(),
       undo: () => void run(() => api.undo()),
       redo: () => void run(() => api.redo()),
       redoAlt: () => void run(() => api.redo()),
@@ -281,16 +303,17 @@ export function Workspace() {
           <span className="sep" />
           <TransportBar />
           <span style={{ flex: 1 }} />
-          <Button size="sm" className="tb-secondary" onClick={() => void importAudio(useSession.getState().selectedTrackId)} title="Importar áudio (Ctrl+I)">
+          <Button size="sm" className="tb-secondary" disabled={busy} onClick={() => void importAudio(useSession.getState().selectedTrackId)} title="Importar áudio (Ctrl+I)">
             Importar
           </Button>
-          <Button size="sm" className="tb-secondary" onClick={() => setDialog("export")} title="Exportar (Ctrl+E)">
+          <Button size="sm" className="tb-secondary" disabled={busy} onClick={() => setDialog("export")} title="Exportar (Ctrl+E)">
             Exportar
           </Button>
-          <Button size="sm" variant="primary" onClick={() => void run(() => api.projectSave(), { success: "Projeto salvo." })} title="Salvar (Ctrl+S)">
+          <Button size="sm" variant="primary" disabled={busy} onClick={() => void run(() => api.projectSave(), { success: "Projeto salvo." })} title="Salvar (Ctrl+S)">
             Salvar
           </Button>
         </div>
+        {busy ? <div className="busy-bar" role="progressbar" aria-label="Trabalhando…" /> : null}
       </header>
       <DockLayout theme={theme} />
       {statusBar ? (
