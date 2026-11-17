@@ -112,3 +112,6 @@ kbd { font-family: var(--font-mono); font-size: var(--text-xs); padding: 1px 6px
 .update-footer { display: flex; align-items: center; gap: var(--space-2); width: 100%; flex-wrap: wrap; }
 .update-auto { display: flex; align-items: center; gap: 6px; font-size: var(--text-xs); color: var(--fg-muted); }
 .update-skip { background: transparent; border: 0; color: var(--fg-muted); text-decoration: underline; font: inherit; font-size: var(--text-sm); cursor: pointer; }
+
+/* UX-13: aviso de atalho repetido no editor de atalhos */
+.shortcut-conflict { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); margin-top: 4px; font-size: var(--text-xs); color: var(--warn); }

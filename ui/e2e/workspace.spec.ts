@@ -32,11 +32,11 @@ test("fluxo: criar → importar → mixar → desfazer → salvar", async ({ pag
   await fader.focus();
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("ArrowDown");
-  await expect(fader).toHaveAttribute("aria-valuetext", "-2.0 dB");
+  await expect(fader).toHaveAttribute("aria-valuetext", "-2,0 dB");
   await expect(page.getByText("●", { exact: false }).first()).toBeVisible();
 
   await page.getByRole("button", { name: "Desfazer" }).click();
-  await expect(fader).toHaveAttribute("aria-valuetext", "-1.0 dB");
+  await expect(fader).toHaveAttribute("aria-valuetext", "-1,0 dB");
 
   await page.getByRole("button", { name: "Solo voz" }).first().click();
   await expect(page.getByRole("button", { name: "Solo voz" }).first()).toHaveAttribute("aria-pressed", "true");

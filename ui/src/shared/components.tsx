@@ -277,7 +277,7 @@ export function Fader({ db: confirmedDb, onChange: emit, label, height = 160 }: 
       aria-valuemin={-144}
       aria-valuemax={12}
       aria-valuenow={db}
-      aria-valuetext={db <= -144 ? "-∞ dB" : `${db.toFixed(1)} dB`}
+      aria-valuetext={db <= -144 ? "-∞ dB" : `${db.toFixed(1).replace(".", ",")} dB`}
       onPointerDown={onPointerDown}
       onDoubleClick={() => onChange(0, true)}
       onKeyDown={(e) => {

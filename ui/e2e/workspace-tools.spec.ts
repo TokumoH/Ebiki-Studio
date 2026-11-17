@@ -124,3 +124,51 @@ test("atalho L cria loop de 4 compassos a partir do compasso do cursor", async (
   await page.keyboard.press("l");
   await expect(loop).toHaveCount(0);
 });
+
+test("atalhos: tecla repetida avisa e substitui; restaurar padrões; Espaço em PT-BR (UX-13)", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Atalhos");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  await page.locator("body").click({ position: { x: 5, y: 300 } });
+  await page.keyboard.press("Control+/");
+  const dialog = page.getByRole("dialog", { name: "Atalhos de teclado" });
+  await expect(dialog.getByRole("button", { name: "Alterar atalho: Tocar / pausar" })).toHaveText("Espaço");
+  await dialog.getByRole("button", { name: "Alterar atalho: Metrônomo" }).click();
+  await page.keyboard.press("l");
+  await expect(dialog.getByRole("alert")).toContainText("já é de “Loop”");
+  await dialog.getByRole("button", { name: "Substituir" }).click();
+  await expect(dialog.getByRole("button", { name: "Alterar atalho: Metrônomo" })).toHaveText("L");
+  await expect(dialog.getByRole("button", { name: "Alterar atalho: Loop" })).toHaveText("—");
+  await dialog.getByRole("button", { name: "Restaurar padrões" }).click();
+  await expect(dialog.getByRole("button", { name: "Alterar atalho: Loop" })).toHaveText("L");
+  await expect(dialog.getByRole("button", { name: "Alterar atalho: Metrônomo" })).toHaveText("C");
+});
+
+test("Delete exclui o clipe selecionado mesmo com o foco fora do Arranjo (UX-14)", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Excluir");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  await page.getByRole("button", { name: "Importar", exact: true }).click();
+  const before = await page.locator(".clip").count();
+  await page.locator(".clip").first().click();
+  // foco vai para outro painel (aba Mixer) e Delete continua valendo
+  await page.locator(".dv-tab").filter({ hasText: /^Mixer$/ }).first().click();
+  await page.keyboard.press("Delete");
+  await expect(page.locator(".clip")).toHaveCount(before - 1);
+  await expect(page.locator(".toasts").getByRole("alert").locator(".toast")).toHaveCount(0); // sem exclusão dupla
+});
+
+test("abas do dock em PT-BR: botão fechar diz 'Fechar Mixer' (UX-16)", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Dock");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  await expect(page.getByRole("button", { name: "Fechar Mixer" })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /^Close / })).toHaveCount(0);
+});

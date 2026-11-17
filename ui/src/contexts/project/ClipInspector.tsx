@@ -6,6 +6,7 @@ import { useLive } from "../../core/live";
 import { Button, EmptyState, Field, Segmented, Toggle } from "../../shared/components";
 import { canSplitAt, framesToMs, msToFrames, overlappingNeighbor } from "./clipEdit";
 import { crossfadeWithNeighbor, findClip, normalizeClip, setPolarity, setReversed, splitAtCursor } from "./clipActions";
+import { formatDecimal } from "../../core/format";
 
 const SHAPES: { value: FadeShape; label: string }[] = [
   { value: "linear", label: "Linear" },
@@ -56,7 +57,7 @@ function GainSlider({ clip }: { clip: Clip }) {
     }
   };
   return (
-    <Field label={`Ganho do clipe: ${db.toFixed(1)} dB`}>
+    <Field label={`Ganho do clipe: ${formatDecimal(db, 1)} dB`}>
       <input
         type="range"
         min={-24}
@@ -64,7 +65,7 @@ function GainSlider({ clip }: { clip: Clip }) {
         step={0.5}
         value={db}
         aria-label="Ganho do clipe"
-        aria-valuetext={`${db.toFixed(1)} dB`}
+        aria-valuetext={`${formatDecimal(db, 1)} dB`}
         onChange={(e) => {
           const v = Number(e.target.value);
           setDb(v);
@@ -107,7 +108,7 @@ export function ClipInspector() {
           {clip.sourceName}
         </h3>
         <p className="clip-inspector-meta">
-          {track.name} · {(clip.lengthFrames / sr).toFixed(2)} s
+          {track.name} · {formatDecimal(clip.lengthFrames / sr, 2)} s
         </p>
         <GainSlider clip={clip} />
         <div className="clip-inspector-row">

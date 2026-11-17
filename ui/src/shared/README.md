@@ -43,6 +43,8 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | [TooltipLayer.tsx](TooltipLayer.tsx) | Camada única de legendas (design system): escuta o documento, espera o ponteiro parar ~0,5 s sobre |
 | [components.test.tsx](components.test.tsx) | Testes: curva do fader; é monotônica e inversível |
 | [contrast.test.ts](contrast.test.ts) | Contraste AA (4,5:1) das cores de texto sobre os fundos dos dois temas, lido de `tokens.css` (UX-10) |
+| [keys.ts](keys.ts) | Exibição de atalhos em PT-BR: Espaço, setas, ⌘/⌥/⇧ no macOS (UX-13) |
+| [keys.test.ts](keys.test.ts) | Testes de `displayKeys` |
 | [components.tsx](components.tsx) | Design System: componentes visuais sem regra de negócio, reutilizáveis em qualquer contexto. |
 | [tokens.css](tokens.css) | Design tokens — tema escuro (padrão de estúdio) e claro. Cores só via tokens. |
 | [ui.css](ui.css) | Componentes do design system |

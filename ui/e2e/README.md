@@ -54,7 +54,7 @@ Testes independentes e por área são fáceis de rodar isoladamente (`npx playwr
 | [tooltips-coverage.spec.ts](tooltips-coverage.spec.ts) | Cobertura das legendas: todo controle visível em todos os painéis precisa ter explicação. |
 | [tooltips.spec.ts](tooltips.spec.ts) | 2 teste(s): legendas: aba do setor, parâmetro de efeito e botão com título; legendas podem ser desligadas em Exi |
 | [updates.spec.ts](updates.spec.ts) | 4 teste(s): Ajuda › Verificar atualizações: salva o projeto antes de instalar e reinicia; sem versão nova e sem  |
-| [workspace-tools.spec.ts](workspace-tools.spec.ts) | 5 teste(s): menu Janela lista os painéis e reabre um painel fechado pelo teclado; renomeia o projeto clicando no |
+| [workspace-tools.spec.ts](workspace-tools.spec.ts) | 8 teste(s): menu Janela lista os painéis e reabre um painel fechado pelo teclado; renomeia o projeto clicando no; editor de atalhos com conflito e restaurar (UX-13); Delete global (UX-14); abas do dock em PT-BR (UX-16) |
 | [workspace.spec.ts](workspace.spec.ts) | 6 teste(s): tela inicial valida o nome e não estoura em 1280×720; fluxo: criar → importar → mixar → desfazer → s |
 
 ## Lógica

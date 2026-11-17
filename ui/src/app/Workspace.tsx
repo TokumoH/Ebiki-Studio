@@ -29,6 +29,7 @@ import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, noteKeyboard
 import { useFollow } from "../core/follow";
 import { recordPlan } from "./recordPlan";
 import { notify } from "../core/toasts";
+import { formatDecimal } from "../core/format";
 
 const AUDIO_EXT = ["wav", "wave", "aif", "aiff", "flac", "mp3", "ogg", "oga", "m4a", "aac", "mp4"];
 
@@ -142,6 +143,10 @@ export function Workspace() {
       loop: () => void toggleLoop(),
       loopOptions: () => useLoopUi.getState().setOpen(true),
       home: () => void run(() => api.seek(0)),
+      end: () => {
+        const s = useSession.getState().session;
+        void run(() => api.seek(Math.max(0, ...(s?.tracks.flatMap((t) => t.clips.map((c) => c.endTick)) ?? [0]))));
+      },
       split: () => void splitAtCursor(),
       newProject: () => (useSession.getState().session?.history.dirty ? setDialog("close") : void closeProject()),
       openProject: () => void openOtherProject(() => setDialog("close")),
@@ -322,7 +327,7 @@ export function Workspace() {
           {audio ? (audio.mode === "device" ? `Saída: ${audio.outputName ?? "padrão"}` : <span className="warn">Sem dispositivo de áudio (modo silencioso)</span>) : "…"}
         </span>
         <span className="mono" data-tip="status.format">{session.project.sampleRate / 1000} kHz · {session.project.bitDepth} bits</span>
-        {audio?.bufferSize ? <span className="mono" data-tip="status.buffer">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs?.toFixed(1) ?? "?"} ms</span> : null}
+        {audio?.bufferSize ? <span className="mono" data-tip="status.buffer">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs !== undefined && audio.estimatedLatencyMs !== null ? formatDecimal(audio.estimatedLatencyMs, 1) : "?"} ms</span> : null}
         {xruns > 0 ? <span className="warn">{xruns} falha(s) de buffer — aumente o buffer</span> : null}
         <span style={{ flex: 1 }} />
         {updateNotice ? (

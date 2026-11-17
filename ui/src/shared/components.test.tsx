@@ -24,7 +24,7 @@ describe("Fader", () => {
     fireEvent.keyDown(s, { key: "ArrowDown", shiftKey: true });
     fireEvent.doubleClick(s);
     expect(calls).toEqual([-5, -5.1, 0]);
-    expect(s).toHaveAttribute("aria-valuetext", "0.0 dB");
+    expect(s).toHaveAttribute("aria-valuetext", "0,0 dB");
   });
 });
 

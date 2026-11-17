@@ -1,9 +1,14 @@
 // Formatação de valores musicais e de áudio para exibição.
 export const PPQ = 960;
 
+/** Número com vírgula decimal (PT-BR), sem separador de milhar — UX-15. */
+export function formatDecimal(n: number, digits = 1): string {
+  return n.toFixed(digits).replace(".", ",");
+}
+
 export function formatDb(db: number): string {
   if (db <= -144) return "−∞";
-  const s = db.toFixed(1);
+  const s = formatDecimal(db, 1);
   return db > 0 ? `+${s}` : s.replace("-", "−");
 }
 

@@ -1,4 +1,4 @@
-import { eventKeys, isActivationKey, isTypingTarget, loadShortcuts, noteKeyboardNavigation, notePointerDown, saveShortcut } from "./shortcuts";
+import { DEFAULT_SHORTCUTS, eventKeys, findConflict, isActivationKey, isTypingTarget, loadShortcuts, noteKeyboardNavigation, notePointerDown, resetShortcuts, saveShortcut } from "./shortcuts";
 
 it("normaliza combinações", () => {
   expect(eventKeys({ key: "z", ctrlKey: true, metaKey: false, shiftKey: true, altKey: false })).toBe("Ctrl+Shift+Z");
@@ -42,4 +42,20 @@ it("botão focado pelo clique do mouse: Espaço/Enter voltam a ser do atalho glo
   expect(isActivationKey("Space", button)).toBe(true);
   notePointerDown(document.body);
   expect(isActivationKey("Space", button)).toBe(true);
+});
+
+it("conflito: avisa quem já usa a tecla; restaurar volta ao padrão (UX-13)", () => {
+  const list = loadShortcuts();
+  expect(findConflict(list, "metronome", "L")?.id).toBe("loop");
+  expect(findConflict(list, "loop", "L")).toBeNull();
+  expect(findConflict(list, "metronome", "")).toBeNull();
+  saveShortcut("metronome", "M");
+  expect(resetShortcuts()).toEqual(DEFAULT_SHORTCUTS);
+  expect(loadShortcuts().find((s) => s.id === "metronome")?.keys).toBe("C");
+});
+
+it("atalhos padrão sem teclas repetidas e com End, Ctrl+N, Ctrl+O e Delete (UX-13, UX-14)", () => {
+  const keys = DEFAULT_SHORTCUTS.map((s) => s.keys);
+  expect(new Set(keys).size).toBe(keys.length);
+  for (const k of ["End", "Ctrl+N", "Ctrl+O", "Delete"]) expect(keys).toContain(k);
 });

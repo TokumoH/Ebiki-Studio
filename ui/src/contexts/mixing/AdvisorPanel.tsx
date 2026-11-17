@@ -5,8 +5,9 @@ import type { MixReport } from "../../ipc/types";
 import { errorMessage, useSession } from "../../core/session";
 import { Button, EmptyState, Field } from "../../shared/components";
 import { notify } from "../../core/toasts";
+import { formatDecimal } from "../../core/format";
 
-const fmt = (x: number | null | undefined, unit: string) => (x === null || x === undefined || !Number.isFinite(x) ? "—" : `${x.toFixed(1)} ${unit}`);
+const fmt = (x: number | null | undefined, unit: string) => (x === null || x === undefined || !Number.isFinite(x) ? "—" : `${formatDecimal(x, 1)} ${unit}`);
 
 /** Auxílio de mixagem por regras: mede a mixagem offline e lista conselhos. */
 export function AdvisorPanel() {
@@ -50,7 +51,7 @@ export function AdvisorPanel() {
             <div className="stat" data-tip="advisor.truePeak"><span className="has-tip">Pico real (true peak)</span><strong>{fmt(m?.truePeakDb, "dBTP")}</strong></div>
             <div className="stat" data-tip="advisor.peak"><span className="has-tip">Pico</span><strong>{fmt(m?.peakDb, "dBFS")}</strong></div>
             <div className="stat" data-tip="advisor.rms"><span className="has-tip">RMS</span><strong>{fmt(m?.rmsDb, "dB")}</strong></div>
-            <div className="stat" data-tip="advisor.correlation"><span className="has-tip">Correlação</span><strong>{m ? m.correlation.toFixed(2) : "—"}</strong></div>
+            <div className="stat" data-tip="advisor.correlation"><span className="has-tip">Correlação</span><strong>{m ? formatDecimal(m.correlation, 2) : "—"}</strong></div>
           </div>
           {report.advice.length === 0 ? <p>Nenhum problema encontrado. 🎉</p> : null}
           {report.advice.map((a, i) => (

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { DOCK_MESSAGES } from "./dockMessages";
 import { DockviewReact, themeDark, themeLight, type DockviewApi, type DockviewReadyEvent, type IDockviewPanelProps } from "dockview-react";
 import "dockview-react/dist/styles/dockview.css";
 import { PANELS } from "./registry";
@@ -57,5 +58,5 @@ export function DockLayout({ theme }: { theme: "dark" | "light" }) {
     dockApi.current = e.api;
     attachDock(e.api);
   }, []);
-  return <DockviewReact className="dock" components={components} onReady={onReady} theme={theme === "dark" ? themeDark : themeLight} />;
+  return <DockviewReact className="dock" components={components} messages={DOCK_MESSAGES} onReady={onReady} theme={theme === "dark" ? themeDark : themeLight} />;
 }

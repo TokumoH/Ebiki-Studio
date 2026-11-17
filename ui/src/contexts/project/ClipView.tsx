@@ -4,6 +4,7 @@ import type { Spectrogram } from "../../ipc/spectrogram";
 import { peaksFor } from "./waveformCache";
 import { spectrogramFor, spectrumColor } from "./spectrogramCache";
 import { envelopeAt, fadePath } from "./clipEdit";
+import { formatDecimal } from "../../core/format";
 
 const MAX_CANVAS = 4096;
 const CANVAS_H = 64;
@@ -165,7 +166,7 @@ export const ClipView = memo(function ClipView(p: ClipViewProps) {
       tabIndex={-1}
       onPointerDown={p.onPointerDown}
       onContextMenu={p.onContextMenu}
-      title={`${clip.sourceName}${clip.gain !== 0 ? ` (${clip.gain.toFixed(1)} dB)` : ""}${flags.length ? ` — ${flags.join(", ")}` : ""}`}
+      title={`${clip.sourceName}${clip.gain !== 0 ? ` (${formatDecimal(clip.gain, 1)} dB)` : ""}${flags.length ? ` — ${flags.join(", ")}` : ""}`}
     >
       <span className="clip-label">
         {clip.sourceName}

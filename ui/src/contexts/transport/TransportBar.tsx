@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { api } from "../../ipc/api";
 import { run, useSession } from "../../core/session";
 import { useLive } from "../../core/live";
-import { formatBarBeat, formatTime } from "../../core/format";
+import { formatBarBeat, formatDecimal, formatTime } from "../../core/format";
 import { Button, Toggle } from "../../shared/components";
 import { loopLabel } from "../../core/bars";
 import { LoopPopover } from "./LoopPopover";
@@ -56,7 +56,7 @@ export function TransportBar() {
         <span className="mono">{formatTime(t?.seconds ?? 0)}</span>
       </div>
       <div className="transport-display" data-tip="transport.tempo">
-        <span className="mono big">♩ {(t?.bpm ?? session.tempo.tempos[0]?.bpm ?? 120).toFixed(1)}</span>
+        <span className="mono big">♩ {formatDecimal(t?.bpm ?? session.tempo.tempos[0]?.bpm ?? 120, 1)}</span>
         <span className="mono">
           {meter?.numerator ?? 4}/{meter?.denominator ?? 4}
         </span>

@@ -43,6 +43,7 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | [dockControl.ts](dockControl.ts) | Fabricação pura: ponte entre a área de painéis (dockview) e quem precisa abrir/focar painéis |
 | [registry.test.ts](registry.test.ts) | Testes: registro de painéis; todo painel do catálogo tem componente e vice-versa |
 | [dockControl.test.ts](dockControl.test.ts) | Altura inicial do grupo de baixo (metade da área, entre 120 e 330 px — UX-03) |
+| [dockMessages.ts](dockMessages.ts) | Textos do dockview em PT-BR: fechar aba e anúncios para leitor de tela (UX-16) |
 | [registry.tsx](registry.tsx) | Composição: cada painel encaixável junta componentes de um ou mais contextos. |
 
 ## Lógica

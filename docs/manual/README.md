@@ -228,6 +228,8 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 
 ## 11. Atalhos (editáveis em *Editar › Atalhos de teclado…*, Ctrl+/)
 
+Tecla já usada por outra ação: o editor avisa e pergunta se substitui. *Restaurar padrões* volta todos ao original. No macOS, Ctrl aparece como ⌘.
+
 | Ação | Atalho |
 |---|---|
 | Tocar / pausar | Espaço |
@@ -240,9 +242,11 @@ exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
 | Exportar | Ctrl+E |
 | Metrônomo | C |
 | Loop | L |
-| Início | Home |
+| Início / fim do projeto | Home / End |
 | Seguir reprodução (liga/desliga) | F |
 | Dividir clipe no cursor | S |
+| Excluir clipe selecionado | Delete (Backspace com o foco no Arranjo) |
+| Novo projeto / abrir projeto | Ctrl+N / Ctrl+O |
 | Menu do clipe selecionado | Menu ou Shift+F10 |
 | Central de ajuda | F1 |
 | Atalhos de teclado | Ctrl+/ |

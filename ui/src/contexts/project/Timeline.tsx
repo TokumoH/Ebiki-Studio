@@ -377,7 +377,8 @@ export function Timeline() {
       tabIndex={0}
       aria-label="Linha do tempo"
       onKeyDown={(e) => {
-        if ((e.key === "Delete" || e.key === "Backspace") && selectedClipId) {
+        // Delete é atalho global (Editar › Excluir clipe, UX-14); Backspace segue local ao Arranjo
+        if (e.key === "Backspace" && selectedClipId) {
           e.preventDefault();
           void run(() => api.clipDelete(selectedClipId));
         }

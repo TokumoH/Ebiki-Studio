@@ -4,6 +4,7 @@ import { api } from "../../ipc/api";
 import { run, newGesture, endGesture } from "../../core/session";
 import { EFFECT_LABELS, PARAMS, PITCH_CLASS_NAMES, maskIncludes, maskPreset, scaleMask, toggleMaskBit } from "./effectsMeta";
 import { Button, Toggle } from "../../shared/components";
+import { formatDecimal } from "../../core/format";
 
 const EQ_KINDS: { value: EqBand["kind"]; label: string }[] = [
   { value: "highPass", label: "Passa-altas" },
@@ -106,7 +107,7 @@ function Slider({ label, unit, min, max, step, value, log, onChange, onEnd, tip 
       <label>
         <span className={tip ? "has-tip" : undefined}>{label}</span>
         <span className="mono">
-          {value.toFixed(step < 1 ? (step < 0.1 ? 2 : 1) : 0)} {unit}
+          {formatDecimal(value, step < 1 ? (step < 0.1 ? 2 : 1) : 0)} {unit}
         </span>
       </label>
       <input type="range" min={0} max={1} step={0.001} value={toPos(value)} aria-label={label} onChange={(e) => onChange(fromPos(Number(e.target.value)))} onPointerUp={onEnd} onKeyUp={onEnd} />

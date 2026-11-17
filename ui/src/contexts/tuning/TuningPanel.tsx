@@ -6,6 +6,7 @@ import { endGesture, errorMessage, newGesture, run, useSession } from "../../cor
 import { notify } from "../../core/toasts";
 import { Button, Dialog, Field, Toggle } from "../../shared/components";
 import { NEUTRAL_EDIT, NOTE_NAMES_PT, centsOff, centsToAngle, dragEdit, effectiveMidi, isInTune, midiName, pitchRange, scaleClasses, scaleKind } from "./tuningMath";
+import { formatDecimal } from "../../core/format";
 
 /** Afinação: afinador em tempo real + editor de afinação por clipe + time-stretch. */
 export function TuningPanel() {
@@ -117,7 +118,7 @@ function Tuner() {
             <strong>—</strong>
           )}
         </div>
-        <div className="tuner-readout mono">{reading ? `${reading.cents > 0 ? "+" : ""}${reading.cents.toFixed(1)} cents · ${reading.frequencyHz.toFixed(1)} Hz` : on ? "sem sinal" : "desligado"}</div>
+        <div className="tuner-readout mono">{reading ? `${reading.cents > 0 ? "+" : ""}${formatDecimal(reading.cents, 1)} cents · ${formatDecimal(reading.frequencyHz, 1)} Hz` : on ? "sem sinal" : "desligado"}</div>
       </div>
     </section>
   );
@@ -401,7 +402,7 @@ function TimeStretchDialog({ open, onClose, clipId, projectBpm }: { open: boolea
         <input className="input" type="number" min={20} max={999} step={0.01} value={sourceBpm} aria-label="BPM de origem" onChange={(e) => setSourceBpm(Number(e.target.value))} />
       </Field>
       <label className="checkbox">
-        <input type="checkbox" checked={useProject} onChange={(e) => setUseProject(e.target.checked)} /> Usar o andamento do projeto ({projectBpm.toFixed(2)} BPM)
+        <input type="checkbox" checked={useProject} onChange={(e) => setUseProject(e.target.checked)} /> Usar o andamento do projeto ({formatDecimal(projectBpm, 2)} BPM)
       </label>
       {!useProject ? (
         <Field label="Andamento de destino (BPM)">
@@ -409,7 +410,7 @@ function TimeStretchDialog({ open, onClose, clipId, projectBpm }: { open: boolea
         </Field>
       ) : null}
       <p className="hint">
-        Duração × {Number.isFinite(ratio) ? ratio.toFixed(3) : "—"} (WSOLA, altura preservada; gera uma fonte nova e pode ser desfeito). {valid ? "" : "A razão precisa ficar entre 0,25 e 4."}
+        Duração × {Number.isFinite(ratio) ? formatDecimal(ratio, 3) : "—"} (WSOLA, altura preservada; gera uma fonte nova e pode ser desfeito). {valid ? "" : "A razão precisa ficar entre 0,25 e 4."}
       </p>
     </Dialog>
   );

@@ -29,7 +29,7 @@
 .toggle-r[aria-pressed="true"] { background: var(--rec); border-color: var(--rec); color: #fff; }
 
 .field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
-.field > span { font-size: var(--text-xs); color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.field > span { font-size: var(--text-xs); color: var(--fg-muted); font-weight: 600; } /* UX-15: sem maiúsculas (unidades como ms e kHz) */
 .input, .select {
   height: 28px;
   padding: 0 var(--space-2);

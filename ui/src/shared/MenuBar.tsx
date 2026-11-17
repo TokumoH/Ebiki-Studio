@@ -2,6 +2,7 @@
 // Alt ou F10 foca a barra; ←/→ trocam de menu; ↓/Enter abrem; ↑/↓ percorrem; → abre submenu,
 // ← fecha; Enter/Espaço ativam; Esc fecha. Não conhece IPC nem domínio (design system).
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { displayKeys } from "./keys";
 
 export type MenuEntry =
   | { kind: "item"; id: string; label: string; keys?: string; disabled?: boolean; checked?: boolean; radio?: boolean; run: () => void }
@@ -217,7 +218,7 @@ export function MenuBar({ menus, label = "Menu principal" }: { menus: MenuDef[];
             {it.checked ? (it.radio ? "●" : "✓") : ""}
           </span>
           <span className="menubar-label">{it.label}</span>
-          <span className="menubar-keys">{it.keys ?? ""}</span>
+          <span className="menubar-keys">{displayKeys(it.keys ?? "")}</span>
         </button>
       );
     });

@@ -6,6 +6,7 @@ import type { ExportFormat, ExportSettings } from "../ipc/types";
 import { errorMessage, useSession } from "../core/session";
 import { notify } from "../core/toasts";
 import { Button, Dialog, Field, Segmented, Toggle } from "../shared/components";
+import { formatDecimal } from "../core/format";
 
 const LABELS: Record<ExportFormat, string> = { wav: "WAV", aiff: "AIFF", flac: "FLAC", mp3: "MP3", ogg: "OGG", aac: "AAC" };
 
@@ -77,7 +78,7 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
         </Field>
       ) : null}
       {s.format === "ogg" ? (
-        <Field label={`Qualidade Vorbis (${s.vorbisQuality.toFixed(1)})`}>
+        <Field label={`Qualidade Vorbis (${formatDecimal(s.vorbisQuality, 1)})`}>
           <input type="range" min={-0.2} max={1} step={0.1} value={s.vorbisQuality} onChange={(e) => setS({ ...s, vorbisQuality: Number(e.target.value) })} />
         </Field>
       ) : null}

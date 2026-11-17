@@ -19,7 +19,11 @@ export const DEFAULT_SHORTCUTS: Shortcut[] = [
   { id: "metronome", label: "Metrônomo", keys: "C" },
   { id: "loop", label: "Loop", keys: "L" },
   { id: "home", label: "Voltar ao início", keys: "Home" },
+  { id: "end", label: "Ir ao fim do projeto", keys: "End" },
   { id: "split", label: "Dividir clipe no cursor", keys: "S" },
+  { id: "deleteClip", label: "Excluir clipe selecionado", keys: "Delete" },
+  { id: "newProject", label: "Novo projeto", keys: "Ctrl+N" },
+  { id: "openProject", label: "Abrir projeto", keys: "Ctrl+O" },
   { id: "zoomIn", label: "Aproximar (zoom)", keys: "Ctrl+=" },
   { id: "zoomOut", label: "Afastar (zoom)", keys: "Ctrl+-" },
   { id: "zoomReset", label: "Zoom padrão", keys: "Ctrl+0" },
@@ -79,6 +83,21 @@ export function loadShortcuts(): Shortcut[] {
   } catch {
     return DEFAULT_SHORTCUTS;
   }
+}
+
+/** Outra ação que já usa `keys` (para avisar antes de trocar), ou null. */
+export function findConflict(list: Shortcut[], id: string, keys: string): Shortcut | null {
+  return (keys && list.find((s) => s.id !== id && s.keys === keys)) || null;
+}
+
+/** Volta todos os atalhos ao padrão. */
+export function resetShortcuts(): Shortcut[] {
+  try {
+    localStorage.removeItem("ebiki.shortcuts");
+  } catch {
+    /* armazenamento indisponível */
+  }
+  return DEFAULT_SHORTCUTS;
 }
 
 export function saveShortcut(id: string, keys: string) {
