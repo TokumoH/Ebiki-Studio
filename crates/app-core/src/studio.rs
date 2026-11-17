@@ -104,6 +104,8 @@ pub struct Studio {
     pub(crate) tuner: Option<crate::tuning_service::TunerSession>,
     /// "Ouvir entrada" (configuração do dispositivo, não do projeto).
     pub(crate) device_monitor: Option<crate::device_monitor::DeviceMonitorView>,
+    /// Ganho de entrada do microfone/interface em dB (configuração do dispositivo).
+    pub(crate) input_gain_db: f64,
 }
 
 /// Nome de pasta seguro a partir do nome do projeto.
@@ -142,6 +144,7 @@ impl Studio {
             recording: None,
             tuner: None,
             device_monitor: None,
+            input_gain_db: 0.0,
         }
     }
 
@@ -157,6 +160,7 @@ impl Studio {
         self.tuner = None;
         self.sent_effects.clear();
         self.reapply_device_monitor();
+        self.reapply_input_gain();
         self.sync()
     }
 

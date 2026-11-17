@@ -353,3 +353,20 @@ fn edit_commands_accept_the_ui_payloads() {
     let v = ok(&w, "history_undo", json!({}));
     assert_eq!(v["tracks"][0]["clips"].as_array().unwrap().len(), 1);
 }
+
+#[test]
+fn audio_input_gain_and_test_tone_accept_the_ui_payloads() {
+    let (_app, w) = app();
+    let v = ok(&w, "audio_status", json!({}));
+    assert_eq!(v["inputGainDb"], 0.0, "começa em 0 dB");
+    let v = ok(&w, "audio_input_gain_set", json!({ "gainDb": 30.0 }));
+    assert_eq!(v["inputGainDb"], 24.0, "limitado a +24 dB");
+    let v = ok(&w, "audio_input_gain_set", json!({ "gainDb": 6.5 }));
+    assert_eq!(v["inputGainDb"], 6.5);
+    assert_eq!(ok(&w, "audio_status", json!({}))["inputGainDb"], 6.5);
+    let err = call(&w, "audio_input_gain_set", json!({ "gainDb": "alto" })).unwrap_err();
+    assert!(!err.is_null(), "argumento inválido é recusado");
+    // sem engine (estado de teste): o tom é recusado com erro de domínio, sem pânico
+    let err = call(&w, "audio_test_tone", json!({})).unwrap_err();
+    assert_eq!(err["code"], "app.no_engine");
+}

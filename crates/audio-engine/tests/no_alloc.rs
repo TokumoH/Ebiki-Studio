@@ -66,6 +66,9 @@ fn process_does_not_allocate() {
         gain: 0.5,
     }))
     .unwrap();
+    // ganho de entrada (rampa no rascunho pré-alocado) e tom de teste: também sem alocar
+    h.set_input_gain_db(12.0).unwrap();
+    h.play_test_tone(5.0, -12.0).unwrap();
     let mut out = vec![0.0f32; 2048 * 2];
     let input = vec![0.1f32; 2048 * 2];
     // a primeira chamada troca o grafo: o grafo antigo vai para a fila de lixo, sem liberar
@@ -82,10 +85,17 @@ fn process_does_not_allocate() {
         48_000,
         "derivação cheia, excedente descartado"
     );
-    assert!(tapped.iter().all(|x| (*x - 0.1).abs() < 1e-9));
+    // a derivação recebe a entrada já amplificada (+12 dB, depois da rampa de ~10 ms)
+    let gained = 0.1 * audio_engine::input_gain_linear(12.0);
+    assert!((tapped[tapped.len() - 1] - gained).abs() < 1e-5);
+    assert!(tapped
+        .iter()
+        .all(|x| *x >= 0.1 - 1e-7 && *x <= gained + 1e-5));
     // troca/desliga a derivação também sem alocar no núcleo
     h.detach_input_tap().unwrap();
     h.set_device_monitor(None).unwrap();
+    h.set_input_gain_db(0.0).unwrap();
+    h.play_test_tone(0.1, -6.0).unwrap();
     reset_violation_count();
     assert_no_alloc(|| {
         core.process(&mut out, 2, &input, 2);
@@ -93,7 +103,7 @@ fn process_does_not_allocate() {
     assert_eq!(
         violation_count(),
         0,
-        "desligar a derivação não libera memória no núcleo"
+        "desligar a derivação e mudar o ganho/tom não aloca nem libera memória no núcleo"
     );
     h.collect_garbage();
 }

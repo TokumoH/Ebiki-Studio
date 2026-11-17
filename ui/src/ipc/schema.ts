@@ -201,6 +201,8 @@ export const AudioStatus = z.object({
   bufferSize: z.number().int().nullable(),
   inputChannels: z.number().int(),
   estimatedLatencyMs: z.number().nullable(),
+  /** Ganho de entrada do microfone/interface (dB, 0..+24). */
+  inputGainDb: z.number().default(0),
   error: z.string().nullable(),
 });
 /** "Ouvir entrada": canal (0-based) ou par estéreo, ganho em dB. */

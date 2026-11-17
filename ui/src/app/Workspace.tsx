@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../ipc/api";
 import { transport } from "../ipc/transport";
-import { refreshAudio, useAudio } from "../core/audio";
+import { openAudioSettings, refreshAudio, useAudio } from "../core/audio";
 import { run, useSession } from "../core/session";
 import { useLive } from "../core/live";
 import { useTheme } from "../core/theme";
@@ -151,7 +151,7 @@ export function Workspace() {
       newProject: () => (useSession.getState().session?.history.dirty ? setDialog("close") : void closeProject()),
       openProject: () => void openOtherProject(() => setDialog("close")),
       closeProject: () => (useSession.getState().session?.history.dirty ? setDialog("close") : void closeProject()),
-      audioSettings: () => setDialog("audio"),
+      audioSettings: openAudioSettings,
       shortcutsDialog: () => setDialog("shortcuts"),
       help: () => setDialog("help"),
       about: () => setDialog("about"),
@@ -338,7 +338,7 @@ export function Workspace() {
         <span>{h.dirty ? "Alterações não salvas (autosave a cada 2 min)" : "Salvo"}</span>
       </footer>
       ) : <span />}
-      <AudioSettingsDialog open={dialog === "audio"} onClose={() => setDialog(null)} onChanged={useAudio.getState().setStatus} />
+      <AudioSettingsDialog onChanged={useAudio.getState().setStatus} />
       <ExportDialog open={dialog === "export"} onClose={() => setDialog(null)} />
       <ShortcutsDialog open={dialog === "shortcuts"} onClose={() => setDialog(null)} onChanged={setShortcutList} />
       <HelpCenter

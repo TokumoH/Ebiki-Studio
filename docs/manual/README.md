@@ -69,8 +69,18 @@ sublinhado pontilhado têm explicação. Desligue em *Exibir › Legendas ao pas
 
 1. **Tela inicial** → *Novo projeto*: escolha nome, pasta, taxa de amostragem (padrão 48 kHz) e
    resolução (padrão 24 bits). O projeto é uma pasta `Nome.ebiki` com tudo dentro (portátil).
-2. **Configurações de áudio** (*Arquivo › Configurações de áudio…*): escolha saída, entrada e buffer.
-   - Buffers de 64–128 amostras dão a menor latência (gravação); 512+ para mixagens pesadas.
+2. **Configurações de áudio** (*Arquivo › Configurações de áudio…*), o único lugar onde se escolhem
+   os dispositivos. O topo mostra o *Sistema de áudio* e a taxa em uso (ex.: "WASAPI · 48 kHz").
+   - **Fone / alto-falantes — o que você ouve** (saída): escolha o *Dispositivo de saída*. **Testar
+     som** toca um tom curto (~1 s, 440 Hz) a −12 dBFS, fora da mixagem (não grava nem exporta). Se
+     ele soar baixo, o volume do sistema operacional ou do fone está baixo — o Ebiki não reduz o volume.
+   - **Microfone / interface — o que você grava** (entrada): escolha o *Dispositivo de entrada*, fale
+     no volume normal e suba o **Ganho** (0 a +24 dB) até os medidores ficarem na **faixa verde**
+     (−18 a −6 dB). Abaixo de −30 dB aparece *"Sinal baixo"*; acima de −1 dB, *"Muito alto"*. O ganho
+     vale para a gravação, os medidores e o retorno, e fica guardado para as próximas aberturas.
+     **Ouvir o microfone no fone enquanto grava** liga o retorno direto (volume padrão 0 dB).
+   - **Desempenho** (recolhido): o buffer. A latência mostrada usa a taxa real do dispositivo.
+     Buffers de 64–128 amostras dão a menor latência (gravação); 512+ para mixagens pesadas.
    - Sem dispositivo disponível, o app continua funcionando em modo silencioso (barra de status avisa).
 3. **Importar áudio** (*Importar* ou Ctrl+I, ou arraste arquivos para a janela): WAV, AIFF, FLAC,
    MP3, OGG, AAC/M4A. O arquivo é copiado para o projeto e convertido para a taxa do projeto;
@@ -118,13 +128,14 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
 
 ## 4. Gravação
 
-1. No painel **Gravação**, bloco **Entrada de áudio**: escolha o dispositivo de entrada (a saída e o
-   buffer continuam em *Arquivo › Configurações de áudio*). Os medidores mostram o nível de cada canal.
-   - **🎧 Ouvir entrada** toca o dispositivo direto na saída, com volume próprio e sem armar faixa —
-     útil para testar o microfone e ajustar o ganho da interface. Não entra na gravação nem na
-     exportação. Começa desligado a cada abertura do app; use fones para evitar microfonia.
-   - Clique no título **▾ Entrada de áudio** para recolher o bloco numa linha de resumo
-     (dispositivo, medidor e "🎧 ouvindo"); o app lembra a escolha.
+1. No painel **Gravação**, bloco **Microfone (entrada)**: mostra o microfone e o ganho em uso (só
+   leitura) e os medidores de cada canal com a mesma faixa verde (−18 a −6 dB). Para trocar o
+   microfone, o fone ou o ganho, use **Configurar microfone e fone…** (abre as Configurações de áudio).
+   - **🎧 Ouvir no fone** toca o microfone direto no fone, com volume próprio (padrão 0 dB) e sem
+     armar faixa — útil para testar o microfone. Não entra na gravação nem na exportação. Começa
+     desligado a cada abertura do app; use fones para evitar microfonia.
+   - Clique no título **▾ Microfone (entrada)** para recolher o bloco numa linha de resumo
+     (microfone, medidor e "🎧 ouvindo"); o app lembra a escolha.
 2. Escolha a entrada de cada faixa (mono ou par estéreo) e a monitoração da faixa
    (desligada, quando armada ou sempre).
 3. Arme a faixa (⏺) e pressione **R** (ou o botão de gravar).

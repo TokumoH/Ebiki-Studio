@@ -21,7 +21,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     steps: [
       "Na tela inicial, escolha nome, pasta, taxa de amostragem (48 kHz) e resolução (24 bits) e clique em Criar projeto.",
       "A logo no canto superior abre o essencial: salvar, exportar, configurações de áudio, legendas, atualizações e ajuda.",
-      "Arquivo › Configurações de áudio: escolha entrada, saída e buffer. Sem dispositivo, o app funciona em modo silencioso.",
+      "Arquivo › Configurações de áudio: escolha o Fone / alto-falantes (saída, o que você ouve) e o Microfone (entrada, o que você grava). Testar som toca um tom curto a −12 dBFS. Sem dispositivo, o app funciona em modo silencioso.",
       "Importe áudios com Arquivo › Importar (Ctrl+I) ou arrastando arquivos para a janela.",
       "Ao tocar, o Arranjo segue a linha de reprodução e vira a página quando ela sai da tela. Desligue em ⇥ Seguir (F) ou Exibir › Seguir reprodução; rolar à mão pausa até a linha voltar a aparecer.",
       "Salve com Ctrl+S. O autosave guarda uma cópia a cada 2 minutos e oferece recuperação se o app fechar sem salvar.",
@@ -32,10 +32,10 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     id: "gravacao",
     title: "Gravação",
-    keywords: "gravar take punch metrônomo contagem entrada microfone latência monitorar armar",
+    keywords: "gravar take punch metrônomo contagem entrada microfone ganho nível baixo fone latência monitorar armar",
     intro: "Cada gravação vira um take novo; nada é sobrescrito.",
     steps: [
-      "No painel Gravação, escolha o dispositivo em Entrada de áudio e confira o nível nos medidores; 🎧 Ouvir entrada toca o microfone direto na saída (sem gravar).",
+      "Escolha o microfone em Configurações de áudio (no painel Gravação: Microfone (entrada) › Configurar microfone e fone…). Fale no volume normal e suba o Ganho até os medidores ficarem na faixa verde (−18 a −6 dB); 🎧 Ouvir no fone toca o microfone direto no fone (sem gravar).",
       "Arme a faixa no botão ● do cabeçalho e escolha a entrada dela (mono ou estéreo).",
       "Ligue o metrônomo (C) e, se quiser, a contagem prévia e o punch-in/out no painel Gravação.",
       "Pressione R para gravar e Espaço para parar. Buffer de 64 a 128 amostras dá a menor latência.",
@@ -154,10 +154,11 @@ export const HELP_TOPICS: HelpTopic[] = [
   {
     id: "problemas",
     title: "Solução de problemas",
-    keywords: "sem som áudio estalos buffer latência dispositivo microfone permissão erro travar",
+    keywords: "sem som áudio baixo volume estalos buffer latência dispositivo microfone fone ganho permissão erro travar",
     intro: "Os problemas mais comuns e como resolver.",
     steps: [
-      "Sem som: confira a saída em Arquivo › Configurações de áudio; a barra de status avisa o modo silencioso.",
+      "Sem som ou som baixo: em Arquivo › Configurações de áudio, confira o Fone / alto-falantes (saída) e clique em Testar som. Se o tom soar baixo, o volume do sistema operacional ou do fone está baixo — o Ebiki não reduz o volume. A barra de status avisa o modo silencioso.",
+      "Gravação baixa: no Microfone (entrada), suba o Ganho (até +24 dB) até os trechos fortes ficarem na faixa verde dos medidores; abaixo de −30 dB aparece o aviso \"Sinal baixo\".",
       "Estalos: aumente o buffer (256 ou 512 amostras).",
       "Gravação muda no macOS: Ajustes do Sistema › Privacidade › Microfone › ative o Ebiki Studio.",
       "Painel sumiu: reabra pelo menu Janela (ou Exibir › Painéis), ou use Exibir › Restaurar layout padrão.",

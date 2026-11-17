@@ -1,10 +1,12 @@
 //! Núcleo de tempo real. Regras: sem alocação, sem bloqueio, sem liberar memória, sem pânico.
 
 use crate::graph::*;
+use crate::input_gain::{InputGain, INPUT_SCRATCH_SAMPLES};
 use crate::input_tap::InputTapRt;
 use crate::metronome::Click;
 use crate::recorder::RecorderRt;
 use crate::telemetry::Telemetry;
+use crate::test_tone::TestTone;
 use crate::transport::TransportState;
 use crate::MAX_BLOCK;
 use std::sync::Arc;
@@ -31,6 +33,13 @@ pub enum Message {
     DetachInputTap,
     /// "Ouvir entrada"; `None` desliga (com rampa até o silêncio).
     SetDeviceMonitor(Option<DeviceMonitor>),
+    /// Ganho de entrada linear (0..+24 dB), com rampa; vale para gravação, medidores e monitores.
+    SetInputGain(f32),
+    /// Tom de teste na saída do dispositivo (fora do master): duração em quadros e pico linear.
+    PlayTestTone {
+        frames: u64,
+        amplitude: f32,
+    },
 }
 
 /// Objetos devolvidos para liberação fora do tempo real.
@@ -61,6 +70,10 @@ pub struct EngineCore {
     /// Rota do monitor de dispositivo e ganho atual (rampa por amostra até `monitor.gain`).
     monitor: Option<DeviceMonitor>,
     monitor_gain: f32,
+    /// Ganho de entrada (rampa) e rascunho pré-alocado com a entrada já amplificada.
+    input_gain: InputGain,
+    input_scratch: Vec<f32>,
+    test_tone: TestTone,
     master_l: Vec<f32>,
     master_r: Vec<f32>,
     click_l: Vec<f32>,
@@ -96,6 +109,9 @@ impl EngineCore {
             input_tap: None,
             monitor: None,
             monitor_gain: 0.0,
+            input_gain: InputGain::new(sr),
+            input_scratch: vec![0.0; INPUT_SCRATCH_SAMPLES],
+            test_tone: TestTone::default(),
             master_l: vec![0.0; MAX_BLOCK],
             master_r: vec![0.0; MAX_BLOCK],
             click_l: vec![0.0; MAX_BLOCK],
@@ -243,6 +259,11 @@ impl EngineCore {
                         }
                     }
                 },
+                Message::SetInputGain(g) => self.input_gain.set_target(g),
+                Message::PlayTestTone { frames, amplitude } => {
+                    let sr = self.graph.sample_rate;
+                    self.test_tone.start(frames, amplitude, sr);
+                }
             }
         }
     }
@@ -271,6 +292,10 @@ impl EngineCore {
     }
 
     /// Processa um callback. `output`/`input` intercalados.
+    ///
+    /// A entrada passa primeiro pelo ganho de entrada (rascunho pré-alocado) e só então alimenta a
+    /// derivação do afinador, os medidores, a gravação e as monitorações. O trabalho é feito em blocos
+    /// de até `MAX_BLOCK` quadros (menos com muitos canais de entrada, para caber no rascunho).
     pub fn process(
         &mut self,
         output: &mut [f32],
@@ -280,49 +305,63 @@ impl EngineCore {
     ) {
         self.handle_messages();
         self.flush_garbage();
-        if let Some(tap) = self.input_tap.as_mut() {
-            if in_channels > 0 {
-                tap.capture(input, in_channels, input.len() / in_channels);
-            }
-        }
-        self.meter_input(input, in_channels);
-        if out_channels == 0 {
-            return;
-        }
-        let total = output.len() / out_channels;
+        self.telemetry.set_input_channels(in_channels);
+        let in_frames = input.len().checked_div(in_channels).unwrap_or(0);
+        let out_frames = output.len().checked_div(out_channels).unwrap_or(0);
+        // o rascunho sai do `self` durante o bloco (troca sem alocar: `Vec::new` não aloca)
+        let mut scratch = std::mem::take(&mut self.input_scratch);
+        // canais demais para o rascunho (caso extremo) ou rascunho perdido num pânico capturado pelo
+        // backend: usa a entrada sem ganho em vez de entrar em pânico em todo callback
+        let use_gain = in_channels > 0 && in_channels <= scratch.len();
+        let chunk = if use_gain {
+            (scratch.len() / in_channels).clamp(1, MAX_BLOCK)
+        } else {
+            MAX_BLOCK
+        };
+        let total = in_frames.max(out_frames);
         let mut done = 0;
         while done < total {
-            let n = (total - done).min(MAX_BLOCK);
-            let in_slice = if in_channels > 0 {
-                let a = (done * in_channels).min(input.len());
-                let b = ((done + n) * in_channels).min(input.len());
-                &input[a..b]
+            let n = (total - done).min(chunk);
+            let in_n = in_frames.saturating_sub(done).min(n);
+            let raw = &input[done * in_channels..(done + in_n) * in_channels];
+            let block_in: &[f32] = if use_gain {
+                let dst = &mut scratch[..raw.len()];
+                self.input_gain.apply(raw, in_channels, dst);
+                dst
             } else {
-                &input[0..0]
+                raw
             };
-            self.process_block(n, in_slice, in_channels);
-            for f in 0..n {
-                let (l, r) = (self.master_l[f], self.master_r[f]);
-                let o = &mut output[(done + f) * out_channels..(done + f + 1) * out_channels];
-                if out_channels == 1 {
-                    o[0] = 0.5 * (l + r);
-                } else {
-                    o[0] = l;
-                    o[1] = r;
-                    for x in &mut o[2..] {
-                        *x = 0.0;
+            if let Some(tap) = self.input_tap.as_mut() {
+                tap.capture(block_in, in_channels, in_n);
+            }
+            self.meter_input(block_in, in_channels);
+            let out_n = out_frames.saturating_sub(done).min(n);
+            if out_n > 0 {
+                self.process_block(out_n, block_in, in_channels);
+                let out = &mut output[done * out_channels..(done + out_n) * out_channels];
+                for (f, o) in out.chunks_exact_mut(out_channels).enumerate() {
+                    let (l, r) = (self.master_l[f], self.master_r[f]);
+                    if out_channels == 1 {
+                        o[0] = 0.5 * (l + r);
+                    } else {
+                        o[0] = l;
+                        o[1] = r;
+                        for x in &mut o[2..] {
+                            *x = 0.0;
+                        }
                     }
                 }
+                self.add_device_monitor(out, out_channels, block_in, in_channels);
+                self.test_tone.add_to(out, out_channels);
             }
             done += n;
         }
-        self.add_device_monitor(output, out_channels, input, in_channels);
+        self.input_scratch = scratch;
         self.telemetry.set_position(self.position);
     }
 
     /// Picos por canal de entrada (até `MAX_INPUT_METERS`). Sem alocação.
     fn meter_input(&self, input: &[f32], in_channels: usize) {
-        self.telemetry.set_input_channels(in_channels);
         if in_channels == 0 {
             return;
         }
@@ -795,5 +834,24 @@ fn inherit(new: &mut RenderGraph, old: &mut RenderGraph) {
                 p.set_params(&ins.params);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::*;
+
+    #[test]
+    fn without_scratch_the_input_passes_without_gain_instead_of_panicking() {
+        // simula o rascunho perdido (pânico capturado pelo backend no meio de um callback)
+        let (mut h, mut core) = create_engine(EngineConfig::default());
+        h.set_input_gain_db(12.0).unwrap();
+        let mut tap = h.attach_input_tap(0, 4_096).unwrap();
+        core.input_scratch = Vec::new();
+        let mut out = vec![0.0f32; 512 * 2];
+        core.process(&mut out, 2, &[0.1f32; 512], 1);
+        let mut v = Vec::new();
+        assert_eq!(tap.drain(&mut v), 512);
+        assert!(v.iter().all(|x| *x == 0.1), "entrada sem ganho, sem pânico");
     }
 }

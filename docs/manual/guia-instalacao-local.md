@@ -107,7 +107,9 @@ Os instaladores **não são assinados**:
 ## 5. Roteiro de teste (15 minutos)
 
 1. **Novo projeto** → nome, pasta, 48 kHz / 24 bits → *Criar projeto*.
-2. **Arquivo › Configurações de áudio…**: escolha saída, entrada e buffer (128 para gravar).
+2. **Arquivo › Configurações de áudio…**: escolha o fone / alto-falantes (saída) e clique em
+   *Testar som*; escolha o microfone (entrada) e ajuste o *Ganho* até a faixa verde; em *Desempenho*,
+   buffer 128 para gravar.
 3. **Importar** (Ctrl+I ou arrastar arquivos) um WAV/MP3 → aparece uma faixa com a forma de onda.
 4. **Espaço** toca/para. Clique na régua para posicionar. **≋** na faixa alterna para espectrograma.
 5. **Mixer**: mova o fader e o pan; *+ efeito* → Compressor/EQ/Reverb; crie um **Bus** e um envio.
@@ -163,7 +165,9 @@ npm --prefix ui run e2e
 | Porta 5173 ocupada | Feche o outro `npm run dev/ui` ou rode `npx kill-port 5173` |
 | "Sem dispositivo de áudio" | Conecte e selecione a interface em *Arquivo › Configurações de áudio*; no Linux verifique PipeWire/ALSA (`aplay -l`) |
 | Gravação muda/silenciosa no macOS | Ajustes do Sistema → Privacidade → **Microfone** → ative o Ebiki Studio |
-| Estalos no áudio | Aumente o buffer em *Arquivo › Configurações de áudio* (256–512) |
+| Estalos no áudio | Aumente o buffer em *Arquivo › Configurações de áudio › Desempenho* (256–512) |
+| Som baixo no fone | *Configurações de áudio › Testar som*: se o tom de −12 dBFS soar baixo, suba o volume do sistema/fone (o Ebiki não reduz o volume) |
+| Gravação baixa | *Configurações de áudio › Microfone*: suba o *Ganho* até os medidores ficarem na faixa verde (−18 a −6 dB) |
 | Compilação lenta/sem espaço | Normal na 1ª vez; `cargo clean` libera espaço depois |
 
 ## 8. Onde ficam os dados

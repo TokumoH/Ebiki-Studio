@@ -38,7 +38,7 @@ Camadas com direção única de dependência (app → panels → contexts → co
 
 | Arquivo ou subdiretório | O que contém |
 |---|---|
-| [audio.ts](audio.ts) | Estado do dispositivo de áudio compartilhado pela interface (barra de status, Configurações de |
+| [audio.ts](audio.ts) | Estado do dispositivo de áudio compartilhado pela interface (barra de status, Configurações de áudio, Gravação, afinador), `setInputGain` e a abertura do diálogo de áudio (`useAudioSettingsUi`/`openAudioSettings`, usada pelo menu e pelo painel Gravação). |
 | [audition.ts](audition.ts) | Audição: toca um WAV (ArrayBuffer vindo do núcleo) pela WebAudio, um de cada vez. |
 | [bars.test.ts](bars.test.ts) | 4/4 nos compassos 1–2 e 3/4 a partir do compasso 3 (tick 7680) |
 | [bars.ts](bars.ts) | Aritmética de compassos sobre o mapa de tempo (pura, sem dependências de apresentação). |

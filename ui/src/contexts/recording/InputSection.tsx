@@ -1,39 +1,19 @@
-// "Entrada de áudio" do painel Gravação (mockup 7): dispositivo de entrada, medidores por canal e
-// "Ouvir entrada" (monitor direto do dispositivo, fora da gravação e da exportação).
-import { useEffect, useRef, useState } from "react";
+// "Microfone (entrada)" do painel Gravação (mockup 7, revisto no S1 da varredura 5): mostra o
+// microfone escolhido e o ganho (somente leitura — escolhidos nas Configurações de áudio, num lugar
+// só), os medidores por canal com a faixa-alvo verde e o "Ouvir o microfone no fone" (monitor direto
+// do dispositivo, fora da gravação e da exportação).
+import { useEffect, useState } from "react";
 import { api } from "../../ipc/api";
-import type { DeviceList, DeviceMonitor } from "../../ipc/types";
+import type { DeviceMonitor } from "../../ipc/types";
 import { errorMessage } from "../../core/session";
 import { notify } from "../../core/toasts";
-import { setInputDevice, useAudio } from "../../core/audio";
-import { useLive } from "../../core/live";
-import { Toggle } from "../../shared/components";
-import { decayPeak, meterFraction, parseRouteKey, peakDb, routeKey, routeOptions } from "./inputRoutes";
+import { openAudioSettings, useAudio, useAudioSettingsUi } from "../../core/audio";
+import { Button, Toggle } from "../../shared/components";
+import { InputMeters, InputSummaryMeter } from "./InputMeters";
+import { parseRouteKey, routeKey, routeOptions } from "./inputRoutes";
 
-const DEFAULT_GAIN_DB = -6;
-
-function InputMeters({ channels }: { channels: number }) {
-  const inputs = useLive((s) => s.meters?.inputs);
-  const shown = useRef<number[]>([]);
-  // decaimento visual: subir na hora, descer aos poucos
-  shown.current = Array.from({ length: channels }, (_, i) => decayPeak(shown.current[i] ?? 0, inputs?.[i] ?? 0));
-  return (
-    <div className="input-meters">
-      {shown.current.map((p, i) => {
-        const db = peakDb(p);
-        return (
-          <div key={i} className="input-meter-row">
-            <span className="input-meter-label">Entrada {i + 1}</span>
-            <div className="input-meter" role="meter" aria-label={`Nível da entrada ${i + 1}`} aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(db)}>
-              <div className={`input-meter-fill${db > -3 ? " hot" : db > -12 ? " warm" : ""}`} style={{ width: `${meterFraction(p) * 100}%` }} />
-            </div>
-            <span className="input-meter-db mono">{db <= -60 ? "−∞" : `${Math.round(db)} dB`}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+/** Volume inicial do retorno no fone: 0 dB (o sinal como chega; antes era −6 dB e soava baixo). */
+export const DEFAULT_MONITOR_GAIN_DB = 0;
 
 const COLLAPSED_KEY = "ebiki.recording.inputCollapsed";
 
@@ -45,15 +25,9 @@ function loadCollapsed(): boolean {
   }
 }
 
-/** Resumo do bloco recolhido: o maior nível entre os canais, numa barra só. */
-function InputSummaryMeter() {
-  const inputs = useLive((s) => s.meters?.inputs);
-  const peak = Math.max(0, ...(inputs ?? []));
-  return (
-    <span className="input-summary-meter" role="meter" aria-label="Nível da entrada (resumo)" aria-valuemin={-60} aria-valuemax={0} aria-valuenow={Math.round(peakDb(peak))}>
-      <span style={{ width: `${meterFraction(peak) * 100}%` }} />
-    </span>
-  );
+/** Ganho em dB no formato da interface ("0 dB", "+12 dB"). */
+export function formatGainDb(db: number): string {
+  return `${db > 0 ? "+" : ""}${(Math.round(db * 10) / 10).toLocaleString("pt-BR")} dB`;
 }
 
 export function InputSection() {
@@ -68,17 +42,15 @@ export function InputSection() {
       }
       return !c;
     });
-  const [devices, setDevices] = useState<DeviceList["inputs"] | null>(null);
   const [monitor, setMonitor] = useState<DeviceMonitor | null>(null);
   const [route, setRoute] = useState("0:");
-  const [gainDb, setGainDb] = useState(DEFAULT_GAIN_DB);
-  const [busy, setBusy] = useState(false);
+  const [gainDb, setGainDb] = useState(DEFAULT_MONITOR_GAIN_DB);
 
+  // relê a monitoração ao abrir, quando o dispositivo muda (a rota pode ter deixado de existir) e
+  // quando as Configurações de áudio fecham (o retorno pode ter sido ligado/desligado lá)
+  const inputId = status?.inputId ?? "";
+  const settingsOpen = useAudioSettingsUi((u) => u.open);
   useEffect(() => {
-    void api
-      .audioDevices()
-      .then((d) => setDevices(d.inputs))
-      .catch(() => setDevices([]));
     void api
       .audioMonitorGet()
       .then((m) => {
@@ -89,27 +61,11 @@ export function InputSection() {
         }
       })
       .catch(() => undefined);
-  }, []);
+  }, [inputId, settingsOpen]);
 
   const hasInput = !!status?.inputName;
   const channels = hasInput ? (status?.inputChannels ?? 0) : 0;
   const options = routeOptions(channels, 1);
-  const inputId = status?.inputId ?? "";
-  const known = !inputId || (devices ?? []).some((d) => d.id === inputId);
-
-  const changeDevice = async (id: string) => {
-    setBusy(true);
-    try {
-      const s = await setInputDevice(id || null);
-      if (s.error) notify.error(`Dispositivo indisponível: ${s.error}.`);
-      // a rota pode ter deixado de existir no novo dispositivo
-      setMonitor(await api.audioMonitorGet());
-    } catch (e) {
-      notify.error(errorMessage(e));
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const applyMonitor = async (on: boolean, nextRoute = route, nextGain = gainDb) => {
     const r = parseRouteKey(nextRoute);
@@ -120,56 +76,61 @@ export function InputSection() {
     }
   };
 
+  const configure = (
+    <Button size="sm" onClick={openAudioSettings} data-tip="rec.configureAudio">
+      Configurar microfone e fone…
+    </Button>
+  );
+
   return (
-    <section className={`input-section${collapsed ? " input-section--collapsed" : ""}`} aria-label="Entrada de áudio">
+    <section className={`input-section${collapsed ? " input-section--collapsed" : ""}`} aria-label="Microfone (entrada)">
       <div className="input-head">
         <h3>
           <button type="button" className="input-toggle" aria-expanded={!collapsed} aria-controls="input-section-body" data-tip="rec.inputCollapse" onClick={toggleCollapsed}>
-            <span aria-hidden="true">{collapsed ? "▸" : "▾"}</span> Entrada de áudio
+            <span aria-hidden="true">{collapsed ? "▸" : "▾"}</span> Microfone (entrada)
           </button>
         </h3>
         {collapsed ? (
           <span className="input-summary">
-            <span className="input-summary-device">{status?.inputName ?? "Sem entrada"}</span>
+            <span className="input-summary-device">{status?.inputName ?? "Sem microfone"}</span>
             {status?.inputName ? <InputSummaryMeter /> : null}
             {monitor ? <span className="input-summary-listen">🎧 ouvindo</span> : null}
           </span>
         ) : (
-          <span className="hint">Saída e buffer: Arquivo › Configurações de áudio</span>
+          configure
         )}
       </div>
       {collapsed ? null : (
         <div id="input-section-body">
-          <div className="row">
-            <label className="field">
-              <span>Dispositivo</span>
-              <select className="select" aria-label="Dispositivo de entrada da gravação" value={inputId} disabled={busy || devices === null} onChange={(e) => void changeDevice(e.target.value)}>
-                <option value="">Nenhuma</option>
-                {!known ? <option value={inputId}>{inputId} (desconectado)</option> : null}
-                {(devices ?? []).map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                    {d.isDefault ? " (padrão)" : ""}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <dl className="input-facts">
+            <div>
+              <dt>Dispositivo</dt>
+              <dd>{status?.inputName ?? "Nenhum"}</dd>
+            </div>
+            <div>
+              <dt>Ganho</dt>
+              <dd data-tip="rec.inputGain">
+                {formatGainDb(status?.inputGainDb ?? 0)}
+              </dd>
+            </div>
             {hasInput ? (
-              <span className="hint">
-                {channels} {channels === 1 ? "canal" : "canais"} · {(status?.sampleRate ?? 48000) / 1000} kHz
-                {status?.estimatedLatencyMs ? ` · ~${status.estimatedLatencyMs.toFixed(1)} ms` : ""}
-              </span>
-            ) : (
-              <span className="hint">Escolha um dispositivo para gravar e ver os níveis.</span>
-            )}
-          </div>
+              <div>
+                <dt>Formato</dt>
+                <dd>
+                  {channels} {channels === 1 ? "canal" : "canais"} · {((status?.sampleRate ?? 48000) / 1000).toLocaleString("pt-BR")} kHz
+                  {status?.estimatedLatencyMs ? ` · ~${status.estimatedLatencyMs.toFixed(1)} ms` : ""}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+          {hasInput ? null : <p className="hint">Escolha o microfone em “Configurar microfone e fone…” para gravar e ver os níveis.</p>}
           {hasInput && channels > 0 ? (
             <div className="input-body">
               <InputMeters channels={Math.min(channels, 8)} />
               <div className="input-monitor">
                 <div className="row">
-                  <Toggle pressed={!!monitor} onChange={(on) => void applyMonitor(on)} aria-label="Ouvir entrada">
-                    🎧 Ouvir entrada
+                  <Toggle pressed={!!monitor} onChange={(on) => void applyMonitor(on)} aria-label="Ouvir o microfone no fone">
+                    🎧 Ouvir no fone
                   </Toggle>
                   <select
                     className="select"
@@ -200,9 +161,9 @@ export function InputSection() {
                     onPointerUp={() => monitor && void applyMonitor(true, route, gainDb)}
                     onKeyUp={() => monitor && void applyMonitor(true, route, gainDb)}
                   />
-                  <span className="mono">{gainDb <= -60 ? "mudo" : `${gainDb > 0 ? "+" : ""}${gainDb} dB`}</span>
+                  <span className="mono">{gainDb <= -60 ? "mudo" : formatGainDb(gainDb)}</span>
                 </label>
-                <p className="hint">Ouve o dispositivo direto na saída, sem armar faixa. Não entra na gravação nem na exportação. Use fones para evitar microfonia.</p>
+                <p className="hint">Ouve o microfone direto no fone, sem armar faixa. Não entra na gravação nem na exportação. Use fones para evitar microfonia.</p>
               </div>
             </div>
           ) : null}

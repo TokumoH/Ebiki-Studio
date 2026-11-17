@@ -22,6 +22,8 @@ pub struct AudioStatus {
     pub input_channels: u16,
     /// Latência estimada de ida e volta em ms (buffers de entrada + saída).
     pub estimated_latency_ms: Option<f64>,
+    /// Ganho de entrada do microfone/interface (dB, 0..+24), aplicado antes de gravação e medidores.
+    pub input_gain_db: f64,
     pub error: Option<String>,
 }
 
@@ -66,6 +68,7 @@ impl AudioRuntime {
                     buffer_size: info.buffer_size,
                     input_channels: info.in_channels,
                     estimated_latency_ms: lat,
+                    input_gain_db: studio.input_gain_db(),
                     error: None,
                 };
                 let _ = studio.attach_engine(handle, info.in_channels as usize);
@@ -84,6 +87,7 @@ impl AudioRuntime {
                     input_id: request.input_id.clone(),
                     sample_rate: request.sample_rate,
                     buffer_size: Some(512),
+                    input_gain_db: studio.input_gain_db(),
                     error: Some(e.to_string()),
                     ..Default::default()
                 };

@@ -127,6 +127,33 @@ impl EngineHandle {
         self.send(Message::SetDeviceMonitor(m))
     }
 
+    /// Ganho de entrada em dB (limitado a 0..+24; não finito = 0 dB). A engine aplica com rampa.
+    pub fn set_input_gain_db(&mut self, db: f32) -> Result<(), EngineError> {
+        self.send(Message::SetInputGain(crate::input_gain::input_gain_linear(
+            db,
+        )))
+    }
+
+    /// Toca o tom de teste ("Testar som") na saída do dispositivo, fora do master: `seconds` de
+    /// duração (0,05..5) e pico de `level_dbfs` (−60..0). Não é gravado nem exportado.
+    pub fn play_test_tone(&mut self, seconds: f32, level_dbfs: f32) -> Result<(), EngineError> {
+        use crate::test_tone::*;
+        let seconds = if seconds.is_finite() {
+            seconds.clamp(TEST_TONE_MIN_SECONDS, TEST_TONE_MAX_SECONDS)
+        } else {
+            1.0
+        };
+        let level = if level_dbfs.is_finite() {
+            level_dbfs.clamp(TEST_TONE_MIN_DBFS, TEST_TONE_MAX_DBFS)
+        } else {
+            -12.0
+        };
+        self.send(Message::PlayTestTone {
+            frames: (seconds * self.sample_rate as f32).round() as u64,
+            amplitude: 10f32.powf(level / 20.0),
+        })
+    }
+
     /// Libera objetos devolvidos pelo núcleo. Retorna quantos foram liberados.
     pub fn collect_garbage(&mut self) -> usize {
         let mut n = 0;

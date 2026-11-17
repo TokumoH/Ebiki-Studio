@@ -11,20 +11,32 @@
 .input-head h3 { margin-top: 0; }
 .input-section .field { display: flex; flex-direction: column; gap: 4px; font-size: var(--text-sm); color: var(--fg-muted); }
 .input-section .field .select { min-width: 260px; color: var(--fg); }
+.input-facts { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5, 24px); margin: var(--space-2) 0; font-size: var(--text-sm); }
+.input-facts dt { color: var(--fg-muted); font-size: var(--text-xs); }
+.input-facts dd { margin: 0; color: var(--fg); }
 .input-body { display: flex; gap: var(--space-5, 24px); flex-wrap: wrap; align-items: flex-start; margin-top: var(--space-2); }
 .input-meters { display: flex; flex-direction: column; gap: 8px; flex: 1 1 300px; min-width: 240px; }
-.input-meter-row { display: grid; grid-template-columns: 76px 1fr 56px; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
-.input-meter { height: 10px; background: var(--bg-sunken); border-radius: 3px; overflow: hidden; }
-.input-meter-fill { height: 100%; background: var(--meter-low); transition: width 60ms linear; }
-.input-meter-fill.warm { background: var(--meter-mid); }
-.input-meter-fill.hot { background: var(--meter-high); }
-.input-meter-db { color: var(--fg-muted); font-size: var(--text-xs); text-align: right; }
+.input-meter-row { display: grid; grid-template-columns: 76px 1fr 72px; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.input-meter { position: relative; height: 10px; background: var(--bg-sunken); border-radius: 3px; overflow: hidden; }
+/* faixa-alvo verde (−18 a −6 dBFS) e cores por zona: fraco (aviso), abaixo, alvo, acima, distorcendo */
+.input-meter-target { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--ok) 22%, transparent); border-inline: 1px solid color-mix(in srgb, var(--ok) 70%, transparent); pointer-events: none; }
+.input-meter-fill { position: relative; height: 100%; background: var(--meter-low); transition: width 60ms linear; }
+.input-meter-fill--low { background: var(--warn); }
+.input-meter-fill--quiet { background: color-mix(in srgb, var(--meter-low) 60%, var(--fg-muted)); }
+.input-meter-fill--target { background: var(--meter-low); }
+.input-meter-fill--loud { background: var(--meter-mid); }
+.input-meter-fill--clip { background: var(--meter-high); }
+.input-meter-db { color: var(--fg-muted); font-size: var(--text-xs); text-align: right; white-space: nowrap; }
+.input-meter-db--clip { color: var(--meter-high); font-weight: 600; }
+.input-level-hint { margin: 0; font-size: var(--text-xs); color: var(--fg-muted); line-height: 1.5; }
+.input-level-hint--low { color: var(--warn); }
+.input-level-hint--clip { color: var(--meter-high); }
 .input-monitor { flex: 1 1 300px; border-left: 1px solid var(--line); padding-left: var(--space-4); }
 .input-monitor .row { align-items: center; }
 .input-gain { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--fg-muted); margin-bottom: var(--space-2); }
 .input-gain input { width: 160px; accent-color: var(--accent); }
 .input-monitor .hint { max-width: 420px; line-height: 1.5; margin: 0; }
-@media (prefers-reduced-motion: reduce) { .input-meter-fill { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .input-meter-fill, .input-summary-fill { transition: none; } }
 /* recolher/abrir a entrada */
 .input-toggle { background: transparent; border: 0; color: inherit; font: inherit; font-weight: 600; padding: 0; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
 .input-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
@@ -32,6 +44,6 @@
 .input-section--collapsed .input-head h3 { margin: 0; }
 .input-summary { display: inline-flex; align-items: center; gap: var(--space-3); flex: 1; min-width: 0; font-size: var(--text-sm); }
 .input-summary-device { color: var(--fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.input-summary-meter { display: inline-block; width: 90px; height: 6px; background: var(--bg-sunken); border-radius: 3px; overflow: hidden; flex: none; }
-.input-summary-meter > span { display: block; height: 100%; background: var(--meter-low); transition: width 60ms linear; }
+.input-summary-meter { position: relative; display: inline-block; width: 90px; height: 6px; background: var(--bg-sunken); border-radius: 3px; overflow: hidden; flex: none; }
+.input-summary-fill { position: relative; display: block; height: 100%; background: var(--meter-low); transition: width 60ms linear; }
 .input-summary-listen { color: var(--accent); white-space: nowrap; }

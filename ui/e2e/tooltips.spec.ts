@@ -14,7 +14,7 @@ test("legendas: aba do setor, parâmetro de efeito e botão com título", async 
   await newProject(page);
   const tip = page.getByRole("tooltip");
   await page.locator(".dv-tab", { hasText: "Gravação" }).hover();
-  await expect(tip).toContainText("Entrada de áudio, faixas armadas");
+  await expect(tip).toContainText("Microfone (entrada), faixas armadas");
   // efeito no master: o parâmetro explica o que faz e a faixa típica
   await page.mouse.move(5, 5);
   await expect(tip).toHaveCount(0);

@@ -9,7 +9,7 @@
 | Usuário responsável | TokumoH |
 | Status | ativo |
 | Commits | origem: `269e11d`; README por módulo em 2026-11-11 (ver `git log -- ui/src/app/README.md`) |
-| Arquivos | 29 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
+| Arquivos | 31 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
 
 ## Propósito
 
@@ -40,7 +40,9 @@ Camadas com direção única de dependência (app → panels → contexts → co
 |---|---|
 | [AboutDialog.tsx](AboutDialog.tsx) | Sobre: marca, versão, licença e privacidade em uma janela curta. |
 | [App.tsx](App.tsx) | Raiz da interface: tela inicial ou workspace, tema, telemetria, avisos e camada de legendas. |
-| [AudioSettingsDialog.tsx](AudioSettingsDialog.tsx) | ao abrir: lista os dispositivos e mostra a configuração ATUAL ("" = padrão do sistema / nenhuma) |
+| [AudioSettingsDialog.test.tsx](AudioSettingsDialog.test.tsx) | Testes do diálogo: seções fone × microfone, latência pela taxa real, Testar som, ganho, aviso de sinal baixo, retorno em 0 dB. |
+| [AudioSettingsDialog.tsx](AudioSettingsDialog.tsx) | Configurações de áudio (S1): "Fone / alto-falantes — o que você ouve" (saída + Testar som) e "Microfone / interface — o que você grava" (entrada, medidores com faixa verde, ganho, ouvir no fone); Desempenho recolhido. Aberto pela store `useAudioSettingsUi` (core/audio). |
+| [audioSettings.css](audioSettings.css) | Estilos das seções do diálogo de áudio e do indicador do tom de teste. |
 | [CloseProjectDialog.test.tsx](CloseProjectDialog.test.tsx) | Transporte simulado em que salvar pode falhar sob demanda. */ |
 | [CloseProjectDialog.tsx](CloseProjectDialog.tsx) | falha ao salvar (ou ao fechar): mantém o diálogo aberto; o erro já aparece como aviso |
 | [ExportDialog.tsx](ExportDialog.tsx) | Diálogo de exportação: formato, resolução/qualidade, intervalo, normalização e stems. |

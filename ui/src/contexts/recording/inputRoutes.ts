@@ -46,3 +46,26 @@ export function meterFraction(peak: number): number {
 export function decayPeak(previous: number, next: number, factor = 0.85): number {
   return Math.max(next, previous * factor);
 }
+
+/** Faixa-alvo do nível de entrada (dBFS), mostrada em verde nos medidores. */
+export const TARGET_ZONE_DB: readonly [number, number] = [-18, -6];
+/** Abaixo disto o sinal é fraco demais (aviso "Sinal baixo"). */
+export const LOW_SIGNAL_DB = -30;
+/** Acima disto está perto de distorcer ("Muito alto"). */
+export const CLIP_DB = -1;
+
+export type LevelZone = "low" | "quiet" | "target" | "loud" | "clip";
+
+/** Zona do nível (dBFS) para cor e aviso: fraco, abaixo do alvo, no alvo, acima do alvo, distorcendo. */
+export function levelZone(db: number): LevelZone {
+  if (db > CLIP_DB) return "clip";
+  if (db > TARGET_ZONE_DB[1]) return "loud";
+  if (db >= TARGET_ZONE_DB[0]) return "target";
+  if (db >= LOW_SIGNAL_DB) return "quiet";
+  return "low";
+}
+
+/** Posição (0–1) de um nível em dB na escala do medidor (−60 a 0 dBFS). */
+export function dbFraction(db: number): number {
+  return Math.min(1, Math.max(0, (db + 60) / 60));
+}

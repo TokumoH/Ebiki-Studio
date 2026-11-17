@@ -45,7 +45,7 @@ export function RecordingPanel() {
       <InputSection />
       <section>
         <h3>Faixas</h3>
-        {channels === 0 ? <p className="hint">Nenhuma entrada de áudio ativa: escolha o dispositivo em Entrada de áudio, acima.</p> : null}
+        {channels === 0 ? <p className="hint">Nenhuma entrada de áudio ativa: escolha o microfone em Microfone (entrada), acima.</p> : null}
         <table>
           <thead>
             <tr>

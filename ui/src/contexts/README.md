@@ -9,7 +9,7 @@
 | Usuário responsável | TokumoH |
 | Status | ativo |
 | Commits | origem: `269e11d`; README por módulo em 2026-11-11 (ver `git log -- ui/src/contexts/README.md`) |
-| Arquivos | 86 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
+| Arquivos | 88 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
 
 ## Propósito
 
@@ -103,7 +103,9 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | [project/timelineView.ts](project/timelineView.ts) | Estado de visualização da timeline (zoom no tempo e altura das faixas), compartilhado entre a |
 | [project/waveformCache.ts](project/waveformCache.ts) | Cache de picos por fonte (evita pedir ao núcleo a cada redesenho). |
 | [recording/](recording/) | Subdiretório (coberto por este README) |
-| [recording/InputSection.tsx](recording/InputSection.tsx) | "Entrada de áudio" do painel Gravação (mockup 7): dispositivo de entrada, medidores por canal e |
+| [recording/InputMeters.tsx](recording/InputMeters.tsx) | Medidores do microfone com a faixa-alvo verde (−18 a −6 dB) e avisos "Sinal baixo"/"Muito alto"; usados no painel e nas Configurações de áudio. |
+| [recording/InputSection.test.tsx](recording/InputSection.test.tsx) | Testes do bloco "Microfone (entrada)": nome, microfone e ganho só leitura, botão que abre as configurações, retorno em 0 dB. |
+| [recording/InputSection.tsx](recording/InputSection.tsx) | "Microfone (entrada)" do painel Gravação: microfone e ganho só leitura, "Configurar microfone e fone…", medidores e "Ouvir no fone" (padrão 0 dB). |
 | [recording/RecordingPanel.tsx](recording/RecordingPanel.tsx) | Configuração de gravação: entradas, monitoração, takes, metrônomo, punch e latência. */ |
 | [recording/inputRoutes.test.ts](recording/inputRoutes.test.ts) | Testes: rotas de entrada; mono por canal e pares estéreo |
 | [recording/inputRoutes.ts](recording/inputRoutes.ts) | Rotas de entrada (mono por canal e pares estéreo) — usadas pela entrada da faixa e pelo |

@@ -41,6 +41,10 @@ export const api = {
   audioStatus: () => call(S.AudioStatus, "audio_status"),
   audioMonitorGet: () => call(S.DeviceMonitor.nullable(), "audio_monitor_get"),
   audioMonitorSet: (req: DeviceMonitor | null) => call(S.DeviceMonitor.nullable(), "audio_monitor_set", { req }),
+  /** Ganho de entrada do microfone (dB, 0..+24); devolve o estado do áudio atualizado. */
+  audioInputGainSet: (gainDb: number) => call(S.AudioStatus, "audio_input_gain_set", { gainDb }),
+  /** "Testar som": tom curto (~1 s, −12 dBFS) na saída, fora do master (não grava nem exporta). */
+  audioTestTone: () => call(Void, "audio_test_tone"),
   audioConfigure: (req: { outputId: string | null; inputId: string | null; bufferSize: number | null }) => call(S.AudioStatus, "audio_configure", { req }),
   // projeto
   projectCreate: (req: { dir: string; name: string; sampleRate: number; bitDepth: number }) => call(Session, "project_create", { req }),

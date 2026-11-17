@@ -50,7 +50,7 @@ interface State {
 
 export function createMockTransport(): Transport {
   const st: State = { session: null, undo: [], redo: [], savedAt: 0, revision: 0, playing: "stopped", frame: 0, lastGesture: null, recent: [],
-    audio: { mode: "null", outputName: "Saída simulada", inputName: null, outputId: null, inputId: null, sampleRate: SR_DEFAULT, bufferSize: 256, inputChannels: 2, estimatedLatencyMs: 10.7, error: null }, monitor: null };
+    audio: { mode: "null", outputName: "Saída simulada", inputName: null, outputId: null, inputId: null, sampleRate: SR_DEFAULT, bufferSize: 256, inputChannels: 2, estimatedLatencyMs: 10.7, inputGainDb: 0, error: null }, monitor: null };
   const listeners = new Map<string, Set<(p: unknown) => void>>();
   const emit = (ev: string, p: unknown) => listeners.get(ev)?.forEach((cb) => cb(p));
 
@@ -194,7 +194,8 @@ export function createMockTransport(): Transport {
     const tracks = st.session.tracks.map((t) => ({ id: t.id, peak: [level(t), level(t)] as [number, number] }));
     const m = tracks.reduce((a, t) => Math.max(a, t.peak[0]), 0);
     // entrada simulada: um sinal fraco oscilando no canal 1 quando há dispositivo de entrada
-    const inputs = st.audio.inputId ? [0.2 + 0.15 * Math.abs(Math.sin(Date.now() / 300)), 0.01] : [];
+    const gain = 10 ** ((st.audio.inputGainDb ?? 0) / 20);
+    const inputs = st.audio.inputId ? [0.2 + 0.15 * Math.abs(Math.sin(Date.now() / 300)), 0.01].map((v) => Math.min(1, v * gain)) : [];
     const meters: MetersView = { master: [m, m], tracks, buses: st.session.buses.map((b) => ({ id: b.id, peak: [0, 0] })), inputs, xruns: 0, recordOverflow: 0 };
     emit("meters", meters);
   }, 33);
@@ -210,10 +211,17 @@ export function createMockTransport(): Transport {
       st.monitor = req ? { ...req, gainDb: Math.max(-60, Math.min(6, req.gainDb)) } : null;
       return st.monitor;
     },
+    audio_input_gain_set: (a) => {
+      const db = Number(a.gainDb);
+      if (!Number.isFinite(db)) fail("app.invalid", "Ganho de entrada inválido.");
+      st.audio = { ...st.audio, inputGainDb: Math.max(0, Math.min(24, db)) };
+      return { ...st.audio, sampleRate: sr() };
+    },
+    audio_test_tone: () => null,
     audio_configure: (a) => {
       const bufferSize = a.req.bufferSize ?? 256;
       if (!a.req.inputId) st.monitor = null;
-      st.audio = { mode: "null", outputName: "Saída simulada", inputName: a.req.inputId ? "Entrada simulada" : null, outputId: a.req.outputId ?? null, inputId: a.req.inputId ?? null, sampleRate: sr(), bufferSize, inputChannels: 2, estimatedLatencyMs: (bufferSize * 2000) / sr(), error: null };
+      st.audio = { mode: "null", outputName: "Saída simulada", inputName: a.req.inputId ? "Entrada simulada" : null, outputId: a.req.outputId ?? null, inputId: a.req.inputId ?? null, sampleRate: sr(), bufferSize, inputChannels: 2, estimatedLatencyMs: (bufferSize * 2000) / sr(), inputGainDb: st.audio.inputGainDb ?? 0, error: null };
       return st.audio;
     },
     project_create: (a) => {

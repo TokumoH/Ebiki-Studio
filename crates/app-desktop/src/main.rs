@@ -44,10 +44,17 @@ fn main() {
                 .as_ref()
                 .and_then(|db| db.setting("audio.request").ok().flatten())
                 .and_then(|s| serde_json::from_str::<serde_json::Value>(&s).ok());
+            let saved_gain = library
+                .as_ref()
+                .and_then(|db| db.setting(commands::INPUT_GAIN_SETTING).ok().flatten())
+                .and_then(|s| s.parse::<f64>().ok());
             let state = AppState::new(library);
             {
                 let mut audio = lock(&state.audio);
                 let mut studio = lock(&state.studio);
+                if let Some(g) = saved_gain {
+                    let _ = studio.set_input_gain_db(g); // antes de abrir o dispositivo
+                }
                 let req = DeviceRequest {
                     output_id: saved_request
                         .as_ref()
@@ -80,6 +87,8 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
         commands::audio_configure,
         commands::audio_monitor_get,
         commands::audio_monitor_set,
+        commands::audio_input_gain_set,
+        commands::audio_test_tone,
         commands::project_create,
         commands::project_open,
         commands::project_view,

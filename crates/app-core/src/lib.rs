@@ -25,3 +25,5 @@ pub mod composition;
 pub mod edit_service;
 // Entrada ao vivo: "Ouvir entrada" (monitor direto do dispositivo).
 pub mod device_monitor;
+// Ganho de entrada e tom de teste ("Testar som"): configuração do dispositivo.
+pub mod input_gain;

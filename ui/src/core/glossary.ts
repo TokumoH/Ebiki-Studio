@@ -17,7 +17,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
   // ------------------------------------------------------------- setores (abas)
   "panel.timeline": e("Arranjo", "As faixas e os clipes no tempo. Arraste clipes para mover, as bordas para aparar e os cantos para fazer fades.", "Ctrl+roda: zoom no tempo · Alt+roda: altura das faixas"),
   "panel.mixer": e("Mixer", "Um canal por faixa, buses e o master: volume, pan, mute/solo, efeitos (inserts) e envios para buses."),
-  "panel.recording": e("Gravação", "Entrada de áudio, faixas armadas, monitoração, metrônomo, contagem, punch in/out e compensação de latência."),
+  "panel.recording": e("Gravação", "Microfone (entrada), faixas armadas, monitoração, metrônomo, contagem, punch in/out e compensação de latência."),
   "panel.tempo": e("Mapa de tempo", "Mudanças de andamento (BPM) e de fórmula de compasso ao longo do projeto."),
   "panel.advisor": e("Análise da mixagem", "Mede volume (LUFS), picos e equilíbrio da mixagem e sugere ajustes por regras, sem IA."),
   "panel.score": e("Partitura", "Editor de partitura e tablatura: notas por clique, por texto ou pelo teclado; ouvir, validar e exportar."),
@@ -121,12 +121,13 @@ export const GLOSSARY: Record<string, TipEntry> = {
   "clip.handle": e("Alça do clipe", "Arraste para aparar o início/fim ou ajustar o fade.", undefined, [/^(Início|Fim|Fade de entrada|Fade de saída) — /]),
 
   // ------------------------------------------------------------------ gravação
-  "rec.inputDevice": e("Dispositivo de entrada", "Interface ou microfone usado para gravar. A saída e o buffer ficam em Arquivo › Configurações de áudio.", undefined, [/^Dispositivo de entrada da gravação$/]),
-  "rec.inputCollapse": e("Recolher ou abrir", "Recolhido, mostra só o dispositivo, um medidor resumido e se está ouvindo. O app lembra a escolha."),
-  "rec.inputMeter": e("Nível da entrada", "Sinal que chega do dispositivo. Mire em −18 a −6 dB nos trechos fortes; perto de 0 dB vai distorcer.", undefined, [/^Nível da entrada /]),
-  "rec.listen": e("Ouvir entrada", "Toca o dispositivo direto na saída, sem armar faixa. Não entra na gravação nem na exportação. Use fones.", undefined, [/^Ouvir entrada$/]),
+  "rec.configureAudio": e("Configurar microfone e fone", "Abre as Configurações de áudio: o único lugar onde se escolhem o microfone (entrada), o fone / alto-falantes (saída) e o ganho.", undefined, [/^Configurar microfone e fone/]),
+  "rec.inputGain": e("Ganho de entrada", "Quanto o sinal do microfone é amplificado antes de gravar, medir e ouvir. Suba até os trechos fortes ficarem na faixa verde.", "0 a +24 dB", [/^Ganho de entrada$/]),
+  "rec.inputCollapse": e("Recolher ou abrir", "Recolhido, mostra só o microfone, um medidor resumido e se está ouvindo. O app lembra a escolha."),
+  "rec.inputMeter": e("Nível da entrada", "Sinal que chega do microfone. Mire na faixa verde (−18 a −6 dB) nos trechos fortes; abaixo de −30 dB está baixo; perto de 0 dB vai distorcer.", undefined, [/^Nível da entrada /]),
+  "rec.listen": e("Ouvir o microfone no fone", "Toca o microfone direto no fone, sem armar faixa. Não entra na gravação nem na exportação. Use fones.", undefined, [/^Ouvir o microfone no fone/]),
   "rec.listenChannels": e("Canais para ouvir", "Qual entrada (mono) ou par (estéreo) ouvir.", undefined, [/^Canais para ouvir$/]),
-  "rec.listenVolume": e("Volume de monitoração", "Volume do \"Ouvir entrada\". Não muda o nível gravado.", "−60 a +6 dB", [/^Volume de monitoração$/]),
+  "rec.listenVolume": e("Volume de monitoração", "Volume do microfone no fone (\"Ouvir o microfone no fone\"). Não muda o nível gravado.", "−60 a +6 dB · padrão 0 dB", [/^Volume de monitoração$/]),
   "rec.trackInput": e("Entrada da faixa", "Qual canal do dispositivo esta faixa grava: mono (um canal) ou estéreo (par).", undefined, [/^Entrada de /]),
   "rec.monitor": e("Monitoração da faixa", "Ouvir a entrada pela faixa (com os efeitos dela): desligada, quando armada ou sempre.", undefined, [/^Monitoração de /]),
   "rec.take": e("Take ativo", "Cada gravação vira um take; escolha qual toca.", undefined, [/^Take ativo de /]),
@@ -137,8 +138,9 @@ export const GLOSSARY: Record<string, TipEntry> = {
 
   // ------------------------------------------------------------------ outros
   "audio.buffer": e("Buffer", "Tamanho do bloco de áudio. Menor = menos atraso (bom para gravar); maior = mais estável (mixagens pesadas).", "64–128 gravar · 512+ mixar", [/^Tamanho do buffer$/]),
-  "audio.output": e("Dispositivo de saída", "Onde o som toca (fones, caixas, interface).", undefined, [/^Dispositivo de saída$/]),
-  "audio.input": e("Dispositivo de entrada", "Interface ou microfone usado para gravar.", undefined, [/^Dispositivo de entrada$/]),
+  "audio.output": e("Fone / alto-falantes (saída)", "Onde o som toca: fone, caixas ou interface.", undefined, [/^Dispositivo de saída$/]),
+  "audio.input": e("Microfone (entrada)", "Microfone ou interface usado para gravar.", undefined, [/^Dispositivo de entrada$/]),
+  "audio.testTone": e("Testar som", "Toca um tom curto a −12 dBFS no fone / alto-falantes, fora da mixagem (não grava nem exporta). Se soar baixo, suba o volume do sistema ou do fone.", "~1 s · 440 Hz", [/^Testar som$/]),
   "status.audio": e("Áudio", "Dispositivo de saída em uso. \"Modo silencioso\" = nenhum dispositivo disponível; o app funciona sem som."),
   "status.format": e("Formato do projeto", "Taxa de amostragem e resolução em que o projeto grava e mixa."),
   "status.buffer": e("Buffer e latência", "Tamanho do buffer e atraso estimado de ida e volta."),

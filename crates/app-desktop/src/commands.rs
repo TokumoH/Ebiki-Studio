@@ -72,6 +72,28 @@ pub fn audio_monitor_set(
     lock(&state.studio).set_device_monitor(req)
 }
 
+/// Chave do ganho de entrada nas configurações do app (ao lado de `audio.request`).
+pub const INPUT_GAIN_SETTING: &str = "audio.inputGainDb";
+
+/// Ganho de entrada do microfone/interface (dB, limitado a 0..+24). Guarda a escolha e devolve o
+/// estado do áudio atualizado.
+#[tauri::command]
+pub fn audio_input_gain_set(state: State<AppState>, gain_db: f64) -> Res<AudioStatus> {
+    let db = lock(&state.studio).set_input_gain_db(gain_db)?;
+    let mut audio = lock(&state.audio);
+    audio.status.input_gain_db = db;
+    if let Some(lib) = lock(&state.library).as_ref() {
+        let _ = lib.set_setting(INPUT_GAIN_SETTING, &db.to_string());
+    }
+    Ok(audio.status.clone())
+}
+
+/// "Testar som": tom curto (~1 s, −12 dBFS) na saída do dispositivo, fora do master.
+#[tauri::command]
+pub fn audio_test_tone(state: State<AppState>) -> Res<()> {
+    lock(&state.studio).play_test_tone()
+}
+
 #[tauri::command]
 pub fn audio_configure(state: State<AppState>, req: AudioConfigReq) -> Res<AudioStatus> {
     if let Some(b) = req.buffer_size {

@@ -8,18 +8,22 @@
 //! - Estado de efeitos e medidores é **herdado** entre grafos por chave estável (id da faixa/efeito),
 //!   então editar a mixagem não corta caudas de reverb nem reinicia compressores.
 //! - Telemetria (posição, picos) por atômicos ([`telemetry::Telemetry`]).
+//! - Ganho de entrada ([`input_gain`]) aplicado antes de gravação, medidores e monitores; tom de
+//!   teste ([`test_tone`]) somado à saída do dispositivo, fora do master.
 //! - O mesmo código processa em tempo real (backend) e offline ([`offline`]), o que permite simulação
 //!   determinística nos testes.
 
 pub mod core;
 pub mod graph;
 pub mod handle;
+pub mod input_gain;
 pub mod input_tap;
 pub mod metronome;
 pub mod null_device;
 pub mod offline;
 pub mod recorder;
 pub mod telemetry;
+pub mod test_tone;
 pub mod transport;
 
 #[cfg(feature = "device")]
@@ -28,6 +32,7 @@ pub mod device;
 pub use crate::core::EngineCore;
 pub use graph::*;
 pub use handle::{create_engine, EngineConfig, EngineHandle};
+pub use input_gain::{input_gain_linear, INPUT_GAIN_MAX_DB, INPUT_GAIN_MIN_DB};
 pub use telemetry::{Telemetry, TelemetrySnapshot, MAX_INPUT_METERS};
 pub use transport::TransportState;
 

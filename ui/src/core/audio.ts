@@ -32,6 +32,33 @@ export async function setInputDevice(inputId: string | null): Promise<AudioStatu
   return s;
 }
 
+/** Ganho de entrada do microfone (dB, 0..+24): aplica na engine e atualiza o estado compartilhado. */
+export async function setInputGain(gainDb: number): Promise<AudioStatus> {
+  const s = await api.audioInputGainSet(gainDb);
+  useAudio.getState().setStatus(s);
+  return s;
+}
+
+/**
+ * Abertura do diálogo "Configurações de áudio" — único lugar onde se escolhem o microfone e o fone.
+ * Estado de interface no núcleo para que menus e painéis (ex.: Gravação) abram o mesmo diálogo sem
+ * depender da camada `app`.
+ */
+interface AudioSettingsUiState {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+}
+
+export const useAudioSettingsUi = create<AudioSettingsUiState>((set) => ({
+  open: false,
+  setOpen: (open) => set({ open }),
+}));
+
+/** Abre as Configurações de áudio (microfone e fone). */
+export function openAudioSettings(): void {
+  useAudioSettingsUi.getState().setOpen(true);
+}
+
 /** O backend só aceita potências de 2 entre 16 e 8192; outro valor (relatado pelo driver) = padrão. */
 export function validBuffer(b: number | null | undefined): number | null {
   return b && b >= 16 && b <= 8192 && (b & (b - 1)) === 0 ? b : null;

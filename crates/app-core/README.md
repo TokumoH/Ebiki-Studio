@@ -9,7 +9,7 @@
 | Usuário responsável | TokumoH |
 | Status | ativo |
 | Commits | origem: `e1704ca`; README por módulo em 2026-11-11 (ver `git log -- crates/app-core/README.md`) |
-| Arquivos | 31 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
+| Arquivos | 33 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
 
 ## Propósito
 
@@ -42,6 +42,7 @@ Os casos de uso dependem só de portas: testáveis com adaptadores falsos e sem 
 | [src/](src/) | Subdiretório (coberto por este README) |
 | [src/compile.rs](src/compile.rs) | Compilador: domínio (Session) → grafo de renderização da engine. |
 | [src/device_monitor.rs](src/device_monitor.rs) | "Ouvir entrada" (monitor direto do dispositivo) — caso de uso da camada de aplicação. |
+| [src/input_gain.rs](src/input_gain.rs) | Ganho de entrada do microfone (0..+24 dB, reaplicado ao trocar a engine) e tom de teste "Testar som" (~1 s, −12 dBFS) — casos de uso do dispositivo (VER-2026-11-16-02). |
 | [src/edit_service.rs](src/edit_service.rs) | Casos de uso da Fase 3 — Edição / Pós-produção (RF-3.1 a RF-3.5). |
 | [src/lib.rs](src/lib.rs) | Camada de aplicação do Ebiki Studio. |
 | [src/lyrics_service.rs](src/lyrics_service.rs) | Casos de uso de letra sincronizada (Fase 6): texto → sílabas, tempos por unidade, deslocamento, |
@@ -64,6 +65,7 @@ Os casos de uso dependem só de portas: testáveis com adaptadores falsos e sem 
 | [tests/composition.rs](tests/composition.rs) | Integração dos casos de uso de composição (Fase 5 Harmonia + Fase 4 Bases) com o 'Studio'. |
 | [tests/contract_fixtures.rs](tests/contract_fixtures.rs) | Gera fixtures JSON do contrato IPC (fonte da verdade para os tipos/zod da UI). |
 | [tests/device_monitor.rs](tests/device_monitor.rs) | "Ouvir entrada" e medidores de entrada pela camada de aplicação. |
+| [tests/input_gain.rs](tests/input_gain.rs) | Ganho de entrada (validação, valor guardado sem engine, reaplicado na troca) e tom de teste fora da exportação. |
 | [tests/edit.rs](tests/edit.rs) | Fase 3 — edição ponta a ponta: casos de uso do 'Studio' → engine (render offline). |
 | [tests/music.rs](tests/music.rs) | Integração das Fases 6–8 pelo 'Studio': notação, letra, afinação, time-stretch, afinador, |
 | [tests/studio.rs](tests/studio.rs) | Simulação ponta a ponta do caso de uso principal (Fase 0 + gravação). |

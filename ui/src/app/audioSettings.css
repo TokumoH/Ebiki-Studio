@@ -1,0 +1,22 @@
+/* Configurações de áudio (S1): seções "Fone / alto-falantes" e "Microfone / interface" + Desempenho. */
+.audio-system { margin: 0; color: var(--fg-muted); font-size: var(--text-sm); }
+.audio-section { display: flex; flex-direction: column; gap: var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: var(--space-3); background: var(--bg-raised); min-width: 0; }
+.audio-section-title { display: flex; align-items: center; gap: var(--space-2); margin: 0; font-size: var(--text-md); }
+.audio-section-icon { flex: none; color: var(--accent); }
+.audio-section .input-meters { flex: none; min-width: 0; } /* no painel Gravação ela divide a linha (flex 300px) */
+.audio-row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.audio-hint { margin: 0; color: var(--fg-muted); font-size: var(--text-xs); line-height: 1.5; }
+.audio-slider { display: grid; grid-template-columns: 110px minmax(0, 1fr) 64px; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--fg-muted); }
+.audio-slider input { width: 100%; accent-color: var(--accent); }
+.audio-slider .mono { text-align: right; color: var(--fg); }
+.audio-check { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); }
+.audio-perf > summary { cursor: pointer; font-weight: 600; }
+.audio-perf > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.audio-perf[open] > summary { margin-bottom: var(--space-2); }
+/* indicador do tom de teste: barra que pulsa enquanto toca */
+.tone-indicator { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 1.2em; font-size: var(--text-sm); color: var(--fg-muted); }
+.tone-indicator > span { display: inline-block; width: 48px; height: 6px; border-radius: 3px; background: var(--bg-sunken); overflow: hidden; }
+.tone-indicator--on > span { background: linear-gradient(90deg, var(--meter-low) 0 70%, var(--bg-sunken) 70%); animation: tone-pulse 0.5s ease-in-out infinite alternate; }
+@keyframes tone-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .tone-indicator--on > span { animation: none; } }
+@media (max-width: 520px) { .audio-slider { grid-template-columns: 1fr 64px; } .audio-slider > span:first-child { grid-column: 1 / -1; } }
