@@ -128,3 +128,23 @@ test("Arranjo continua com a maior parte da tela em janela baixa (UX-03)", async
   const lanes = await page.locator(".lanes").boundingBox();
   expect(lanes!.height).toBeGreaterThanOrEqual(120);
 });
+
+test("Mixer: M e S das faixas à vista em 1280×720 (UX-04)", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Mixer");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  await page.getByRole("button", { name: "Importar", exact: true }).click();
+  await page.locator(".dv-tab").filter({ hasText: /^Mixer$/ }).first().click();
+  for (const name of ["Mute voz", "Solo voz"]) {
+    const visible = await page.getByRole("tabpanel", { name: "Mixer" }).getByRole("button", { name }).evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!hit && el.contains(hit);
+    });
+    expect(visible, name).toBe(true);
+  }
+});

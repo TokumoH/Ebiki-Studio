@@ -291,9 +291,19 @@ export function Timeline() {
       const d = drag.current;
       drag.current = null;
       if (d?.moved) void pending.then(() => endGesture());
+      // UX-08: clique sem arrastar também posiciona o cursor (S divide o clipe ali)
+      else if (d && leftButton) void run(() => api.seek(clickTick(d.startX, altAtDown)));
     };
+    const altAtDown = e.altKey;
+    const leftButton = e.button === 0;
     el.addEventListener("pointermove", move);
     el.addEventListener("pointerup", up);
+  };
+
+  /** Tique do clique na grade (Alt = livre), como a régua. */
+  const clickTick = (clientX: number, free = false) => {
+    const t = xToTick(clientX);
+    return Math.round(free || !session ? t : snapToBeat(session.tempo, t));
   };
 
   /** Corta (`value` = tick da borda) ou aplica fade (`value` = amostras) conforme a alça. */
@@ -488,7 +498,11 @@ export function Timeline() {
                 <div key={l.tick} className={`grid-line${l.isBar ? "" : " grid-line--beat"}`} style={{ left: l.tick * pxPerTick }} />
               ))}
             {session.tracks.map((t, ti) => (
-              <div key={t.id} className="lane" style={{ ["--track-h" as string]: `${heights[ti] ?? 72}px` }} aria-selected={t.id === selectedTrackId} data-testid={`lane-${ti}`} onPointerDown={() => select({ trackId: t.id })}>
+              <div key={t.id} className="lane" style={{ ["--track-h" as string]: `${heights[ti] ?? 72}px` }} aria-selected={t.id === selectedTrackId} data-testid={`lane-${ti}`} onPointerDown={(e) => {
+                  select({ trackId: t.id });
+                  // UX-08: clique no vazio da faixa posiciona o cursor
+                  if (e.button === 0) void run(() => api.seek(clickTick(e.clientX, e.altKey)));
+                }}>
                 {t.clips.map((c) => {
                   const left = c.start * pxPerTick;
                   const width = (c.endTick - c.start) * pxPerTick;

@@ -43,11 +43,11 @@ Testes independentes e por área são fáceis de rodar isoladamente (`npx playwr
 | [edit.spec.ts](edit.spec.ts) | Fase 3 — edição: fade pelo inspetor, dividir no cursor (S), menu de contexto e desfazer. |
 | [identity.spec.ts](identity.spec.ts) | 9 teste(s): tela de carregamento com a logo aparece e sai sozinha; menu fixo: Exibir troca o tema e Alt leva o t; tutorial: Enter avança e atalhos não disparam por baixo (UX-11); diálogo prende o foco (UX-06) |
 | [layers.spec.ts](layers.spec.ts) | Camadas: diálogos e menus ficam acima dos divisores do dockview (antes um divisor cobria parte dos |
-| [follow.spec.ts](follow.spec.ts) | 3 teste(s): seguir reprodução vira a página; F desliga e rolar à mão pausa; UX-01 — Espaço toca depois de clicar num botão |
+| [follow.spec.ts](follow.spec.ts) | 4 teste(s): seguir reprodução vira a página; F desliga e rolar à mão pausa; UX-01 — Espaço toca depois de clicar num botão; clique na faixa/clipe move o cursor (UX-08) |
 | [first-record.spec.ts](first-record.spec.ts) | 3 teste(s): gravar sem microfone mostra um aviso só com atalho; com microfone arma a faixa selecionada e grava; metrônomo mostra o estado; barra de trabalhando |
 | [loop.spec.ts](loop.spec.ts) | 4 teste(s): opções de loop: compassos X até Y, projeto inteiro, desligar e religar o mesmo trecho; sem clipes, ' |
 | [music.spec.ts](music.spec.ts) | 5 teste(s): partitura: criar e entrar notas pelo teclado, render alphaTab, validar; letra: colar texto, sincroni |
-| [overflow.spec.ts](overflow.spec.ts) | derivado do catálogo: painéis novos entram na verificação automaticamente |
+| [overflow.spec.ts](overflow.spec.ts) | derivado do catálogo: painéis novos entram na verificação automaticamente; M/S do Mixer à vista (UX-04) |
 | [recording-input.spec.ts](recording-input.spec.ts) | 2 teste(s): Gravação: escolher a entrada no painel, ver o nível e ouvir a entrada; Gravação: o bloco Entrada de  |
 | [score-entry.spec.ts](score-entry.spec.ts) | 3 teste(s): Digitar notas: o exemplo C,C,C,x,x,x,D,D,D entra de uma vez e sai com um Ctrl+Z; Digitar notas: erro |
 | [timeline-zoom.spec.ts](timeline-zoom.spec.ts) | 3 teste(s): Ctrl+roda aproxima no tempo mantendo o ponto sob o mouse; Alt+roda muda a altura de todas as faixas; |

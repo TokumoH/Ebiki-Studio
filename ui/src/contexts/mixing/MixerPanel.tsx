@@ -137,6 +137,7 @@ function StripView({ name, target, strip, buses, selected, onSelect, isMaster, o
         <Fader height={120} label={`Volume ${name}`} db={strip.volume} onChange={(db, end) => (end ? (vol.end(), void run(() => api.mixerEdit(target, { op: "volume", value: db }))) : void run(() => api.mixerEdit(target, { op: "volume", value: db }, vol.id())))} />
         <LiveMeter target={target} label={`Nível ${name}`} />
       </div>
+      <div className="strip-foot">
       <div className="strip-value mono">
         {formatDb(strip.volume)} dB · {formatPan(strip.pan)}
       </div>
@@ -149,6 +150,7 @@ function StripView({ name, target, strip, buses, selected, onSelect, isMaster, o
             S
           </Toggle>
         ) : null}
+      </div>
       </div>
       <Dialog title={`Adicionar efeito — ${name}`} open={adding} onClose={() => setAdding(false)} footer={<Button onClick={() => setAdding(false)}>Fechar</Button>}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8 }}>

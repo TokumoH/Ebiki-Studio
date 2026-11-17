@@ -16,6 +16,8 @@
 .strip-fader { display: flex; justify-content: center; gap: var(--space-2); }
 .strip-value { text-align: center; font-size: var(--text-xs); color: var(--fg-muted); }
 .strip-buttons { display: flex; justify-content: center; gap: 2px; }
+/* UX-04: valor e M/S grudados no pé do canal — à vista mesmo quando o canal precisa rolar */
+.strip-foot { position: sticky; bottom: calc(-1 * var(--space-2)); margin: 0 calc(-1 * var(--space-2)) calc(-1 * var(--space-2)); padding: var(--space-1) var(--space-2) var(--space-2); background: inherit; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: var(--space-1); }
 .strip select { width: 100%; height: 22px; font-size: var(--text-xs); }
 .effect-editor { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-3); }
 .param { display: flex; flex-direction: column; gap: 2px; }

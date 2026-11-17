@@ -74,3 +74,22 @@ test("UX-01: depois de clicar num botão, Espaço toca/pausa em vez de reacionar
   await page.keyboard.press("Space");
   await expect(metro).toHaveAttribute("aria-pressed", "false");
 });
+
+test("clicar no vazio da faixa ou num clipe posiciona o cursor (UX-08)", async ({ page }) => {
+  await newProject(page);
+  const pos = page.locator(".transport-display .big").first();
+  await expect(pos).toHaveText("001.1.000");
+  const lane = (await page.getByTestId("lane-0").boundingBox())!;
+  const bar3 = await page.locator(".ruler-mark:not(.ruler-mark--beat)", { hasText: /^3$/ }).first().evaluate((el) => el.getBoundingClientRect().left);
+  await page.mouse.click(bar3 + 2, lane.y + lane.height / 2);
+  await expect(pos).toHaveText("003.1.000");
+  // importa um clipe e clica nele sem arrastar
+  await page.getByRole("button", { name: "Importar", exact: true }).click();
+  await expect(page.locator(".clip").first()).toBeVisible();
+  const id = await page.locator(".clip").first().getAttribute("data-clip-id");
+  const clip = page.locator(`.clip[data-clip-id="${id}"]`);
+  const cb = (await clip.boundingBox())!;
+  // o clipe entra no cursor (compasso 3); clicar no meio dele leva o cursor para dentro do clipe
+  await page.mouse.click(cb.x + cb.width * 0.6, cb.y + cb.height / 2);
+  await expect(pos).not.toHaveText("003.1.000");
+});
