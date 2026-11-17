@@ -327,7 +327,10 @@ export function Workspace() {
         <button type="button" className="statusbar-audio" data-tip="status.audio" onClick={openAudioSettings}>
           {audio ? (
             audio.mode === "device" ? (
-              `Fone: ${audio.outputName ?? "padrão"} · Microfone: ${audio.inputName ?? "nenhum"}`
+              <>
+                {`Fone: ${audio.outputName ?? "padrão"} · Microfone: ${audio.inputName ?? "nenhum"}`}
+                {audio.warning ? <span className="warn"> · ⚠ {audio.warning}</span> : null}
+              </>
             ) : (
               <span className="warn">Sem dispositivo de áudio (modo silencioso) — configurar</span>
             )

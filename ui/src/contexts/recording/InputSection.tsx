@@ -62,11 +62,16 @@ export function InputSection() {
         }
       })
       .catch(() => undefined);
-  }, [inputId, settingsOpen]);
+  }, [inputId, settingsOpen, status?.inputChannels]);
 
   const hasInput = !!status?.inputName;
   const channels = hasInput ? (status?.inputChannels ?? 0) : 0;
   const options = routeOptions(channels, 1);
+  // AU-06: rota que não existe mais no microfone atual volta para a primeira válida (senão o seletor
+  // mostra uma coisa e o app envia outra)
+  useEffect(() => {
+    if (!options.some((o) => o.value === route)) setRoute(options[0]?.value ?? "0:");
+  }, [channels]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const applyMonitor = async (on: boolean, nextRoute = route, nextGain = gainDb) => {
     const r = parseRouteKey(nextRoute);

@@ -68,6 +68,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-17-08-release-v0-4-0.md](VER-2026-11-17-08-release-v0-4-0.md) | Versão 0.4.0 (versão e notas da release) |
 | [VER-2026-11-17-09-mostrar-na-pasta.md](VER-2026-11-17-09-mostrar-na-pasta.md) | "Mostrar na pasta" após exportar (ADR-0037) |
 | [VER-2026-11-17-10-release-sem-corrida.md](VER-2026-11-17-10-release-sem-corrida.md) | Release sem corrida entre os sistemas (v0.4.0 duplicada) |
+| [VER-2026-11-17-11-audio-silencio-e-desconexao.md](VER-2026-11-17-11-audio-silencio-e-desconexao.md) | Áudio: modo silencioso indevido, desconexão de dispositivos e formatos inteiros |
 
 ## Lógica
 

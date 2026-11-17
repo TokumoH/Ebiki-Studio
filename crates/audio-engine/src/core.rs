@@ -323,7 +323,9 @@ impl EngineCore {
         while done < total {
             let n = (total - done).min(chunk);
             let in_n = in_frames.saturating_sub(done).min(n);
-            let raw = &input[done * in_channels..(done + in_n) * in_channels];
+            // entrada mais curta que a saída: depois do fim dela, fatia vazia (sem pânico — AU-01)
+            let a = (done * in_channels).min(input.len());
+            let raw = &input[a..a + in_n * in_channels];
             let block_in: &[f32] = if use_gain {
                 let dst = &mut scratch[..raw.len()];
                 self.input_gain.apply(raw, in_channels, dst);
@@ -853,5 +855,27 @@ mod tests {
         let mut v = Vec::new();
         assert_eq!(tap.drain(&mut v), 512);
         assert!(v.iter().all(|x| *x == 0.1), "entrada sem ganho, sem pânico");
+    }
+
+    #[test]
+    fn shorter_input_than_output_across_block_boundaries_does_not_panic() {
+        // AU-01: entrada com menos quadros que a saída, passando da fronteira de um bloco
+        for (in_ch, in_frames, out_frames) in [
+            (2usize, 1023usize, 1025usize),
+            (1, 10, 3000),
+            (2, 0, 2048),
+            (8, 600, 4100),
+        ] {
+            let (_h, mut core) = create_engine(EngineConfig::default());
+            let input = vec![0.1f32; in_frames * in_ch];
+            let mut out = vec![0.0f32; out_frames * 2];
+            let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                core.process(&mut out, 2, &input, in_ch)
+            }));
+            assert!(
+                r.is_ok(),
+                "pânico com in_ch={in_ch} in={in_frames} out={out_frames}"
+            );
+        }
     }
 }

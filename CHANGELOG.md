@@ -3,6 +3,18 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Corrigido
+
+- **Sem som** quando o microfone salvo estava desconectado ou não aceitava a taxa do projeto: agora o áudio
+  abre só com a saída e avisa. Fone escolhido que sumiu passa a usar o padrão do sistema.
+- **Dispositivo desconectado com o app aberto** é tratado: o áudio é reaberto sozinho, com aviso; quando o
+  dispositivo volta, ele é usado de novo.
+- Microfones e placas que só trabalham com amostras inteiras (16/24/32 bits) passam a funcionar.
+- Entradas da faixa mostram só os canais do microfone atual; latência acumulada do microfone; diálogo mostra
+  o modo silencioso.
+
 ## [0.4.0] - 2026-11-17
 
 Microfone e fone separados (com ganho e teste de som), a vista segue a reprodução e uma rodada grande de

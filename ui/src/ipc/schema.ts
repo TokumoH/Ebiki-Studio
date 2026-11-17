@@ -204,6 +204,8 @@ export const AudioStatus = z.object({
   /** Ganho de entrada do microfone/interface (dB, 0..+24). */
   inputGainDb: z.number().default(0),
   error: z.string().nullable(),
+  /** Problema contornado (microfone indisponível, fone trocado pelo padrão): o áudio segue. */
+  warning: z.string().nullable().default(null),
 });
 /** "Ouvir entrada": canal (0-based) ou par estéreo, ganho em dB. */
 export const DeviceMonitor = z.object({ left: z.number().int().min(0), right: z.number().int().min(0).nullable(), gainDb: z.number() });

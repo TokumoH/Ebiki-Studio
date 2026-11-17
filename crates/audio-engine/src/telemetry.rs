@@ -4,6 +4,11 @@ use crate::transport::TransportState;
 use crate::MAX_STRIPS;
 use std::sync::atomic::{AtomicU32, AtomicU64, AtomicU8, Ordering};
 
+/// Bit de [`Telemetry::take_device_lost`]: a saída (fone/alto-falante) sumiu.
+pub const LOST_OUTPUT: u8 = 1;
+/// Bit de [`Telemetry::take_device_lost`]: a entrada (microfone/interface) sumiu.
+pub const LOST_INPUT: u8 = 2;
+
 /// Valores compartilhados entre a thread de áudio (escrita) e a de controle (leitura).
 pub struct Telemetry {
     position: AtomicU64,
@@ -17,6 +22,8 @@ pub struct Telemetry {
     input_peaks: [AtomicU32; MAX_INPUT_METERS],
     /// Canais de entrada do último callback (até `MAX_INPUT_METERS`).
     input_channels: AtomicU8,
+    /// Dispositivos que sumiram com o stream aberto (bits [`LOST_OUTPUT`] / [`LOST_INPUT`]).
+    device_lost: AtomicU8,
 }
 
 /// Canais de entrada com medidor.
@@ -49,6 +56,7 @@ impl Default for Telemetry {
                 .collect(),
             input_peaks: std::array::from_fn(|_| AtomicU32::new(0)),
             input_channels: AtomicU8::new(0),
+            device_lost: AtomicU8::new(0),
         }
     }
 }
@@ -69,6 +77,17 @@ impl Telemetry {
 
     pub(crate) fn add_record_overflow(&self, n: u64) {
         self.record_overflow.fetch_add(n, Ordering::Relaxed);
+    }
+
+    /// O backend avisa que o dispositivo de saída ([`LOST_OUTPUT`]) ou de entrada ([`LOST_INPUT`])
+    /// sumiu (desconectado). Sem alocação: pode ser chamado do callback de erro do driver.
+    pub fn mark_device_lost(&self, which: u8) {
+        self.device_lost.fetch_or(which, Ordering::AcqRel);
+    }
+
+    /// Lê e zera os dispositivos perdidos desde a última leitura (a aplicação reabre o áudio).
+    pub fn take_device_lost(&self) -> u8 {
+        self.device_lost.swap(0, Ordering::AcqRel)
     }
 
     /// Registra um xrun/sobrecarga (chamado pelo backend).
@@ -151,5 +170,16 @@ mod tests {
         assert_eq!(s.peaks[1], [0.5, 0.9]);
         assert_eq!(t.snapshot(2).peaks[1], [0.0, 0.0]);
         t.push_peak(MAX_STRIPS + 5, 1.0, 1.0); // fora do limite: ignorado sem pânico
+    }
+
+    #[test]
+    fn device_lost_accumulates_and_clears_on_read() {
+        let t = Telemetry::default();
+        assert_eq!(t.take_device_lost(), 0);
+        t.mark_device_lost(LOST_INPUT);
+        t.mark_device_lost(LOST_OUTPUT);
+        t.mark_device_lost(LOST_INPUT);
+        assert_eq!(t.take_device_lost(), LOST_INPUT | LOST_OUTPUT);
+        assert_eq!(t.take_device_lost(), 0, "lido uma vez só");
     }
 }

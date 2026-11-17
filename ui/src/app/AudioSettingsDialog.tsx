@@ -99,7 +99,8 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
       const s = await api.audioConfigure({ outputId: out || null, inputId: inp || null, bufferSize: buffer });
       onChanged?.(s);
       useAudio.getState().setStatus(s);
-      if (s.error) notify.error(`Dispositivo indisponível: ${s.error}. Usando saída silenciosa.`);
+      if (s.error) notify.error(`Sem som: ${s.error}. O app ficou em modo silencioso — escolha outro fone/alto-falante.`);
+      else if (s.warning) notify.info(s.warning);
       else notify.success(`Áudio: ${s.outputName ?? "saída padrão"} · ${formatRate(s.sampleRate)} · buffer ${s.bufferSize ?? "padrão"}`);
       onClose();
     } catch (e) {
@@ -177,8 +178,17 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
             ))}
           </select>
         </Field>
+        {status && status.mode !== "device" ? (
+          <p className="audio-alert" role="alert">
+            Sem som agora: nenhum fone/alto-falante abriu{status.error ? ` (${status.error})` : ""}. Escolha outro dispositivo e clique em Aplicar.
+          </p>
+        ) : status?.warning ? (
+          <p className="audio-alert audio-alert--warn" role="status">
+            {status.warning}
+          </p>
+        ) : null}
         <div className="audio-row">
-          <Button onClick={() => void testTone()} data-tip="audio.testTone">
+          <Button onClick={() => void testTone()} data-tip="audio.testTone" disabled={status?.mode !== "device"} title={status?.mode !== "device" ? "Sem dispositivo de saída aberto" : undefined}>
             Testar som
           </Button>
           <span className={`tone-indicator${toneOn ? " tone-indicator--on" : ""}`} role="status" aria-label="Tom de teste">

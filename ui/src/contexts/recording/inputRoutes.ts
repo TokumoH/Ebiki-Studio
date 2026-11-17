@@ -32,6 +32,21 @@ export function routeOptions(channels: number, minChannels = 2): RouteOption[] {
   return opts;
 }
 
+/**
+ * Opções de entrada de uma faixa: só os canais que o microfone tem agora (AU-05). Uma rota salva que
+ * deixou de existir (microfone trocado/desconectado) aparece marcada como indisponível, para a
+ * pessoa ver por que a gravação não aceita aquela faixa.
+ */
+export function trackRouteOptions(channels: number, current: InputRoute | null): RouteOption[] {
+  const opts = routeOptions(channels, 0);
+  const key = routeKey(current);
+  if (current && key && !opts.some((o) => o.value === key)) {
+    const label = current.right === null ? `Entrada ${current.left + 1}` : `Entradas ${current.left + 1}/${current.right + 1}`;
+    opts.unshift({ value: key, label: `${label} (indisponível)`, route: current });
+  }
+  return opts;
+}
+
 /** Pico linear → dBFS (piso de −60). */
 export function peakDb(peak: number): number {
   return peak > 0 ? Math.max(-60, 20 * Math.log10(peak)) : -60;

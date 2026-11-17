@@ -3,7 +3,7 @@ import { api } from "../../ipc/api";
 import type { Track } from "../../ipc/types";
 import { refreshAudio, useAudio } from "../../core/audio";
 import { InputSection } from "./InputSection";
-import { parseRouteKey, routeKey, routeOptions } from "./inputRoutes";
+import { parseRouteKey, routeKey, trackRouteOptions } from "./inputRoutes";
 import { run, useSession } from "../../core/session";
 import { Button, Field, Toggle } from "../../shared/components";
 import "./recording.css";
@@ -19,7 +19,7 @@ function InputSelect({ track, channels }: { track: Track; channels: number }) {
       onChange={(e) => void run(() => api.recordingTrack({ trackId: track.id, input: parseRouteKey(e.target.value) }))}
     >
       <option value="">Sem entrada</option>
-      {routeOptions(channels).map((o) => (
+      {trackRouteOptions(channels, track.recording.input).map((o) => (
         <option key={o.value} value={o.value}>
           {o.label}
         </option>

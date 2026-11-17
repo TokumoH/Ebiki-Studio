@@ -216,6 +216,23 @@ fn spawn_telemetry(app: tauri::AppHandle) {
         .spawn(move || loop {
             std::thread::sleep(TELEMETRY_INTERVAL);
             let state = app.state::<AppState>();
+            // dispositivo desconectado/religado: reabre o áudio e avisa a interface (mesma ordem de
+            // travas dos comandos: áudio, depois estúdio)
+            // fase 1 só com a trava do áudio (listar dispositivos é lento); fase 2 reabre
+            let reason = lock(&state.audio).check_reopen();
+            let reopened = reason.and_then(|r| {
+                let mut audio = lock(&state.audio);
+                let mut studio = lock(&state.studio);
+                audio
+                    .reopen(r, &mut studio)
+                    .then(|| (r, audio.status.clone()))
+            });
+            if let Some((reason, status)) = reopened {
+                let _ = app.emit(
+                    "audio-reopened",
+                    serde_json::json!({ "message": reason.message(), "status": status }),
+                );
+            }
             let (transport, meters) = {
                 let studio = lock(&state.studio);
                 if !studio.is_open() {

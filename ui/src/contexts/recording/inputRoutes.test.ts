@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dbFraction, decayPeak, levelZone, meterFraction, parseRouteKey, peakDb, routeKey, routeOptions, TARGET_ZONE_DB } from "./inputRoutes";
+import { dbFraction, decayPeak, levelZone, meterFraction, parseRouteKey, peakDb, routeKey, routeOptions, TARGET_ZONE_DB, trackRouteOptions } from "./inputRoutes";
 
 describe("rotas de entrada", () => {
   it("mono por canal e pares estéreo", () => {
@@ -48,5 +48,16 @@ describe("medidor", () => {
     expect(dbFraction(-6)).toBeCloseTo(0.9);
     expect(dbFraction(-90)).toBe(0);
     expect(dbFraction(6)).toBe(1);
+  });
+});
+
+describe("entradas da faixa depois de trocar o microfone (AU-05)", () => {
+  it("só os canais que existem; rota salva que sumiu aparece como indisponível", () => {
+    expect(trackRouteOptions(1, null).map((o) => o.value)).toEqual(["0:"]);
+    expect(trackRouteOptions(0, null)).toEqual([]);
+    const gone = trackRouteOptions(1, { left: 0, right: 1 });
+    expect(gone[0]).toMatchObject({ value: "0:1", label: "Entradas 1/2 (indisponível)" });
+    expect(gone.map((o) => o.value)).toEqual(["0:1", "0:"]);
+    expect(trackRouteOptions(2, { left: 0, right: 1 }).some((o) => o.label.includes("indisponível"))).toBe(false);
   });
 });

@@ -82,6 +82,11 @@ sublinhado pontilhado têm explicação. Desligue em *Exibir › Legendas ao pas
    - **Desempenho** (recolhido): o buffer. A latência mostrada usa a taxa real do dispositivo.
      Buffers de 64–128 amostras dão a menor latência (gravação); 512+ para mixagens pesadas.
    - Sem dispositivo disponível, o app continua funcionando em modo silencioso (barra de status avisa).
+   - **Microfone ausente ou incompatível não deixa o app mudo:** o áudio abre só com a saída e a barra
+     de status avisa. Fone escolhido que sumiu é trocado pelo padrão do sistema.
+   - **Desconectou com o app aberto:** o áudio é reaberto sozinho (aviso na tela); quando o
+     dispositivo volta, ele é usado de novo em até 2 segundos.
+   - Dispositivos que só trabalham com amostras inteiras (16/24/32 bits) também funcionam.
 3. **Importar áudio** (*Importar* ou Ctrl+I, ou arraste arquivos para a janela): WAV, AIFF, FLAC,
    MP3, OGG, AAC/M4A. O arquivo é copiado para o projeto e convertido para a taxa do projeto;
    o original nunca é alterado.

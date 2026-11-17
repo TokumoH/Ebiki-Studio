@@ -119,3 +119,7 @@ kbd { font-family: var(--font-mono); font-size: var(--text-xs); padding: 1px 6px
 /* UX-18: entrada de áudio da barra de status é um botão para as configurações */
 .statusbar-audio { background: none; border: 0; padding: 0 4px; color: inherit; font: inherit; cursor: pointer; border-radius: var(--radius-sm); }
 .statusbar-audio:hover { color: var(--fg); text-decoration: underline; }
+
+/* AU-10: modo silencioso e avisos de dispositivo no diálogo de áudio */
+.audio-alert { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); border: 1px solid var(--crit); color: var(--fg); font-size: var(--text-sm); }
+.audio-alert--warn { border-color: var(--warn); }

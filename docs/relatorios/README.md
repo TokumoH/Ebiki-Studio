@@ -44,6 +44,7 @@ Data no nome ordena cronologicamente; um relatório por varredura.
 | [2026-11-06-varredura-identidade.md](2026-11-06-varredura-identidade.md) | Varredura — Identidade Ebiki (menu fixo, ajuda, tutorial, splash, instaladores) — v0.2.0 |
 | [2026-11-11-varredura-4.md](2026-11-11-varredura-4.md) | Varredura 4 — 2026-11-11 (17 objetivos do CORE) |
 | [2026-11-16-varredura-5-ux.md](2026-11-16-varredura-5-ux.md) | Varredura 5 — UX, áudio baixo e seguir reprodução (sugestões aguardando aprovação) |
+| [2026-11-17-varredura-6-audio.md](2026-11-17-varredura-6-audio.md) | Varredura 6 — bugs de áudio: modo silencioso, desconexão de dispositivos, formatos (correções e sugestões) |
 
 ## Lógica
 

@@ -4,8 +4,11 @@
 //! ([`DeviceHost`]); a aplicação conversa com ela por canal.
 
 use crate::core::EngineCore;
+use crate::telemetry::{Telemetry, LOST_INPUT, LOST_OUTPUT};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::{FromSample, SampleFormat, SizedSample};
 use std::sync::mpsc;
+use std::sync::Arc;
 use std::time::Instant;
 
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
@@ -41,6 +44,12 @@ pub struct RunningInfo {
     pub buffer_size: Option<u32>,
     pub out_channels: u16,
     pub in_channels: u16,
+    /// O microfone pedido não abriu (ausente ou incompatível): o áudio segue sem entrada.
+    pub input_missing: bool,
+    /// O fone pedido não foi encontrado: a saída usa o padrão do sistema.
+    pub output_fallback: bool,
+    /// Avisos para a pessoa (PT-BR), um por problema contornado.
+    pub warnings: Vec<String>,
 }
 
 #[derive(Debug, thiserror::Error, Clone, PartialEq, Eq)]
@@ -50,7 +59,7 @@ pub enum DeviceError {
     #[error("dispositivo não encontrado: {0}")]
     NotFound(String),
     #[error(
-        "o dispositivo não suporta {0} Hz em ponto flutuante; escolha outra taxa ou dispositivo"
+        "o dispositivo não suporta {0} Hz; escolha outro dispositivo ou mude a taxa do projeto"
     )]
     UnsupportedRate(u32),
     #[error("falha no driver de áudio: {0}")]
@@ -117,31 +126,136 @@ fn find(h: &cpal::Host, id: &str, output: bool) -> Result<cpal::Device, DeviceEr
         .ok_or_else(|| DeviceError::NotFound(id.to_owned()))
 }
 
-fn f32_config(
+/// Formatos aceitos, do preferido ao menos preferido (o motor trabalha em f32; os inteiros são
+/// convertidos no callback). Muitos microfones USB e placas no Linux não oferecem f32.
+const FORMATS: [SampleFormat; 5] = [
+    SampleFormat::F32,
+    SampleFormat::I32,
+    SampleFormat::I24,
+    SampleFormat::I16,
+    SampleFormat::U16,
+];
+
+/// Melhor configuração na taxa `rate`: formato mais preferido em [`FORMATS`] e, nele, o número de
+/// canais igual a `want_channels` (senão o primeiro com mais canais, senão o maior disponível).
+pub(crate) fn pick_config(
     configs: impl Iterator<Item = cpal::SupportedStreamConfigRange>,
     rate: u32,
     want_channels: u16,
 ) -> Option<cpal::SupportedStreamConfig> {
-    let mut best: Option<cpal::SupportedStreamConfigRange> = None;
-    for c in configs {
-        if c.sample_format() != cpal::SampleFormat::F32
-            || c.min_sample_rate() > rate
-            || c.max_sample_rate() < rate
-        {
-            continue;
+    let rank = |c: &cpal::SupportedStreamConfigRange| {
+        let fmt = FORMATS.iter().position(|f| *f == c.sample_format())?;
+        if c.min_sample_rate() > rate || c.max_sample_rate() < rate || c.channels() == 0 {
+            return None;
         }
-        let better = match &best {
-            None => true,
-            Some(b) => {
-                (c.channels() >= want_channels && b.channels() < want_channels)
-                    || (c.channels() == want_channels)
-            }
+        // menor é melhor: formato, depois canais (exato < mais < menos)
+        let ch = if c.channels() == want_channels {
+            0
+        } else if c.channels() > want_channels {
+            1
+        } else {
+            2
         };
-        if better {
-            best = Some(c);
+        Some((fmt, ch, u16::MAX - c.channels()))
+    };
+    configs
+        .filter_map(|c| rank(&c).map(|r| (r, c)))
+        .min_by_key(|(r, _)| *r)
+        .map(|(_, c)| c.with_sample_rate(rate))
+}
+
+/// Buffer pedido dentro da faixa que o dispositivo aceita (fora dela o stream não abre).
+pub(crate) fn fit_buffer(range: &cpal::SupportedBufferSize, req: Option<u32>) -> cpal::BufferSize {
+    match (req, range) {
+        (None, _) => cpal::BufferSize::Default,
+        (Some(b), cpal::SupportedBufferSize::Range { min, max }) => {
+            cpal::BufferSize::Fixed(b.clamp(*min, (*max).max(*min)))
         }
+        (Some(b), cpal::SupportedBufferSize::Unknown) => cpal::BufferSize::Fixed(b),
     }
-    best.map(|c| c.with_sample_rate(rate))
+}
+
+/// Quadros por pedaço de conversão no callback (buffers pré-alocados, sem alocação no tempo real).
+const CB_FRAMES: usize = 4096;
+
+/// Callback de erro do driver: dispositivo sumiu → marca para a aplicação reabrir; resto → xrun.
+fn on_stream_error(tel: Arc<Telemetry>, which: u8) -> impl FnMut(cpal::Error) + Send + 'static {
+    move |e: cpal::Error| match e.kind() {
+        cpal::ErrorKind::DeviceNotAvailable | cpal::ErrorKind::HostUnavailable => {
+            tel.mark_device_lost(which)
+        }
+        _ => tel.add_xrun(),
+    }
+}
+
+/// Stream de saída no formato nativo `T`: `render` preenche um rascunho f32, convertido para `T`.
+fn build_output<T: SizedSample + FromSample<f32> + Send + 'static>(
+    dev: &cpal::Device,
+    config: cpal::StreamConfig,
+    mut render: impl FnMut(&mut [f32]) + Send + 'static,
+    err: impl FnMut(cpal::Error) + Send + 'static,
+) -> Result<cpal::Stream, cpal::Error> {
+    let ch = (config.channels as usize).max(1);
+    let mut buf = vec![0.0f32; CB_FRAMES * ch];
+    dev.build_output_stream::<T, _, _>(
+        config,
+        move |data: &mut [T], _: &cpal::OutputCallbackInfo| {
+            for chunk in data.chunks_mut(CB_FRAMES * ch) {
+                let b = &mut buf[..chunk.len()];
+                render(b);
+                for (d, s) in chunk.iter_mut().zip(b.iter()) {
+                    *d = T::from_sample(*s);
+                }
+            }
+        },
+        err,
+        None,
+    )
+}
+
+/// Stream de entrada no formato nativo `T`, convertido para f32 antes de `push`.
+fn build_input<T: SizedSample + Send + 'static>(
+    dev: &cpal::Device,
+    config: cpal::StreamConfig,
+    mut push: impl FnMut(&[f32]) + Send + 'static,
+    err: impl FnMut(cpal::Error) + Send + 'static,
+) -> Result<cpal::Stream, cpal::Error>
+where
+    f32: FromSample<T>,
+{
+    let ch = (config.channels as usize).max(1);
+    let mut buf = vec![0.0f32; CB_FRAMES * ch];
+    dev.build_input_stream::<T, _, _>(
+        config,
+        move |data: &[T], _: &cpal::InputCallbackInfo| {
+            for chunk in data.chunks(CB_FRAMES * ch) {
+                let b = &mut buf[..chunk.len()];
+                for (d, s) in b.iter_mut().zip(chunk.iter()) {
+                    *d = <f32 as FromSample<T>>::from_sample_(*s);
+                }
+                push(b);
+            }
+        },
+        err,
+        None,
+    )
+}
+
+/// Escolhe o tipo de amostra do stream pelo formato da configuração.
+macro_rules! by_format {
+    ($fmt:expr, $f:ident, $($arg:expr),*) => {
+        match $fmt {
+            SampleFormat::F32 => $f::<f32>($($arg),*),
+            SampleFormat::I32 => $f::<i32>($($arg),*),
+            SampleFormat::I24 => $f::<cpal::I24>($($arg),*),
+            SampleFormat::I16 => $f::<i16>($($arg),*),
+            SampleFormat::U16 => $f::<u16>($($arg),*),
+            other => Err(cpal::Error::with_message(
+                cpal::ErrorKind::UnsupportedConfig,
+                format!("formato {other:?} não suportado"),
+            )),
+        }
+    };
 }
 
 /// Thread dona dos streams de áudio.
@@ -197,16 +311,86 @@ impl Drop for DeviceHost {
     }
 }
 
+/// Entrada aberta: stream (mantém o callback vivo), canais, nome e a fila lida pela saída.
+struct OpenInput {
+    stream: cpal::Stream,
+    channels: usize,
+    name: String,
+    consumer: rtrb::Consumer<f32>,
+}
+
+/// Abre o microfone pedido. Falhar aqui **não** derruba o áudio: quem chama segue sem entrada.
+fn open_input(
+    h: &cpal::Host,
+    id: &str,
+    rate: u32,
+    buffer: Option<u32>,
+    telemetry: &Arc<Telemetry>,
+) -> Result<OpenInput, String> {
+    let dev =
+        find(h, id, false).map_err(|_| "microfone não encontrado (desconectado?)".to_owned())?;
+    let cfg = pick_config(
+        dev.supported_input_configs().map_err(|e| e.to_string())?,
+        rate,
+        2,
+    )
+    .ok_or_else(|| format!("o microfone não funciona a {} kHz", rate as f64 / 1000.0))?;
+    let fmt = cfg.sample_format();
+    let buffer_size = fit_buffer(cfg.buffer_size(), buffer);
+    let mut config: cpal::StreamConfig = cfg.into();
+    config.buffer_size = buffer_size;
+    let ch = (config.channels as usize).max(1);
+    let (mut prod, consumer) = rtrb::RingBuffer::<f32>::new(rate as usize * ch / 2);
+    let tel = telemetry.clone();
+    let push = move |data: &[f32]| {
+        // só quadros inteiros: um corte no meio do quadro trocaria L/R para sempre
+        let whole = (data.len().min(prod.slots()) / ch) * ch;
+        if let Ok(mut chunk) = prod.write_chunk_uninit(whole) {
+            let n = chunk.len();
+            let (a, b) = chunk.as_mut_slices();
+            for (dst, src) in a.iter_mut().chain(b.iter_mut()).zip(data) {
+                dst.write(*src);
+            }
+            // SAFETY: n posições escritas acima.
+            unsafe { chunk.commit(n) };
+            if n < data.len() {
+                tel.add_xrun();
+            }
+        }
+    };
+    let err = on_stream_error(telemetry.clone(), LOST_INPUT);
+    let stream =
+        by_format!(fmt, build_input, &dev, config, push, err).map_err(|e| e.to_string())?;
+    stream.play().map_err(|e| e.to_string())?;
+    Ok(OpenInput {
+        stream,
+        channels: ch,
+        name: dev.to_string(),
+        consumer,
+    })
+}
+
 fn open_streams(
     mut core: EngineCore,
     req: &DeviceRequest,
 ) -> Result<(Vec<cpal::Stream>, RunningInfo), DeviceError> {
     let h = host();
-    let out_dev = match &req.output_id {
-        Some(id) => find(&h, id, true)?,
+    let mut warnings = Vec::new();
+    // fone pedido que sumiu: usa o padrão do sistema em vez de ficar mudo
+    let mut output_fallback = false;
+    let out_dev = match req.output_id.as_deref().map(|id| find(&h, id, true)) {
+        Some(Ok(d)) => d,
+        Some(Err(_)) => {
+            output_fallback = true;
+            warnings.push(
+                "O fone/alto-falante escolhido não foi encontrado: usando o padrão do sistema."
+                    .to_owned(),
+            );
+            h.default_output_device().ok_or(DeviceError::NoOutput)?
+        }
         None => h.default_output_device().ok_or(DeviceError::NoOutput)?,
     };
-    let out_cfg = f32_config(
+    let out_cfg = pick_config(
         out_dev
             .supported_output_configs()
             .map_err(|e| DeviceError::Backend(e.to_string()))?,
@@ -214,105 +398,80 @@ fn open_streams(
         2,
     )
     .ok_or(DeviceError::UnsupportedRate(req.sample_rate))?;
+    let out_fmt = out_cfg.sample_format();
+    let out_buffer = fit_buffer(out_cfg.buffer_size(), req.buffer_size);
     let mut out_config: cpal::StreamConfig = out_cfg.into();
-    if let Some(b) = req.buffer_size {
-        out_config.buffer_size = cpal::BufferSize::Fixed(b);
-    }
-    let out_ch = out_config.channels as usize;
+    out_config.buffer_size = out_buffer;
+    let out_ch = (out_config.channels as usize).max(1);
     let telemetry = core.telemetry();
 
-    // entrada (opcional): callback empurra para fila lock-free; a saída consome
+    // entrada (opcional): se não abrir, o áudio segue sem ela — nunca derruba a saída
     let mut streams = Vec::new();
     let mut in_ch = 0usize;
     let mut input_name = None;
+    let mut input_missing = false;
     let mut in_consumer: Option<rtrb::Consumer<f32>> = None;
     if let Some(id) = &req.input_id {
-        let in_dev = find(&h, id, false)?;
-        let cfg = f32_config(
-            in_dev
-                .supported_input_configs()
-                .map_err(|e| DeviceError::Backend(e.to_string()))?,
-            req.sample_rate,
-            2,
-        )
-        .ok_or(DeviceError::UnsupportedRate(req.sample_rate))?;
-        let mut in_config: cpal::StreamConfig = cfg.into();
-        in_config.buffer_size = out_config.buffer_size;
-        in_ch = in_config.channels as usize;
-        let (mut prod, cons) = rtrb::RingBuffer::<f32>::new(req.sample_rate as usize * in_ch / 2);
-        let tel = telemetry.clone();
-        let stream = in_dev
-            .build_input_stream(
-                in_config,
-                move |data: &[f32], _: &cpal::InputCallbackInfo| {
-                    // só quadros inteiros: um corte no meio do quadro trocaria L/R para sempre
-                    let whole = (data.len().min(prod.slots()) / in_ch) * in_ch;
-                    if let Ok(mut chunk) = prod.write_chunk_uninit(whole) {
-                        let n = chunk.len();
-                        let (a, b) = chunk.as_mut_slices();
-                        for (dst, src) in a.iter_mut().chain(b.iter_mut()).zip(data) {
-                            dst.write(*src);
-                        }
-                        // SAFETY: n posições escritas acima.
-                        unsafe { chunk.commit(n) };
-                        if n < data.len() {
-                            tel.add_xrun();
-                        }
-                    }
-                },
-                move |_e| {},
-                None,
-            )
-            .map_err(|e| DeviceError::Backend(e.to_string()))?;
-        stream
-            .play()
-            .map_err(|e| DeviceError::Backend(e.to_string()))?;
-        streams.push(stream);
-        input_name = Some(in_dev.to_string());
-        in_consumer = Some(cons);
+        match open_input(&h, id, req.sample_rate, req.buffer_size, &telemetry) {
+            Ok(i) => {
+                in_ch = i.channels;
+                input_name = Some(i.name);
+                in_consumer = Some(i.consumer);
+                streams.push(i.stream);
+            }
+            Err(why) => {
+                input_missing = true;
+                warnings.push(format!(
+                    "Microfone indisponível ({why}): o áudio segue sem entrada."
+                ));
+            }
+        }
     }
 
-    let mut in_buf = vec![0.0f32; 16_384 * in_ch.max(1)];
+    let mut in_buf = vec![0.0f32; CB_FRAMES * in_ch.max(1)];
     let sr = req.sample_rate as f64;
     let tel_out = telemetry.clone();
-    let tel_err = telemetry;
-    let stream = out_dev
-        .build_output_stream(
-            out_config,
-            move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
-                let started = Instant::now();
-                let frames = data.len() / out_ch.max(1);
-                let mut n_in = 0;
-                if let Some(c) = in_consumer.as_mut() {
-                    let want = (frames * in_ch).min(in_buf.len());
-                    // múltiplo do número de canais, para não desalinhar L/R
-                    let avail = (c.slots().min(want) / in_ch.max(1)) * in_ch.max(1);
-                    if let Ok(chunk) = c.read_chunk(avail) {
-                        let (a, b) = chunk.as_slices();
-                        in_buf[..a.len()].copy_from_slice(a);
-                        in_buf[a.len()..a.len() + b.len()].copy_from_slice(b);
-                        chunk.commit_all();
-                    }
-                    // completa com silêncio se a entrada atrasou
-                    in_buf[avail..want].fill(0.0);
-                    n_in = want;
+    let render = move |data: &mut [f32]| {
+        let started = Instant::now();
+        let frames = data.len() / out_ch;
+        let mut n_in = 0;
+        if let Some(c) = in_consumer.as_mut() {
+            let want = (frames * in_ch).min(in_buf.len());
+            // AU-03: o que se acumulou na fila (entrada aberta antes da saída, relógios diferentes)
+            // vira latência fixa na monitoração e nos takes: acima de 2 callbacks, descarta o excesso
+            let backlog = c.slots();
+            if backlog > want * 2 {
+                let drop = ((backlog - want) / in_ch.max(1)) * in_ch.max(1);
+                if let Ok(chunk) = c.read_chunk(drop) {
+                    chunk.commit_all();
                 }
-                // um pânico aqui encerraria o stream: em caso de falha, silêncio + registro
-                let ok = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    core.process(data, out_ch, &in_buf[..n_in], in_ch);
-                }));
-                if ok.is_err() {
-                    data.fill(0.0);
-                    tel_out.add_xrun();
-                }
-                let budget = frames as f64 / sr;
-                if started.elapsed().as_secs_f64() > budget * 0.9 {
-                    tel_out.add_xrun();
-                }
-            },
-            move |_e| tel_err.add_xrun(),
-            None,
-        )
+            }
+            // múltiplo do número de canais, para não desalinhar L/R
+            let avail = (c.slots().min(want) / in_ch.max(1)) * in_ch.max(1);
+            if let Ok(chunk) = c.read_chunk(avail) {
+                let (a, b) = chunk.as_slices();
+                in_buf[..a.len()].copy_from_slice(a);
+                in_buf[a.len()..a.len() + b.len()].copy_from_slice(b);
+                chunk.commit_all();
+            }
+            // completa com silêncio se a entrada atrasou (ou parou: microfone desconectado)
+            in_buf[avail..want].fill(0.0);
+            n_in = want;
+        }
+        // um pânico aqui encerraria o stream: em caso de falha, silêncio + registro
+        let ok = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            core.process(data, out_ch, &in_buf[..n_in], in_ch);
+        }));
+        if ok.is_err() {
+            data.fill(0.0);
+            tel_out.add_xrun();
+        }
+        if started.elapsed().as_secs_f64() > frames as f64 / sr * 0.9 {
+            tel_out.add_xrun();
+        }
+    };
+    let err = on_stream_error(telemetry, LOST_OUTPUT);
+    let stream = by_format!(out_fmt, build_output, &out_dev, out_config, render, err)
         .map_err(|e| DeviceError::Backend(e.to_string()))?;
     stream
         .play()
@@ -322,9 +481,15 @@ fn open_streams(
         output_name: out_dev.to_string(),
         input_name,
         sample_rate: req.sample_rate,
-        buffer_size: req.buffer_size,
+        buffer_size: match out_buffer {
+            cpal::BufferSize::Fixed(b) => Some(b),
+            cpal::BufferSize::Default => None,
+        },
         out_channels: out_ch as u16,
         in_channels: in_ch as u16,
+        input_missing,
+        output_fallback,
+        warnings,
     };
     Ok((streams, info))
 }
@@ -337,5 +502,88 @@ mod tests {
     fn listing_never_panics_even_without_hardware() {
         let l = list_devices();
         assert!(!l.host.is_empty());
+    }
+
+    use cpal::{SupportedBufferSize, SupportedStreamConfigRange as R};
+
+    fn r(ch: u16, min: u32, max: u32, fmt: SampleFormat) -> R {
+        R::new(
+            ch,
+            min,
+            max,
+            SupportedBufferSize::Range { min: 64, max: 4096 },
+            fmt,
+        )
+    }
+
+    #[test]
+    fn prefers_f32_but_accepts_integer_devices() {
+        // microfone USB típico: só i16 (antes era recusado e derrubava o áudio inteiro)
+        let only_i16 = vec![r(1, 44_100, 48_000, SampleFormat::I16)];
+        let c = pick_config(only_i16.into_iter(), 48_000, 2).expect("aceito");
+        assert_eq!(c.sample_format(), SampleFormat::I16);
+        assert_eq!(c.channels(), 1);
+        let mixed = vec![
+            r(2, 48_000, 48_000, SampleFormat::I16),
+            r(2, 48_000, 48_000, SampleFormat::F32),
+            r(2, 48_000, 48_000, SampleFormat::I32),
+        ];
+        assert_eq!(
+            pick_config(mixed.into_iter(), 48_000, 2)
+                .unwrap()
+                .sample_format(),
+            SampleFormat::F32
+        );
+    }
+
+    #[test]
+    fn channels_exact_then_more_then_fewer() {
+        let cfgs = || {
+            vec![
+                r(1, 48_000, 48_000, SampleFormat::F32),
+                r(8, 48_000, 48_000, SampleFormat::F32),
+                r(2, 48_000, 48_000, SampleFormat::F32),
+            ]
+            .into_iter()
+        };
+        assert_eq!(pick_config(cfgs(), 48_000, 2).unwrap().channels(), 2);
+        let no_stereo = vec![
+            r(1, 48_000, 48_000, SampleFormat::F32),
+            r(8, 48_000, 48_000, SampleFormat::F32),
+        ];
+        assert_eq!(
+            pick_config(no_stereo.into_iter(), 48_000, 2)
+                .unwrap()
+                .channels(),
+            8
+        );
+    }
+
+    #[test]
+    fn rate_outside_range_or_unknown_format_is_refused() {
+        let cfgs = vec![
+            r(2, 44_100, 44_100, SampleFormat::F32),
+            r(2, 48_000, 48_000, SampleFormat::U8),
+        ];
+        assert!(pick_config(cfgs.into_iter(), 48_000, 2).is_none());
+    }
+
+    #[test]
+    fn buffer_is_clamped_to_the_device_range() {
+        let range = SupportedBufferSize::Range {
+            min: 128,
+            max: 1024,
+        };
+        assert_eq!(fit_buffer(&range, Some(32)), cpal::BufferSize::Fixed(128));
+        assert_eq!(
+            fit_buffer(&range, Some(4096)),
+            cpal::BufferSize::Fixed(1024)
+        );
+        assert_eq!(fit_buffer(&range, Some(256)), cpal::BufferSize::Fixed(256));
+        assert_eq!(fit_buffer(&range, None), cpal::BufferSize::Default);
+        assert_eq!(
+            fit_buffer(&SupportedBufferSize::Unknown, Some(256)),
+            cpal::BufferSize::Fixed(256)
+        );
     }
 }
