@@ -37,7 +37,7 @@ test("configurações de áudio: reabrir mostra a entrada e o buffer escolhidos"
   await expect(page.getByLabel("Tamanho do buffer")).toBeHidden();
   await page.getByText("Desempenho", { exact: true }).click();
   await page.getByLabel("Tamanho do buffer").selectOption("128");
-  await expect(page.getByText("Buffer — ~5.3 ms de ida e volta a 48 kHz")).toBeVisible();
+  await expect(page.getByText("Buffer — ~5,3 ms de ida e volta a 48 kHz")).toBeVisible();
   await page.getByRole("button", { name: "Aplicar" }).click();
   await expect(page.getByRole("dialog", { name: "Configurações de áudio" })).toHaveCount(0);
   await open();
@@ -76,4 +76,18 @@ test("configurações de áudio: fone (o que você ouve) e microfone (o que voc�
   await expect(mic).toContainText("+24 dB");
   await expect.poll(async () => Number(await meter.getAttribute("aria-valuenow"))).toBeGreaterThan(-20);
   await expect(meter.locator(".input-meter-target")).toHaveCount(1);
+});
+
+test("barra de status: mostra fone e microfone e abre as configurações (UX-18)", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill("Status");
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+  const status = page.getByRole("contentinfo", { name: "Status" });
+  const audio = status.locator(".statusbar-audio");
+  await expect(audio).toContainText(/Fone: .* · Microfone: |Sem dispositivo de áudio/);
+  await audio.click();
+  await expect(page.getByRole("dialog", { name: "Configurações de áudio" })).toBeVisible();
 });

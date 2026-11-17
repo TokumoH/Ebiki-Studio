@@ -11,6 +11,7 @@ import { openAudioSettings, useAudio, useAudioSettingsUi } from "../../core/audi
 import { Button, Toggle } from "../../shared/components";
 import { InputMeters, InputSummaryMeter } from "./InputMeters";
 import { parseRouteKey, routeKey, routeOptions } from "./inputRoutes";
+import { formatDecimal } from "../../core/format";
 
 /** Volume inicial do retorno no fone: 0 dB (o sinal como chega; antes era −6 dB e soava baixo). */
 export const DEFAULT_MONITOR_GAIN_DB = 0;
@@ -118,7 +119,7 @@ export function InputSection() {
                 <dt>Formato</dt>
                 <dd>
                   {channels} {channels === 1 ? "canal" : "canais"} · {((status?.sampleRate ?? 48000) / 1000).toLocaleString("pt-BR")} kHz
-                  {status?.estimatedLatencyMs ? ` · ~${status.estimatedLatencyMs.toFixed(1)} ms` : ""}
+                  {status?.estimatedLatencyMs ? ` · ~${formatDecimal(status.estimatedLatencyMs, 1)} ms` : ""}
                 </dd>
               </div>
             ) : null}

@@ -26,8 +26,13 @@ test("gravar sem microfone: um aviso só, com atalho para a Gravação (UX-09)",
 
 test("gravar com microfone e nada armado: arma a faixa selecionada e grava (UX-09)", async ({ page }) => {
   await newProject(page);
+  // o microfone é escolhido em Configurações de áudio (S1)
+  await page.getByRole("menuitem", { name: "Arquivo", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Configurações de áudio…" }).click();
+  await page.getByLabel("Dispositivo de entrada").selectOption("sim-in");
+  await page.getByRole("button", { name: "Aplicar" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.locator(".dv-tab", { hasText: "Gravação" }).click();
-  await page.getByLabel("Dispositivo de entrada da gravação").selectOption("sim-in");
   // UX-12: o botão do metrônomo diz o estado real
   await expect(page.locator(".recording-side").getByRole("button", { name: "Metrônomo ligado" })).toHaveText("Desligado");
   await page.locator("body").click({ position: { x: 5, y: 300 } });

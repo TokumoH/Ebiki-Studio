@@ -323,11 +323,20 @@ export function Workspace() {
       <DockLayout theme={theme} />
       {statusBar ? (
       <footer className="statusbar" aria-label="Status">
-        <span data-tip="status.audio">
-          {audio ? (audio.mode === "device" ? `Saída: ${audio.outputName ?? "padrão"}` : <span className="warn">Sem dispositivo de áudio (modo silencioso)</span>) : "…"}
-        </span>
-        <span className="mono" data-tip="status.format">{session.project.sampleRate / 1000} kHz · {session.project.bitDepth} bits</span>
-        {audio?.bufferSize ? <span className="mono" data-tip="status.buffer">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs !== undefined && audio.estimatedLatencyMs !== null ? formatDecimal(audio.estimatedLatencyMs, 1) : "?"} ms</span> : null}
+        {/* UX-18: abre Configurações de áudio; mostra fone e microfone; latência só com dispositivo */}
+        <button type="button" className="statusbar-audio" data-tip="status.audio" onClick={openAudioSettings}>
+          {audio ? (
+            audio.mode === "device" ? (
+              `Fone: ${audio.outputName ?? "padrão"} · Microfone: ${audio.inputName ?? "nenhum"}`
+            ) : (
+              <span className="warn">Sem dispositivo de áudio (modo silencioso) — configurar</span>
+            )
+          ) : (
+            "…"
+          )}
+        </button>
+        <span className="mono" data-tip="status.format">{formatDecimal(session.project.sampleRate / 1000, session.project.sampleRate % 1000 ? 1 : 0)} kHz · {session.project.bitDepth} bits</span>
+        {audio?.mode === "device" && audio.bufferSize ? <span className="mono" data-tip="status.buffer">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs !== undefined && audio.estimatedLatencyMs !== null ? formatDecimal(audio.estimatedLatencyMs, 1) : "?"} ms</span> : null}
         {xruns > 0 ? <span className="warn">{xruns} falha(s) de buffer — aumente o buffer</span> : null}
         <span style={{ flex: 1 }} />
         {updateNotice ? (

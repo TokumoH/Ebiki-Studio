@@ -46,9 +46,13 @@ test("seguir desligado (F): a vista fica parada; rolar à mão pausa o seguir", 
   await page.waitForTimeout(2500);
   expect(await lanesScroll(page)).toBe(0);
   await page.keyboard.press("Space");
+  await expect(page.getByRole("button", { name: "Tocar", exact: true })).toBeVisible(); // pausou (estado vem da telemetria)
   // religa e rola à mão para longe da linha durante a reprodução: a vista não volta sozinha
   await page.keyboard.press("f");
   await page.keyboard.press("Space");
+  // espera tocar e o seguir alcançar a linha (que ficou fora da tela) antes de rolar à mão
+  await expect(page.getByRole("button", { name: /^Pausar/ })).toBeVisible();
+  await expect.poll(() => lanesScroll(page), { timeout: 8000 }).toBeGreaterThan(100);
   await page.locator(".lanes").evaluate((el) => (el.scrollLeft = 6000));
   await page.waitForTimeout(1500);
   expect(await lanesScroll(page)).toBeGreaterThan(5000);

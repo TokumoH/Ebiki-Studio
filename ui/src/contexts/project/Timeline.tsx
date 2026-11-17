@@ -193,6 +193,7 @@ export function Timeline() {
   const lastLeft = useRef(0);
   const setScrollLeft = (el: HTMLDivElement, left: number) => {
     autoScroll.current = Math.min(left, Math.max(0, el.scrollWidth - el.clientWidth));
+    lastLeft.current = autoScroll.current;
     el.scrollLeft = left;
   };
 
@@ -221,6 +222,11 @@ export function Timeline() {
       if (rolling && !wasRolling) f.resume();
       wasRolling = rolling;
       if (!rolling || !f.enabled) return;
+      // a vista mudou por fora (rolagem manual cujo evento ainda não chegou): pausa em vez de puxar de volta
+      if (Math.abs(el.scrollLeft - lastLeft.current) > 2) {
+        f.suspend();
+        return;
+      }
       const target = followScrollLeft(t.tick * pxPerTickRef.current, el.scrollLeft, el.clientWidth);
       if (target === null) {
         f.resume();

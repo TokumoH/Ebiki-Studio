@@ -141,7 +141,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
   "audio.output": e("Fone / alto-falantes (saída)", "Onde o som toca: fone, caixas ou interface.", undefined, [/^Dispositivo de saída$/]),
   "audio.input": e("Microfone (entrada)", "Microfone ou interface usado para gravar.", undefined, [/^Dispositivo de entrada$/]),
   "audio.testTone": e("Testar som", "Toca um tom curto a −12 dBFS no fone / alto-falantes, fora da mixagem (não grava nem exporta). Se soar baixo, suba o volume do sistema ou do fone.", "~1 s · 440 Hz", [/^Testar som$/]),
-  "status.audio": e("Áudio", "Dispositivo de saída em uso. \"Modo silencioso\" = nenhum dispositivo disponível; o app funciona sem som."),
+  "status.audio": e("Áudio", "Fone/alto-falantes e microfone em uso. Clique para abrir as Configurações de áudio. \"Modo silencioso\" = nenhum dispositivo disponível; o app funciona sem som."),
   "status.format": e("Formato do projeto", "Taxa de amostragem e resolução em que o projeto grava e mixa."),
   "status.buffer": e("Buffer e latência", "Tamanho do buffer e atraso estimado de ida e volta."),
   "score.mode": e("Modo do mouse", "Selecionar: clique para editar notas. Inserir notas: passe o mouse na pauta e clique para inserir.", undefined, [/^Modo do mouse na pauta$/]),

@@ -67,7 +67,7 @@ describe("AudioSettingsDialog", () => {
     await api.projectCreate({ dir: "/tmp", name: "Taxa", sampleRate: 44100, bitDepth: 24 });
     await openDialog();
     expect(screen.getByText("Sistema de áudio: Simulado · 44,1 kHz")).toBeInTheDocument();
-    expect(screen.getByText("Buffer — ~11.6 ms de ida e volta a 44,1 kHz")).toBeInTheDocument();
+    expect(screen.getByText("Buffer — ~11,6 ms de ida e volta a 44,1 kHz")).toBeInTheDocument();
     expect(roundTripMs(256, 48000)).toBeCloseTo(10.67, 2);
     expect(roundTripMs(256, 96000)).toBeCloseTo(5.33, 2);
     expect(roundTripMs(256, 0)).toBeCloseTo(10.67, 2); // taxa desconhecida: 48 kHz

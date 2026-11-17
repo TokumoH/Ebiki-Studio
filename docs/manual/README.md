@@ -138,7 +138,8 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
      (microfone, medidor e "🎧 ouvindo"); o app lembra a escolha.
 2. Escolha a entrada de cada faixa (mono ou par estéreo) e a monitoração da faixa
    (desligada, quando armada ou sempre).
-3. Arme a faixa (⏺) e pressione **R** (ou o botão de gravar).
+3. Arme a faixa (⏺) e pressione **R** (ou o botão de gravar). Sem faixa armada, **R** arma a faixa
+   selecionada (com o microfone escolhido) e grava; sem microfone, um aviso leva ao painel Gravação.
    - **Loop** (botão ⟲ Loop, tecla **L**): repete um trecho na reprodução. O **▾** ao lado (ou
      *Transporte › Opções de loop…*) escolhe o trecho: *4 compassos a partir do cursor*, *Projeto
      inteiro* (do início ao fim do compasso do último clipe) ou *Compassos X até Y*. Também dá para

@@ -10,6 +10,7 @@ import { notify } from "../core/toasts";
 import { Button, Dialog, Field } from "../shared/components";
 import { InputMeters } from "../contexts/recording/InputMeters";
 import "./audioSettings.css";
+import { formatDecimal } from "../core/format";
 
 /** Faixa do ganho de entrada (dB), duração do tom de teste (ms) e canal padrão do retorno (entrada 1, mono). */
 export const INPUT_GAIN_MAX_DB = 24;
@@ -248,7 +249,7 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
 
       <details className="audio-section audio-perf">
         <summary>Desempenho</summary>
-        <Field label={`Buffer — ~${latency.toFixed(1)} ms de ida e volta a ${formatRate(sampleRate)}`}>
+        <Field label={`Buffer — ~${formatDecimal(latency, 1)} ms de ida e volta a ${formatRate(sampleRate)}`}>
           <select className="select" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} aria-label="Tamanho do buffer">
             {[32, 64, 128, 256, 512, 1024, 2048].map((b) => (
               <option key={b} value={b}>
