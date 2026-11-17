@@ -65,6 +65,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-17-05-ux-atalhos-numeros-dock.md](VER-2026-11-17-05-ux-atalhos-numeros-dock.md) | Atalhos, números e dock em PT-BR (UX-13, UX-14, UX-15, UX-16) |
 | [VER-2026-11-17-06-ux-exportar-bpm-faixa-nomes.md](VER-2026-11-17-06-ux-exportar-bpm-faixa-nomes.md) | Exportar trecho, BPM editável, remover faixa com desfazer e nomes (UX-19, UX-20, UX-22, UX-23) |
 | [VER-2026-11-17-07-integracao-s1-status-e-seguir.md](VER-2026-11-17-07-integracao-s1-status-e-seguir.md) | Integração do S1, barra de status (UX-18) e corrida do seguir |
+| [VER-2026-11-17-08-release-v0-4-0.md](VER-2026-11-17-08-release-v0-4-0.md) | Versão 0.4.0 (versão e notas da release) |
 
 ## Lógica
 

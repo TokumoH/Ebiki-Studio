@@ -3,7 +3,10 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.4.0] - 2026-11-17
+
+Microfone e fone separados (com ganho e teste de som), a vista segue a reprodução e uma rodada grande de
+melhorias de uso.
 
 ### Novidades
 
@@ -36,6 +39,15 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - Indicador de "trabalhando" ao importar, abrir e criar projeto.
 - Números com vírgula decimal e rótulos sem maiúsculas. Metrônomo da Gravação mostra Ligado/Desligado.
   Abas do painel em PT-BR.
+
+### Downloads
+
+Mesmos formatos da 0.3.0 (Windows `.exe`/`.msi`, macOS `.dmg` universal, Linux `.deb`/`.rpm`/`.AppImage`),
+com `SHA256SUMS.txt`. Quem tem a 0.2.1 ou a 0.3.0 recebe esta versão em *Ajuda › Verificar atualizações…*.
+Depois de atualizar, abra *Arquivo › Configurações de áudio* e use **Testar som** e o **Ganho** do microfone.
+
+Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
+Licença: GPL-3.0-or-later (nome e logo reservados).
 
 ## [0.3.0] - 2026-11-11
 
@@ -192,6 +204,7 @@ Confira a integridade com `SHA256SUMS.txt` (ex.: `sha256sum -c SHA256SUMS.txt --
 Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
 Licença: GPL-3.0-or-later (nome e logo reservados).
 
+[0.4.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.1
 [0.2.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.0
