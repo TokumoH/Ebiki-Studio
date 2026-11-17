@@ -22,3 +22,8 @@
 .loop-popover .hint { margin: 0; color: var(--fg-muted); line-height: 1.5; font-size: var(--text-xs); }
 .loop-note { border-top: 1px solid var(--line); padding-top: 8px; }
 .loop-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* UX-20: BPM editável no próprio mostrador */
+.tempo-btn { background: none; border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--fg); padding: 0 2px; cursor: text; font: inherit; font-family: var(--font-mono); font-size: var(--text-lg); line-height: 1.1; }
+.tempo-btn:hover { border-color: var(--line-strong); }
+.tempo-input { width: 72px; height: 22px; font-size: var(--text-md, 14px); }

@@ -7,6 +7,7 @@ import { errorMessage, useSession } from "../core/session";
 import { notify } from "../core/toasts";
 import { Button, Dialog, Field, Segmented, Toggle } from "../shared/components";
 import { formatDecimal } from "../core/format";
+import { loopLabel } from "../core/bars";
 
 const LABELS: Record<ExportFormat, string> = { wav: "WAV", aiff: "AIFF", flac: "FLAC", mp3: "MP3", ogg: "OGG", aac: "AAC" };
 
@@ -15,12 +16,16 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
   const [formats, setFormats] = useState<ExportFormat[]>(["wav"]);
   const [s, setS] = useState<ExportSettings>({ format: "wav", bitDepth: 24, mp3Kbps: 320, vorbisQuality: 0.6, normalize: false });
   const [stems, setStems] = useState(false);
+  // UX-19: trecho a exportar — projeto inteiro ou o trecho do loop (quando houver)
+  const [onlyLoop, setOnlyLoop] = useState(false);
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (open) void api.exportFormats().then(setFormats).catch(() => undefined);
   }, [open]);
   if (!session) return null;
   const lossless = s.format === "wav" || s.format === "aiff" || s.format === "flac";
+  const loop = session.recording.loopRange;
+  const range: [number, number] | null = onlyLoop && loop ? loop : null;
   const go = async () => {
     setBusy(true);
     try {
@@ -32,8 +37,11 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
       } else {
         const path = await transport().pickSave({ defaultPath: `${session.project.name}.${s.format === "ogg" ? "ogg" : s.format}`, filters: [{ name: LABELS[s.format], extensions: [s.format] }], title: "Exportar mixagem" });
         if (!path) return;
-        await api.exportMix(path, s, null);
-        notify.success("Mixagem exportada.");
+        await api.exportMix(path, s, range);
+        notify.success(`Mixagem exportada em ${path}`, {
+          label: "Copiar caminho",
+          run: () => void navigator.clipboard?.writeText(path).catch(() => undefined),
+        });
       }
       onClose();
     } catch (e) {
@@ -82,6 +90,14 @@ export function ExportDialog({ open, onClose }: { open: boolean; onClose: () => 
           <input type="range" min={-0.2} max={1} step={0.1} value={s.vorbisQuality} onChange={(e) => setS({ ...s, vorbisQuality: Number(e.target.value) })} />
         </Field>
       ) : null}
+      <Field label="Trecho">
+        <Segmented
+          label="Trecho"
+          value={onlyLoop && loop ? "loop" : "all"}
+          onChange={(v) => setOnlyLoop(v === "loop")}
+          options={[{ value: "all", label: "Projeto inteiro" }, ...(loop && !stems ? [{ value: "loop", label: `Trecho do loop (${loopLabel(session.tempo, loop)})` }] : [])]}
+        />
+      </Field>
       <div className="row">
         <Toggle pressed={s.normalize} onChange={(v) => setS({ ...s, normalize: v })} data-tip="export.normalize">
           Normalizar (−1 dBFS)

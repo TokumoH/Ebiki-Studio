@@ -69,3 +69,6 @@
 .loop-edge { position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize; background: var(--accent); opacity: 0.85; }
 .loop-edge--start { left: -1px; border-radius: 2px 0 0 2px; }
 .loop-edge--end { right: -1px; border-radius: 0 2px 2px 0; }
+
+/* UX-22: remover faixa afastado de ▲▼ */
+.track-remove { margin-left: var(--space-2); }

@@ -139,7 +139,7 @@ test("Mixer: M e S das faixas à vista em 1280×720 (UX-04)", async ({ page }) =
   await page.getByRole("button", { name: "Criar projeto" }).click();
   await page.getByRole("button", { name: "Importar", exact: true }).click();
   await page.locator(".dv-tab").filter({ hasText: /^Mixer$/ }).first().click();
-  for (const name of ["Mute voz", "Solo voz"]) {
+  for (const name of ["Silenciar voz", "Solo voz"]) {
     const visible = await page.getByRole("tabpanel", { name: "Mixer" }).getByRole("button", { name }).evaluate((el) => {
       const r = el.getBoundingClientRect();
       const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);

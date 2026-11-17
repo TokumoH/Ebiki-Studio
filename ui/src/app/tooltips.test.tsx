@@ -25,9 +25,9 @@ describe("cobertura do glossário", () => {
 describe("legenda pelo nome do controle", () => {
   it.each([
     ["Armar Voz", "Armar"],
-    ["Mute Baixo", "Mute"],
+    ["Silenciar Baixo", "Silenciar (M)"],
     ["Solo Master", "Solo"],
-    ["Pan Voz", "Pan"],
+    ["Panorâmica Voz", "Panorâmica (pan)"],
     ["Volume Voz", "Volume (fader)"],
     ["Tocar (Espaço)", "Tocar / pausar"],
     ["Pausar", "Tocar / pausar"],

@@ -392,7 +392,11 @@ export function createMockTransport(): Transport {
     },
     transport_state: () => transportView(),
     export_formats: () => ["wav", "aiff", "flac", "mp3", "ogg"],
-    export_mix: () => null,
+    // o E2E confere o que foi pedido (formato, trecho) — só no simulado
+    export_mix: (a) => {
+      (globalThis as { __ebikiLastExport?: unknown }).__ebikiLastExport = a;
+      return null;
+    },
     export_stems: (a) => s().tracks.map((t, i) => `${a.dir}/${String(i + 1).padStart(2, "0")} - ${t.name}.wav`),
   };
 

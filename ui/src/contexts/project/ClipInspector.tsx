@@ -92,7 +92,7 @@ export function ClipInspector() {
   if (!session || !found) {
     return (
       <div className="clip-inspector">
-        <EmptyState title="Nenhum clipe selecionado">Clique num clipe da linha do tempo para editar ganho, fades, fase e reverso.</EmptyState>
+        <EmptyState title="Nenhum clipe selecionado">Clique num clipe do Arranjo para editar ganho, fades, fase e reverso.</EmptyState>
       </div>
     );
   }

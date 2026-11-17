@@ -28,7 +28,7 @@ export const TOUR_STEPS: TourStep[] = [
   },
   {
     title: "Transporte e gravação",
-    body: "Espaço toca e pausa, R grava, C liga o metrônomo e L faz loop de 4 compassos. Arme a faixa no ● e escolha a entrada no painel Gravação.",
+    body: "Espaço toca e pausa, R grava, C liga o metrônomo e L liga o loop (▾ escolhe o trecho). Arme a faixa no ● e escolha a entrada no painel Gravação.",
     target: '[data-tour="transporte"]',
   },
   {

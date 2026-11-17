@@ -1,5 +1,5 @@
 // Barra de transporte: tocar/parar/gravar, posição, andamento, metrônomo e loop (com as opções).
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { api } from "../../ipc/api";
 import { run, useSession } from "../../core/session";
 import { useLive } from "../../core/live";
@@ -56,7 +56,7 @@ export function TransportBar() {
         <span className="mono">{formatTime(t?.seconds ?? 0)}</span>
       </div>
       <div className="transport-display" data-tip="transport.tempo">
-        <span className="mono big">♩ {formatDecimal(t?.bpm ?? session.tempo.tempos[0]?.bpm ?? 120, 1)}</span>
+        <TempoField bpm={t?.bpm ?? session.tempo.tempos[0]?.bpm ?? 120} />
         <span className="mono">
           {meter?.numerator ?? 4}/{meter?.denominator ?? 4}
         </span>
@@ -80,5 +80,50 @@ export function TransportBar() {
       </Toggle>
       {state === "countin" ? <span className="badge-rec">Contagem…</span> : state === "recording" ? <span className="badge-rec">● Gravando</span> : null}
     </div>
+  );
+}
+
+/** Andamento no cursor: clique (ou Enter) para digitar o BPM; grava no trecho de andamento atual (UX-20). */
+function TempoField({ bpm }: { bpm: number }) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState("");
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        className="tempo-btn mono big"
+        aria-label={`Andamento: ${formatDecimal(bpm, 1)} BPM. Clique para editar`}
+        onClick={() => {
+          setText(String(Math.round(bpm * 100) / 100));
+          setEditing(true);
+        }}
+      >
+        ♩ {formatDecimal(bpm, 1)}
+      </button>
+    );
+  }
+  const commit = () => {
+    setEditing(false);
+    const v = Number(text.replace(",", "."));
+    const s = useSession.getState().session;
+    if (!s || !Number.isFinite(v) || v < 20 || v > 400) return;
+    const cursor = useLive.getState().transport?.tick ?? 0;
+    const segment = [...s.tempo.tempos].filter((x) => x.tick <= cursor).sort((a, b) => b.tick - a.tick)[0]?.tick ?? 0;
+    void run(() => api.tempoSet(segment, Math.round(v * 100) / 100));
+  };
+  return (
+    <input
+      className="input tempo-input mono"
+      aria-label="Andamento (BPM)"
+      inputMode="decimal"
+      autoFocus
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") commit();
+        if (e.key === "Escape") setEditing(false);
+      }}
+    />
   );
 }

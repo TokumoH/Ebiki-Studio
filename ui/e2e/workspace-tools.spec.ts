@@ -172,3 +172,53 @@ test("abas do dock em PT-BR: botão fechar diz 'Fechar Mixer' (UX-16)", async ({
   await expect(page.getByRole("button", { name: "Fechar Mixer" })).toHaveCount(1);
   await expect(page.getByRole("button", { name: /^Close / })).toHaveCount(0);
 });
+
+async function freshProject(page: import("@playwright/test").Page, name: string) {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.clear());
+  await page.goto("/");
+  await page.getByLabel("Nome do projeto").fill(name);
+  await page.getByRole("button", { name: "Escolher…" }).click();
+  await page.getByRole("button", { name: "Criar projeto" }).click();
+}
+
+test("BPM editável no transporte (UX-20)", async ({ page }) => {
+  await freshProject(page, "Bpm");
+  await page.getByRole("button", { name: /^Andamento: 120,0 BPM/ }).click();
+  const input = page.getByLabel("Andamento (BPM)");
+  await input.fill("96,5");
+  await input.press("Enter");
+  await expect(page.getByRole("button", { name: /^Andamento: 96,5 BPM/ })).toBeVisible();
+  // Esc cancela
+  await page.getByRole("button", { name: /^Andamento/ }).click();
+  await page.getByLabel("Andamento (BPM)").fill("200");
+  await page.getByLabel("Andamento (BPM)").press("Escape");
+  await expect(page.getByRole("button", { name: /^Andamento: 96,5 BPM/ })).toBeVisible();
+});
+
+test("remover faixa: aviso com Desfazer (UX-22)", async ({ page }) => {
+  await freshProject(page, "Remover");
+  await page.getByRole("button", { name: "+ Faixa" }).click();
+  await expect(page.getByTestId("lane-0")).toBeVisible();
+  await page.getByRole("button", { name: "Remover Faixa 1" }).click();
+  await expect(page.getByTestId("lane-0")).toHaveCount(0);
+  await page.locator(".toasts").getByRole("status").getByRole("button", { name: "Desfazer" }).click();
+  await expect(page.getByTestId("lane-0")).toBeVisible();
+});
+
+test("exportar: trecho do loop e aviso com o caminho (UX-19)", async ({ page }) => {
+  await freshProject(page, "Exportar");
+  await page.getByRole("button", { name: "Importar", exact: true }).click();
+  await page.locator("body").click({ position: { x: 5, y: 300 } });
+  await page.keyboard.press("l"); // liga o loop (4 compassos a partir do cursor)
+  await page.keyboard.press("Control+e");
+  const dialog = page.getByRole("dialog", { name: "Exportar" });
+  await dialog.getByRole("radio", { name: /Trecho do loop/ }).click();
+  await expect(dialog.getByRole("radio", { name: /Trecho do loop/ })).toHaveAttribute("aria-checked", "true");
+  await dialog.getByRole("button", { name: "Exportar", exact: true }).click();
+  const toasts = page.locator(".toasts").getByRole("status");
+  await expect(toasts).toContainText("Mixagem exportada em");
+  await expect(toasts.getByRole("button", { name: "Copiar caminho" })).toBeVisible();
+  const sent = await page.evaluate(() => (globalThis as { __ebikiLastExport?: { range: [number, number] | null } }).__ebikiLastExport);
+  expect(sent?.range).toEqual([0, 960 * 4 * 4]);
+});

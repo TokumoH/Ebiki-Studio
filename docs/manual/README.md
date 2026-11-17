@@ -108,6 +108,9 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
   selecionado. Navegue com as setas, **Enter** executa, **Esc** fecha.
 - **Teclado nas alças:** com o clipe selecionado, **Tab** até uma borda/alça e use **←/→**
   (cortar: 1/16 de tempo, **Shift** = 1 tempo; fades: 10 ms, **Shift** = 100 ms).
+- **Andamento:** clique no BPM da barra de transporte para digitar outro valor (vale para o trecho de
+  andamento no cursor); mudanças ao longo da música ficam no painel **Mapa de tempo**.
+- **Remover faixa:** ✕ no cabeçalho; o aviso traz *Desfazer* (Ctrl+Z também desfaz).
 - **Seguir reprodução** (botão **⇥ Seguir**, tecla **F**, *Exibir › Seguir reprodução*; ligado por
   padrão): ao tocar ou gravar, quando a linha passa de 90% da tela o Arranjo vira a página e a deixa
   perto da borda esquerda; no fim do loop volta ao início dele. Rolar a vista à mão durante a
@@ -154,6 +157,8 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
 *Exportar* (Ctrl+E): WAV/AIFF (16/24/32 float), FLAC (16/24), MP3 (CBR 128–320 ou V0), OGG Vorbis.
 Opções: normalizar para −1 dBFS e **stems** (um arquivo por faixa). AAC ainda não é suportado na
 exportação (licenciamento — ADR-0023). MP3 aceita até 48 kHz.
+**Trecho:** projeto inteiro ou, com o loop ligado, só o *trecho do loop*. Ao terminar, o aviso mostra onde
+o arquivo foi salvo (com *Copiar caminho*).
 
 ## 7. Harmonia e composição
 

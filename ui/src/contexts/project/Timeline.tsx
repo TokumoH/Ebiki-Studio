@@ -15,12 +15,18 @@ import { crossfadeWithNeighbor, findClip, normalizeClip, setPolarity, setReverse
 import { TrackOrderButtons } from "./TrackOrderButtons";
 import { anchoredScrollLeft, trackIndexAt, useTimelineView, wheelFactor } from "./timelineView";
 import { setLoop } from "../../core/loop";
+import { notify } from "../../core/toasts";
 import { followScrollLeft, isRolling, useFollow } from "../../core/follow";
 
 /** Cursor de reprodução: só ele assina a posição (a timeline inteira não re-renderiza a cada quadro). */
 function Playhead({ pxPerTick }: { pxPerTick: number }) {
   const tick = useLive((s) => s.transport?.tick ?? 0);
   return <div className="playhead" style={{ left: tick * pxPerTick }} />;
+}
+
+/** Remove a faixa e oferece desfazer no próprio aviso (UX-22). */
+async function removeTrack(id: string, name: string) {
+  if (await run(() => api.trackDelete(id))) notify.info(`Faixa “${name}” removida.`, { label: "Desfazer", run: () => void run(() => api.undo()) });
 }
 
 /** Altura (px) da faixa de cima da régua onde arrastar desenha o loop. */
@@ -93,12 +99,12 @@ function TrackHeader({ track, index, selected }: { track: Track; index: number; 
         </div>
       )}
         <TrackOrderButtons trackId={track.id} name={track.name} index={index} />
-        <Button size="sm" variant="ghost" icon aria-label={`Remover ${track.name}`} title="Remover faixa" onClick={() => void run(() => api.trackDelete(track.id))}>
+        <Button size="sm" variant="ghost" icon className="track-remove" aria-label={`Remover ${track.name}`} title="Remover faixa (Ctrl+Z desfaz)" onClick={() => void removeTrack(track.id, track.name)}>
           ✕
         </Button>
       </div>
       <div className="row">
-        <Toggle className="toggle-m" pressed={track.strip.mute} onChange={(v) => void run(() => api.mixerEdit(target, { op: "mute", value: v }))} aria-label={`Mute ${track.name}`}>
+        <Toggle className="toggle-m" pressed={track.strip.mute} onChange={(v) => void run(() => api.mixerEdit(target, { op: "mute", value: v }))} aria-label={`Silenciar ${track.name}`}>
           M
         </Toggle>
         <Toggle className="toggle-s" pressed={track.strip.solo} onChange={(v) => void run(() => api.mixerEdit(target, { op: "solo", value: v }))} aria-label={`Solo ${track.name}`}>
@@ -375,7 +381,7 @@ export function Timeline() {
       className="timeline"
       data-tour="arranjo"
       tabIndex={0}
-      aria-label="Linha do tempo"
+      aria-label="Arranjo"
       onKeyDown={(e) => {
         // Delete é atalho global (Editar › Excluir clipe, UX-14); Backspace segue local ao Arranjo
         if (e.key === "Backspace" && selectedClipId) {

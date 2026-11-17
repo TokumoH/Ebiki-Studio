@@ -82,8 +82,8 @@ export const GLOSSARY: Record<string, TipEntry> = {
 
   // ------------------------------------------------------------------- mixer
   "mixer.volume": e("Volume (fader)", "Nível do canal na mixagem. 0 dB = sem alteração.", "duplo clique: 0 dB · setas com foco", [/^Volume (?!de monitoração)/]),
-  "mixer.pan": e("Pan", "Posição no estéreo: esquerda, centro (C) ou direita.", "−100 (E) a +100 (D)", [/^Pan /]),
-  "mixer.mute": e("Mute", "Silencia o canal.", undefined, [/^Mute /]),
+  "mixer.pan": e("Panorâmica (pan)", "Posição no estéreo: esquerda, centro (C) ou direita.", "−100 (E) a +100 (D)", [/^Panorâmica /]),
+  "mixer.mute": e("Silenciar (M)", "Silencia o canal (mute).", undefined, [/^Silenciar /]),
   "mixer.solo": e("Solo", "Ouve só os canais em solo (os outros ficam mudos).", undefined, [/^Solo /]),
   "mixer.insert": e("Efeito (insert)", "Efeito no caminho do canal; o som passa por ele inteiro. Clique para editar.", undefined, [/^Editar (Equalizador|Compressor|Gate|Limitador|Reverb|Delay|Saturação|Chorus|De-esser|Correção de afinação)$/]),
   "mixer.addEffect": e("Adicionar efeito", "Coloca um efeito (insert) neste canal.", undefined, [/^Adicionar efeito em /]),
@@ -104,7 +104,7 @@ export const GLOSSARY: Record<string, TipEntry> = {
   "transport.follow": e("Seguir reprodução", "Quando a linha de reprodução sai da tela, o Arranjo vira a página. Rolar a vista à mão pausa até a linha voltar a aparecer ou até o próximo ▶.", "F", [/^Seguir reprodução$/]),
   "transport.loopBars": e("Compassos do loop", "Do primeiro ao último compasso (inclusive) — mesma numeração da régua.", undefined, [/^(Primeiro|Último) compasso do loop$/]),
   "transport.position": e("Posição", "Compasso.tempo.tique e tempo decorrido do cursor."),
-  "transport.tempo": e("Andamento e compasso", "BPM e fórmula de compasso no cursor. Mude no painel Mapa de tempo."),
+  "transport.tempo": e("Andamento e compasso", "BPM e fórmula de compasso no cursor. Clique no BPM para digitar outro; mudanças de andamento ao longo da música ficam no painel Mapa de tempo."),
   "transport.undo": e("Desfazer", "Desfaz a última ação.", "Ctrl+Z", [/^Desfazer/]),
   "transport.redo": e("Refazer", "Refaz o que foi desfeito.", "Ctrl+Shift+Z", [/^Refazer/]),
 

@@ -130,7 +130,7 @@ function StripView({ name, target, strip, buses, selected, onSelect, isMaster, o
       ) : null}
       {!isMaster ? (
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <Knob label={`Pan ${name}`} value={strip.pan} min={-1} max={1} format={formatPan} onChange={(v, end) => (end ? pan.end() : void run(() => api.mixerEdit(target, { op: "pan", value: Math.round(v * 100) / 100 }, pan.id())))} />
+          <Knob label={`Panorâmica ${name}`} value={strip.pan} min={-1} max={1} format={formatPan} onChange={(v, end) => (end ? pan.end() : void run(() => api.mixerEdit(target, { op: "pan", value: Math.round(v * 100) / 100 }, pan.id())))} />
         </div>
       ) : null}
       <div className="strip-fader">
@@ -142,7 +142,7 @@ function StripView({ name, target, strip, buses, selected, onSelect, isMaster, o
         {formatDb(strip.volume)} dB · {formatPan(strip.pan)}
       </div>
       <div className="strip-buttons">
-        <Toggle className="toggle-m" pressed={strip.mute} onChange={(v) => void run(() => api.mixerEdit(target, { op: "mute", value: v }))} aria-label={`Mute ${name}`}>
+        <Toggle className="toggle-m" pressed={strip.mute} onChange={(v) => void run(() => api.mixerEdit(target, { op: "mute", value: v }))} aria-label={`Silenciar ${name}`}>
           M
         </Toggle>
         {!isMaster ? (
