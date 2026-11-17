@@ -92,6 +92,17 @@ falha listando Windows e macOS.
   - `scripts/ci-local.sh docs` sem erros;
   - `check_readmes.py` ok.
 
+## Primeira execução (run 7) e ajuste
+
+- `prepare` funcionou: apagou as duas releases e a tag e criou o rascunho.
+- Os 3 sistemas enviaram os arquivos.
+- O gerador montou o `latest.json` com as 13 plataformas, mas o envio falhou com `already_exists`. Na `tauri-action` v1 a
+  opção se chama `uploadUpdaterJson`, e não `includeUpdaterJson`, então a action enviou o próprio `latest.json`.
+- Nada foi publicado (a trava funcionou: o rascunho ficou parado).
+- **Ajuste:** opção com o nome certo (conferido no `action.yml` da v1). O job final apaga `latest.json` e
+  `SHA256SUMS.txt` que já estejam no rascunho antes de enviar os seus.
+- **Reverificação:** YAML, `bash -n` nos blocos e testes do gerador.
+
 ## Riscos
 
 - O workflow novo só é provado de verdade na próxima execução: não dá para rodar Actions localmente. Os comandos `gh api`

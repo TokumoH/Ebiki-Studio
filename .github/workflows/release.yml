@@ -142,7 +142,7 @@ jobs:
           tauriScript: npm run tauri
           # só envia para o rascunho criado em "preparar"; o latest.json é montado uma vez, no fim
           releaseId: ${{ needs.prepare.outputs.release_id }}
-          includeUpdaterJson: false
+          uploadUpdaterJson: false
           args: ${{ matrix.args }} ${{ steps.signing.outputs.args }}
 
   publish:
@@ -167,6 +167,11 @@ jobs:
             gh api -H "Accept: application/octet-stream" "repos/$REPO/releases/assets/$id" > "dist/$name"
           done
           ls -la dist
+      - name: Tirar latest.json/SHA256SUMS.txt antigos do rascunho (os nossos são a fonte)
+        run: |
+          jq -r '.assets[] | select(.name == "latest.json" or .name == "SHA256SUMS.txt") | .id' release.json |
+            while read -r id; do gh api -X DELETE "repos/$REPO/releases/assets/$id"; echo "asset $id apagado"; done
+          rm -f dist/latest.json dist/SHA256SUMS.txt
       - name: latest.json (todas as plataformas ou nada)
         run: |
           if ls dist/*.sig >/dev/null 2>&1; then
