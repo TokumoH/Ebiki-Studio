@@ -17,6 +17,15 @@ async function noHorizontalOverflow(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
+/** Escolhe o microfone simulado em Configurações de áudio (o afinador precisa de um). */
+async function chooseMic(page: import("@playwright/test").Page) {
+  await page.getByRole("menuitem", { name: "Arquivo", exact: true }).click();
+  await page.getByRole("menuitem", { name: "Configurações de áudio…" }).click();
+  await page.getByLabel("Dispositivo de entrada").selectOption("sim-in");
+  await page.getByRole("button", { name: "Aplicar" }).click();
+  await page.getByRole("dialog").waitFor({ state: "detached" });
+}
+
 test("partitura: criar e entrar notas pelo teclado, render alphaTab, validar", async ({ page }) => {
   await newProject(page, "Partitura");
   await openTab(page, "Partitura");
@@ -96,6 +105,7 @@ test("afinação: afinador mostra a nota; editor detecta notas, corrige, aplica 
   await newProject(page, "Afinacao");
   await page.getByRole("button", { name: "Importar", exact: true }).click();
   await page.getByRole("button", { name: "Clipe voz.wav" }).click();
+  await chooseMic(page);
   await openTab(page, "Afinação");
   await page.getByRole("button", { name: "Ligar afinador" }).click();
   await expect(page.getByTestId("tuner-note")).toContainText("A4");

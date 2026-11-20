@@ -39,7 +39,7 @@ Testes independentes e por área são fáceis de rodar isoladamente (`npx playwr
 | Arquivo ou subdiretório | O que contém |
 |---|---|
 | [audio-settings.spec.ts](audio-settings.spec.ts) | 2 teste(s): configurações de áudio: o foco fica no seletor escolhido enquanto a telemetria chega; configurações  |
-| [audio-devices.spec.ts](audio-devices.spec.ts) | 2 teste(s): microfone salvo que sumiu não deixa o app mudo (segue sem entrada, com aviso); desconexão com o app aberto avisa e atualiza a barra de status |
+| [audio-devices.spec.ts](audio-devices.spec.ts) | 3 teste(s): microfone salvo que sumiu não deixa o app mudo (segue sem entrada, com aviso); desconexão com o app aberto avisa e atualiza a barra de status; afinador desliga e explica quando o microfone some (AU-08) |
 | [composition.spec.ts](composition.spec.ts) | 5 teste(s): harmonia: tom + gênero → ouvir → inserir → desfazer; harmonia: próximo acorde monta sequência e inse |
 | [edit.spec.ts](edit.spec.ts) | Fase 3 — edição: fade pelo inspetor, dividir no cursor (S), menu de contexto e desfazer. |
 | [identity.spec.ts](identity.spec.ts) | 9 teste(s): tela de carregamento com a logo aparece e sai sozinha; menu fixo: Exibir troca o tema e Alt leva o t; tutorial: Enter avança e atalhos não disparam por baixo (UX-11); diálogo prende o foco (UX-06) |

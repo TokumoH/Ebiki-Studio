@@ -14,6 +14,8 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - Microfones e placas que só trabalham com amostras inteiras (16/24/32 bits) passam a funcionar.
 - Entradas da faixa mostram só os canais do microfone atual; latência acumulada do microfone; diálogo mostra
   o modo silencioso.
+- Afinador acompanha o microfone atual (religa ou desliga com aviso); aviso de falhas de buffer só enquanto
+  elas acontecem; parar a gravação depois de desconectar o dispositivo não trava a tela.
 
 ## [0.4.0] - 2026-11-17
 

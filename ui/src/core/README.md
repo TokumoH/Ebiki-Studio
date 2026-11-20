@@ -54,6 +54,8 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | [theme.ts](theme.ts) | Tema claro/escuro: estado, preferência guardada e aplicação no documento. |
 | [toasts.ts](toasts.ts) | Estado dos avisos temporários (notify.success / notify.error), com ação opcional; aviso igual não empilha. |
 | [toasts.test.ts](toasts.test.ts) | Testes: aviso igual não empilha, ação no aviso, limite de 5 |
+| [xruns.ts](xruns.ts) | Falhas de buffer recentes (últimos 10 s) para a barra de status: só pede buffer maior enquanto as falhas acontecem (AU-11) |
+| [xruns.test.ts](xruns.test.ts) | Testes de `recentXruns`: janela, contagem reiniciada |
 
 ## Lógica
 

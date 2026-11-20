@@ -478,3 +478,30 @@ fn opening_removes_caches_of_audio_no_longer_referenced() {
         "arquivo de nome desconhecido não é tocado"
     );
 }
+
+#[test]
+fn stopping_a_recording_after_the_device_died_does_not_block_for_a_second() {
+    // AU-12: o dispositivo sumiu no meio da gravação (o núcleo parou de rodar). Parar não pode
+    // segurar a trava do estúdio por 1 s esperando um núcleo que não responde.
+    let dir = tempfile::tempdir().unwrap();
+    let mut st = studio();
+    let (h, core) = create_engine(EngineConfig {
+        sample_rate: SR,
+        ..Default::default()
+    });
+    let gen: audio_engine::null_device::InputGenerator = Box::new(|buf: &mut [f32]| buf.fill(0.1));
+    let dev = audio_engine::null_device::NullDevice::start(core, 256, 2, Some(gen));
+    st.attach_engine(h, 2).unwrap();
+    new_project(&mut st, dir.path());
+    arm_new_track(&mut st);
+    st.start_recording(Tick(0), false).unwrap();
+    wait_recorded(&st, 4_800);
+    dev.stop(); // "desconectado": nenhum callback roda mais
+    let t0 = std::time::Instant::now();
+    let _ = st.stop_recording();
+    assert!(
+        t0.elapsed() < std::time::Duration::from_millis(400),
+        "levou {:?}",
+        t0.elapsed()
+    );
+}

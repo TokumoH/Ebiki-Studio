@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent, type KeyboardEvent as RKeyboardEvent } from "react";
 import "./tuning.css";
-import { api, musicApi } from "../../ipc/api";
+import { musicApi } from "../../ipc/api";
 import type { NoteEdit, PitchCorrectionMap, ScaleCorrection } from "../../ipc/types";
 import { endGesture, errorMessage, newGesture, run, useSession } from "../../core/session";
 import { notify } from "../../core/toasts";
 import { Button, Dialog, Field, Toggle } from "../../shared/components";
 import { NEUTRAL_EDIT, NOTE_NAMES_PT, centsOff, centsToAngle, dragEdit, effectiveMidi, isInTune, midiName, pitchRange, scaleClasses, scaleKind } from "./tuningMath";
 import { formatDecimal } from "../../core/format";
+import { refreshAudio, useAudio } from "../../core/audio";
 
 /** Afinação: afinador em tempo real + editor de afinação por clipe + time-stretch. */
 export function TuningPanel() {
@@ -24,15 +25,39 @@ export function TuningPanel() {
 
 function Tuner() {
   const a4 = useSession((s) => s.session?.tuning.a4Hz ?? 440);
-  const [channels, setChannels] = useState(2);
+  // canais do microfone vêm do estado de áudio compartilhado: trocar ou desconectar o microfone em
+  // qualquer lugar atualiza o afinador (AU-08)
+  const status = useAudio((a) => a.status);
+  const channels = status?.inputName ? (status.inputChannels ?? 0) : 0;
+  const inputKey = `${status?.inputId ?? ""}:${channels}`;
   const [channel, setChannel] = useState(0);
   const [on, setOn] = useState(false);
   const [reading, setReading] = useState<{ name: string; octave: number; cents: number; frequencyHz: number; note: number } | null>(null);
   const [ref, setRef] = useState(a4);
   useEffect(() => setRef(a4), [a4]);
   useEffect(() => {
-    void api.audioStatus().then((s) => setChannels(Math.max(1, s.inputChannels))).catch(() => undefined);
+    void refreshAudio().catch(() => undefined);
   }, []);
+  const onRef = useRef(on);
+  onRef.current = on;
+  // microfone trocado/reaberto: o núcleo desliga o afinador. Religa no mesmo canal se ainda existir;
+  // senão desliga e explica
+  const lastInput = useRef(inputKey);
+  useEffect(() => {
+    if (lastInput.current === inputKey) return;
+    lastInput.current = inputKey;
+    const fit = Math.min(channel, Math.max(0, channels - 1));
+    if (fit !== channel) setChannel(fit);
+    if (!onRef.current) return;
+    if (channels > 0 && channel < channels) {
+      void musicApi.tunerStart(channel).catch(() => setOn(false));
+    } else {
+      setOn(false);
+      setReading(null);
+      notify.info(channels > 0 ? `O microfone novo não tem a Entrada ${channel + 1}: afinador desligado.` : "Microfone desconectado: afinador desligado.");
+    }
+  }, [inputKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!on) return;
     let alive = true;
@@ -67,7 +92,8 @@ function Tuner() {
       <h3>Afinador</h3>
       <div className="row">
         <Field label="Entrada">
-          <select className="select" aria-label="Canal de entrada do afinador" value={channel} disabled={on} onChange={(e) => setChannel(Number(e.target.value))}>
+          <select className="select" aria-label="Canal de entrada do afinador" value={channel} disabled={on || channels === 0} onChange={(e) => setChannel(Number(e.target.value))}>
+            {channels === 0 ? <option value={0}>Sem microfone</option> : null}
             {Array.from({ length: channels }, (_, i) => (
               <option key={i} value={i}>
                 Entrada {i + 1}
@@ -89,7 +115,7 @@ function Tuner() {
             onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
           />
         </Field>
-        <Toggle pressed={on} onChange={() => void toggle()} aria-label="Ligar afinador">
+        <Toggle pressed={on} onChange={() => void toggle()} aria-label="Ligar afinador" disabled={!on && channels === 0} title={!on && channels === 0 ? "Escolha o microfone em Configurações de áudio" : undefined}>
           {on ? "Desligar" : "Ligar"}
         </Toggle>
       </div>

@@ -69,6 +69,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-17-09-mostrar-na-pasta.md](VER-2026-11-17-09-mostrar-na-pasta.md) | "Mostrar na pasta" após exportar (ADR-0037) |
 | [VER-2026-11-17-10-release-sem-corrida.md](VER-2026-11-17-10-release-sem-corrida.md) | Release sem corrida entre os sistemas (v0.4.0 duplicada) |
 | [VER-2026-11-17-11-audio-silencio-e-desconexao.md](VER-2026-11-17-11-audio-silencio-e-desconexao.md) | Áudio: modo silencioso indevido, desconexão de dispositivos e formatos inteiros |
+| [VER-2026-11-20-01-audio-afinador-xruns-parada.md](VER-2026-11-20-01-audio-afinador-xruns-parada.md) | Afinador após troca de microfone, falhas de buffer recentes, parada sem travar (S-4, S-5, S-6) |
 
 ## Lógica
 

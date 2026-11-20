@@ -53,9 +53,9 @@ loop e contagem estão corretos.
 | S-1 (D6, AU-16) | Fone que não aceita a taxa do projeto deixa o app mudo | Conversor de taxa em tempo real na saída (e na entrada), abrindo o dispositivo na taxa nativa | Fones Bluetooth e alguns USB só têm 44,1 kHz ou 16 kHz (modo chamada); hoje a única saída é mudar a taxa do projeto | G |
 | S-2 (AU-04) | "Aplicar" sempre grava um buffer fixo (256), mesmo com o driver no padrão; a latência mostrada e a compensação ficam erradas no WASAPI compartilhado | Opção "Padrão do driver (recomendado)" e publicar o tamanho real do callback | Takes atrasados com "Usar estimativa" | M |
 | S-3 (AU-09) | Audições de Harmonia/Bases/Partitura tocam pela WebAudio na saída padrão do sistema, não no fone escolhido | Tocar as audições pelo motor (mesma saída) | Confunde o diagnóstico de "não ouço nada" | M |
-| S-4 (AU-08) | Afinador lê a contagem de canais uma vez só; depois de trocar o microfone dá "afinador não está ligado" | Reler o status e religar ao mudar `inputChannels` | Estado velho após troca | P |
-| S-5 (AU-11) | xruns misturam pânico, erro de dispositivo e underrun; "aumente o buffer" é cumulativo | Contadores separados e janela de tempo | Mensagem enganosa | P |
-| S-6 (AU-12) | `stop_recording` espera até 1 s com a trava do estúdio quando o núcleo morreu | Esperar fora da trava | Interface trava ~1 s na reabertura durante gravação | P |
+| S-4 (AU-08) ✅ VER-2026-11-20-01 | Afinador lê a contagem de canais uma vez só; depois de trocar o microfone dá "afinador não está ligado" | Reler o status e religar ao mudar `inputChannels` | Estado velho após troca | P |
+| S-5 (AU-11) ✅ VER-2026-11-20-01 | xruns misturam pânico, erro de dispositivo e underrun; "aumente o buffer" é cumulativo | Contadores separados e janela de tempo | Mensagem enganosa | P |
+| S-6 (AU-12) ✅ VER-2026-11-20-01 | `stop_recording` espera até 1 s com a trava do estúdio quando o núcleo morreu | Esperar fora da trava | Interface trava ~1 s na reabertura durante gravação | P |
 | S-7 (AU-13/14/15) | Proteções latentes: canal ≥ entradas no monitor/gravador (hoje validado antes), ganho de entrada desligado sem aviso após pânico capturado, quadros de entrada extras não gravados (inalcançável hoje) | Defesas e aviso | Robustez | P |
 
 ## 4. Verificação

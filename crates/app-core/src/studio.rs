@@ -873,12 +873,22 @@ impl Studio {
             engine
                 .detach_recorder()
                 .map_err(|e| AppError::new("app.engine", e.to_string()))?;
-            // espera o núcleo aplicar as mensagens (até 1 s)
-            for _ in 0..200 {
+            // espera o núcleo aplicar as mensagens (até 1 s). Se a posição não andar em ~100 ms, o
+            // núcleo não está rodando (dispositivo desconectado): para de esperar em vez de segurar a
+            // trava do estúdio por 1 s (AU-12)
+            let mut last_pos = engine.telemetry().position();
+            for i in 1..=200 {
                 if engine.telemetry().state() == TransportState::Stopped {
                     break;
                 }
                 std::thread::sleep(Duration::from_millis(5));
+                if i % 20 == 0 {
+                    let pos = engine.telemetry().position();
+                    if pos == last_pos {
+                        break;
+                    }
+                    last_pos = pos;
+                }
             }
             std::thread::sleep(Duration::from_millis(20));
             engine.collect_garbage();
