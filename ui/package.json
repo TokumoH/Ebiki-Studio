@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@coderline/alphatab": "1.9.0",
-    "@tauri-apps/api": "2.12.4",
+    "@tauri-apps/api": "2.12.5",
     "@tauri-apps/plugin-dialog": "2.8.4",
     "@tauri-apps/plugin-opener": "2.7.3",
     "@tauri-apps/plugin-process": "2.4.0",
@@ -27,18 +27,18 @@
     "zustand": "5.1.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1",
-    "@tauri-apps/cli": "2.12.4",
+    "@playwright/test": "1.65.1",
+    "@tauri-apps/cli": "2.12.5",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
-    "@testing-library/user-event": "14.6.9",
+    "@testing-library/user-event": "14.6.12",
     "@types/node": "^22.20.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.3.0",
-    "jsdom": "31.0.0",
+    "jsdom": "31.0.1",
     "typescript": "7.0.2",
-    "vite": "8.3.7",
+    "vite": "8.3.8",
     "vitest": "5.1.0"
   },
   "license": "GPL-3.0-or-later"
