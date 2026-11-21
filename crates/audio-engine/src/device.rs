@@ -434,6 +434,7 @@ fn open_streams(
     let render = move |data: &mut [f32]| {
         let started = Instant::now();
         let frames = data.len() / out_ch;
+        tel_out.set_callback_frames(frames);
         let mut n_in = 0;
         if let Some(c) = in_consumer.as_mut() {
             let want = (frames * in_ch).min(in_buf.len());

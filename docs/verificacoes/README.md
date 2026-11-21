@@ -71,6 +71,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-17-11-audio-silencio-e-desconexao.md](VER-2026-11-17-11-audio-silencio-e-desconexao.md) | Áudio: modo silencioso indevido, desconexão de dispositivos e formatos inteiros |
 | [VER-2026-11-20-01-audio-afinador-xruns-parada.md](VER-2026-11-20-01-audio-afinador-xruns-parada.md) | Afinador após troca de microfone, falhas de buffer recentes, parada sem travar (S-4, S-5, S-6) |
 | [VER-2026-11-21-01-release-v0-4-1.md](VER-2026-11-21-01-release-v0-4-1.md) | Versão 0.4.1 (correções de áudio) |
+| [VER-2026-11-21-02-buffer-padrao-do-driver.md](VER-2026-11-21-02-buffer-padrao-do-driver.md) | Buffer "Padrão do driver" e latência pelo callback real (S-2) |
 
 ## Lógica
 

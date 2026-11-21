@@ -24,6 +24,9 @@ pub struct Telemetry {
     input_channels: AtomicU8,
     /// Dispositivos que sumiram com o stream aberto (bits [`LOST_OUTPUT`] / [`LOST_INPUT`]).
     device_lost: AtomicU8,
+    /// Quadros do último callback do dispositivo (0 = ainda não rodou). Com o buffer no padrão do
+    /// driver é o único jeito de saber o tamanho real (WASAPI compartilhado usa o período do sistema).
+    callback_frames: AtomicU32,
 }
 
 /// Canais de entrada com medidor.
@@ -57,6 +60,7 @@ impl Default for Telemetry {
             input_peaks: std::array::from_fn(|_| AtomicU32::new(0)),
             input_channels: AtomicU8::new(0),
             device_lost: AtomicU8::new(0),
+            callback_frames: AtomicU32::new(0),
         }
     }
 }
@@ -83,6 +87,20 @@ impl Telemetry {
     /// sumiu (desconectado). Sem alocação: pode ser chamado do callback de erro do driver.
     pub fn mark_device_lost(&self, which: u8) {
         self.device_lost.fetch_or(which, Ordering::AcqRel);
+    }
+
+    /// O backend registra o tamanho do callback (quadros). Sem alocação.
+    pub fn set_callback_frames(&self, frames: usize) {
+        self.callback_frames
+            .store(frames.min(u32::MAX as usize) as u32, Ordering::Relaxed);
+    }
+
+    /// Tamanho real do callback, se o dispositivo já rodou.
+    pub fn callback_frames(&self) -> Option<u32> {
+        match self.callback_frames.load(Ordering::Relaxed) {
+            0 => None,
+            n => Some(n),
+        }
     }
 
     /// Lê e zera os dispositivos perdidos desde a última leitura (a aplicação reabre o áudio).
@@ -181,5 +199,13 @@ mod tests {
         t.mark_device_lost(LOST_INPUT);
         assert_eq!(t.take_device_lost(), LOST_INPUT | LOST_OUTPUT);
         assert_eq!(t.take_device_lost(), 0, "lido uma vez só");
+    }
+
+    #[test]
+    fn callback_frames_unknown_until_the_device_runs() {
+        let t = Telemetry::default();
+        assert_eq!(t.callback_frames(), None);
+        t.set_callback_frames(480);
+        assert_eq!(t.callback_frames(), Some(480));
     }
 }

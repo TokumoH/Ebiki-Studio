@@ -340,7 +340,11 @@ export function Workspace() {
           )}
         </button>
         <span className="mono" data-tip="status.format">{formatDecimal(session.project.sampleRate / 1000, session.project.sampleRate % 1000 ? 1 : 0)} kHz · {session.project.bitDepth} bits</span>
-        {audio?.mode === "device" && audio.bufferSize ? <span className="mono" data-tip="status.buffer">buffer {audio.bufferSize} · ~{audio.estimatedLatencyMs !== undefined && audio.estimatedLatencyMs !== null ? formatDecimal(audio.estimatedLatencyMs, 1) : "?"} ms</span> : null}
+        {audio?.mode === "device" && (audio.bufferSize || audio.callbackFrames) ? (
+          <span className="mono" data-tip="status.buffer">
+            {audio.bufferSize ? `buffer ${audio.bufferSize}` : `driver ${audio.callbackFrames}`} · ~{audio.estimatedLatencyMs !== undefined && audio.estimatedLatencyMs !== null ? formatDecimal(audio.estimatedLatencyMs, 1) : "?"} ms
+          </span>
+        ) : null}
         {xruns > 0 ? <span className="warn">{xruns} falha(s) de buffer nos últimos 10 s — se continuar, aumente o buffer</span> : null}
         <span style={{ flex: 1 }} />
         {updateNotice ? (

@@ -33,6 +33,14 @@ pub struct AudioStatus {
     pub error: Option<String>,
     /// Problema contornado (microfone indisponível, fone substituído pelo padrão…): o áudio segue.
     pub warning: Option<String>,
+    /// Tamanho real do callback do dispositivo (quadros), quando já rodou. Com `buffer_size = None`
+    /// ("Padrão do driver") é ele que define a latência.
+    pub callback_frames: Option<u32>,
+}
+
+/// Latência de ida e volta estimada (ms): entrada + saída, cada uma com `frames` quadros.
+pub fn round_trip_ms(frames: u32, sample_rate: u32) -> f64 {
+    2.0 * frames as f64 * 1000.0 / sample_rate.max(1) as f64
 }
 
 /// Por que o áudio foi reaberto sozinho (para avisar a pessoa).
@@ -149,9 +157,7 @@ impl AudioRuntime {
         match DeviceHost::start(core, request.clone()) {
             Ok(host) => {
                 let info = host.info.clone();
-                let lat = info
-                    .buffer_size
-                    .map(|b| 2.0 * b as f64 * 1000.0 / info.sample_rate as f64);
+                let lat = info.buffer_size.map(|b| round_trip_ms(b, info.sample_rate));
                 self.status = AudioStatus {
                     mode: "device".into(),
                     output_name: Some(info.output_name.clone()),
@@ -165,6 +171,7 @@ impl AudioRuntime {
                     input_gain_db: studio.input_gain_db(),
                     error: None,
                     warning: (!info.warnings.is_empty()).then(|| info.warnings.join(" ")),
+                    callback_frames: None,
                 };
                 self.missing = Missing {
                     input: info.input_missing,
@@ -210,6 +217,18 @@ impl AudioRuntime {
             Some(Running::Null(n)) => n.stop(),
             None => {}
         }
+    }
+
+    /// Estado com o tamanho real do callback (lido da telemetria agora). Com o buffer no padrão do
+    /// driver, a latência estimada passa a usar esse tamanho (antes ficava vazia ou errada — AU-04).
+    pub fn live_status(&self) -> AudioStatus {
+        let mut s = self.status.clone();
+        let cf = self.telemetry.as_ref().and_then(|t| t.callback_frames());
+        s.callback_frames = cf;
+        if s.mode == "device" && s.buffer_size.is_none() {
+            s.estimated_latency_ms = cf.map(|f| round_trip_ms(f, s.sample_rate));
+        }
+        s
     }
 
     /// Fase 1 (só a trava do áudio): algum dispositivo sumiu ou um que faltava voltou?
@@ -417,5 +436,55 @@ mod reopen_loop_tests {
             ..Default::default()
         };
         assert_eq!(reopen_reason(0, silent, &req, &opened, || l.clone()), None);
+    }
+}
+
+#[cfg(test)]
+mod latency_tests {
+    use super::*;
+
+    #[test]
+    fn round_trip_counts_input_and_output() {
+        assert!((round_trip_ms(480, 48_000) - 20.0).abs() < 1e-9);
+        assert!((round_trip_ms(256, 48_000) - 10.666_666).abs() < 1e-3);
+        assert_eq!(round_trip_ms(10, 0), 20_000.0, "taxa 0 não divide por zero");
+    }
+
+    #[test]
+    fn driver_default_buffer_uses_the_real_callback_size() {
+        let (_h, core) = create_engine(EngineConfig::default());
+        let tel = core.telemetry();
+        let rt = AudioRuntime {
+            status: AudioStatus {
+                mode: "device".into(),
+                sample_rate: 48_000,
+                buffer_size: None,
+                ..Default::default()
+            },
+            telemetry: Some(tel.clone()),
+            ..Default::default()
+        };
+        assert_eq!(
+            rt.live_status().estimated_latency_ms,
+            None,
+            "dispositivo ainda não rodou"
+        );
+        tel.set_callback_frames(480);
+        let s = rt.live_status();
+        assert_eq!(s.callback_frames, Some(480));
+        assert!((s.estimated_latency_ms.unwrap() - 20.0).abs() < 1e-9);
+        // buffer fixo: mantém a estimativa pelo buffer pedido
+        let rt2 = AudioRuntime {
+            status: AudioStatus {
+                mode: "device".into(),
+                sample_rate: 48_000,
+                buffer_size: Some(256),
+                estimated_latency_ms: Some(10.7),
+                ..Default::default()
+            },
+            telemetry: Some(tel),
+            ..Default::default()
+        };
+        assert_eq!(rt2.live_status().estimated_latency_ms, Some(10.7));
     }
 }

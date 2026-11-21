@@ -161,7 +161,7 @@ export const HELP_TOPICS: HelpTopic[] = [
       "Gravação baixa: no Microfone (entrada), suba o Ganho (até +24 dB) até os trechos fortes ficarem na faixa verde dos medidores; abaixo de −30 dB aparece o aviso \"Sinal baixo\".",
       "Microfone ou fone desconectado: o áudio é reaberto sozinho na saída disponível e segue sem a entrada; quando o dispositivo volta, ele é usado de novo. Um microfone ausente ou incompatível nunca deixa o app mudo — a barra de status mostra o aviso.",
       "Modo silencioso mesmo com fone: o fone pode não aceitar a taxa do projeto (alguns fones Bluetooth só funcionam a 44,1 kHz, ou a 16 kHz quando o microfone deles está em uso). Escolha outro fone/alto-falante ou um projeto a 44,1 kHz.",
-      "Estalos: aumente o buffer (256 ou 512 amostras).",
+      "Estalos: use o buffer Padrão do driver (Desempenho) ou um buffer fixo maior (256 ou 512 amostras).",
       "Gravação muda no macOS: Ajustes do Sistema › Privacidade › Microfone › ative o Ebiki Studio.",
       "Painel sumiu: reabra pelo menu Janela (ou Exibir › Painéis), ou use Exibir › Restaurar layout padrão.",
     ],

@@ -63,7 +63,8 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
   const [devices, setDevices] = useState<DeviceList | null>(null);
   const [out, setOut] = useState<string>("");
   const [inp, setInp] = useState<string>("");
-  const [buffer, setBuffer] = useState<number>(256);
+  // 0 = "Padrão do driver" (sem buffer fixo: o sistema escolhe — AU-04)
+  const [buffer, setBuffer] = useState<number>(0);
   const [busy, setBusy] = useState(false);
   const [gainDb, setGainDb] = useState(0);
   const [monitor, setMonitor] = useState<DeviceMonitor | null>(null);
@@ -82,7 +83,7 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
         useAudio.getState().setStatus(s);
         setOut(s.outputId ?? "");
         setInp(s.inputId ?? "");
-        if (s.bufferSize) setBuffer(s.bufferSize);
+        setBuffer(s.bufferSize ?? 0);
         setGainDb(s.inputGainDb ?? 0);
         setMonitor(m);
         if (m) {
@@ -96,12 +97,12 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
   const apply = async () => {
     setBusy(true);
     try {
-      const s = await api.audioConfigure({ outputId: out || null, inputId: inp || null, bufferSize: buffer });
+      const s = await api.audioConfigure({ outputId: out || null, inputId: inp || null, bufferSize: buffer || null });
       onChanged?.(s);
       useAudio.getState().setStatus(s);
       if (s.error) notify.error(`Sem som: ${s.error}. O app ficou em modo silencioso — escolha outro fone/alto-falante.`);
       else if (s.warning) notify.info(s.warning);
-      else notify.success(`Áudio: ${s.outputName ?? "saída padrão"} · ${formatRate(s.sampleRate)} · buffer ${s.bufferSize ?? "padrão"}`);
+      else notify.success(`Áudio: ${s.outputName ?? "saída padrão"} · ${formatRate(s.sampleRate)} · buffer ${s.bufferSize ?? "do driver"}`);
       onClose();
     } catch (e) {
       notify.error(errorMessage(e));
@@ -139,7 +140,9 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
   };
 
   const sampleRate = status?.sampleRate ?? 48000;
-  const latency = roundTripMs(buffer, sampleRate);
+  // com o buffer do driver, a latência vem do callback real (quando o dispositivo já rodou)
+  const effective = buffer || status?.callbackFrames || 0;
+  const latency = effective ? roundTripMs(effective, sampleRate) : null;
   const liveChannels = status?.inputName ? Math.min(status.inputChannels ?? 0, 8) : 0;
   // os medidores mostram o dispositivo EM USO; outro escolhido só vale depois de Aplicar
   const pendingInput = inp !== (status?.inputId ?? "");
@@ -259,8 +262,15 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
 
       <details className="audio-section audio-perf">
         <summary>Desempenho</summary>
-        <Field label={`Buffer — ~${formatDecimal(latency, 1)} ms de ida e volta a ${formatRate(sampleRate)}`}>
+        <Field
+          label={
+            latency === null
+              ? `Buffer — latência definida pelo sistema (${formatRate(sampleRate)})`
+              : `Buffer — ~${formatDecimal(latency, 1)} ms de ida e volta a ${formatRate(sampleRate)}${!buffer && status?.callbackFrames ? ` (driver: ${status.callbackFrames} amostras)` : ""}`
+          }
+        >
           <select className="select" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} aria-label="Tamanho do buffer">
+            <option value={0}>Padrão do driver (recomendado)</option>
             {[32, 64, 128, 256, 512, 1024, 2048].map((b) => (
               <option key={b} value={b}>
                 {b} amostras{b <= 128 ? " (gravação)" : b >= 1024 ? " (mixagem pesada)" : ""}
@@ -268,7 +278,7 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
             ))}
           </select>
         </Field>
-        <p className="audio-hint">Buffers menores reduzem a latência; se ouvir estalos, aumente o buffer.</p>
+        <p className="audio-hint">O padrão do driver é o mais estável. Buffers menores reduzem a latência; se ouvir estalos, aumente o buffer.</p>
       </details>
     </Dialog>
   );

@@ -39,6 +39,8 @@ export function RecordingPanel() {
   if (!session) return null;
   const rec = session.recording;
   const channels = audio?.inputName ? (audio.inputChannels ?? 0) : 0;
+  // AU-04: com o buffer do driver, a estimativa usa o callback real (antes ficava em 2×256 fixo)
+  const estimate = 2 * (audio?.bufferSize ?? audio?.callbackFrames ?? 0);
   return (
     <div className="recording">
       <div className="recording-main">
@@ -145,9 +147,9 @@ export function RecordingPanel() {
           <Field label="Amostras" tip="rec.latency">
             <input className="input" type="number" min={0} max={48000} value={rec.latencyCompensationFrames} onChange={(e) => void run(() => api.recordingLatency(Math.max(0, Math.min(48000, Number(e.target.value)))))} style={{ width: 100 }} />
           </Field>
-          {audio?.bufferSize ? (
-            <Button variant="ghost" onClick={() => void run(() => api.recordingLatency((audio.bufferSize ?? 0) * 2))} title="Estimativa: buffer de entrada + saída">
-              Usar estimativa ({(audio.bufferSize ?? 0) * 2})
+          {estimate ? (
+            <Button variant="ghost" onClick={() => void run(() => api.recordingLatency(estimate))} title="Estimativa: buffer de entrada + saída (tamanho real do driver quando o buffer é o padrão)">
+              Usar estimativa ({estimate})
             </Button>
           ) : null}
         </div>

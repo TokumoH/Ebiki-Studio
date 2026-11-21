@@ -67,11 +67,23 @@ describe("AudioSettingsDialog", () => {
     await api.projectCreate({ dir: "/tmp", name: "Taxa", sampleRate: 44100, bitDepth: 24 });
     await openDialog();
     expect(screen.getByText("Sistema de áudio: Simulado · 44,1 kHz")).toBeInTheDocument();
+    // padrão do driver: latência pelo callback real (480 amostras no simulado)
+    expect(screen.getByText("Buffer — ~21,8 ms de ida e volta a 44,1 kHz (driver: 480 amostras)")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Tamanho do buffer"), { target: { value: "256" } });
     expect(screen.getByText("Buffer — ~11,6 ms de ida e volta a 44,1 kHz")).toBeInTheDocument();
     expect(roundTripMs(256, 48000)).toBeCloseTo(10.67, 2);
     expect(roundTripMs(256, 96000)).toBeCloseTo(5.33, 2);
     expect(roundTripMs(256, 0)).toBeCloseTo(10.67, 2); // taxa desconhecida: 48 kHz
     expect(formatRate(48000)).toBe("48 kHz");
+  });
+
+  it("buffer no padrão do driver: Aplicar não grava um tamanho fixo (AU-04)", async () => {
+    await openDialog();
+    expect((screen.getByLabelText("Tamanho do buffer") as HTMLSelectElement).value).toBe("0");
+    fireEvent.click(screen.getByRole("button", { name: "Aplicar" }));
+    await waitFor(() => expect(spy.calls.some((c) => c.cmd === "audio_configure")).toBe(true));
+    const call = spy.calls.find((c) => c.cmd === "audio_configure")!;
+    expect((call.args as { req: { bufferSize: number | null } }).req.bufferSize).toBeNull();
   });
 
   it("Testar som chama a engine e mostra o indicador", async () => {

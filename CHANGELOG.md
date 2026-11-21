@@ -3,6 +3,13 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Corrigido
+
+- **Buffer "Padrão do driver (recomendado)"**: o app não força mais 256 amostras; a latência mostrada e a
+  estimativa de compensação usam o tamanho real do callback (takes deixam de sair atrasados no Windows).
+
 ## [0.4.1] - 2026-11-21
 
 Correções de áudio: o app não fica mais mudo por causa do microfone e se recupera quando um dispositivo é

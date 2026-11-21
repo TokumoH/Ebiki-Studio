@@ -79,8 +79,9 @@ sublinhado pontilhado têm explicação. Desligue em *Exibir › Legendas ao pas
      (−18 a −6 dB). Abaixo de −30 dB aparece *"Sinal baixo"*; acima de −1 dB, *"Muito alto"*. O ganho
      vale para a gravação, os medidores e o retorno, e fica guardado para as próximas aberturas.
      **Ouvir o microfone no fone enquanto grava** liga o retorno direto (volume padrão 0 dB).
-   - **Desempenho** (recolhido): o buffer. A latência mostrada usa a taxa real do dispositivo.
-     Buffers de 64–128 amostras dão a menor latência (gravação); 512+ para mixagens pesadas.
+   - **Desempenho** (recolhido): o buffer. **Padrão do driver (recomendado)** deixa o sistema escolher
+     (o mais estável); a latência mostrada usa o tamanho real do callback e a taxa real do dispositivo.
+     Buffers fixos de 64–128 amostras dão a menor latência (gravação); 512+ para mixagens pesadas.
    - Sem dispositivo disponível, o app continua funcionando em modo silencioso (barra de status avisa).
    - **Microfone ausente ou incompatível não deixa o app mudo:** o áudio abre só com a saída e a barra
      de status avisa. Fone escolhido que sumiu é trocado pelo padrão do sistema.
@@ -154,7 +155,8 @@ os ajustes, aplicados na reprodução e na exportação. Tudo pode ser desfeito 
 4. **Metrônomo**: liga/desliga (C), volume, subdivisão, contagem (0, 1, 2 ou 4 compassos).
 5. **Punch in/out**: defina os compassos; só o trecho entre eles é gravado.
 6. **Takes**: cada passada vira um take; escolha o take ativo na lista da faixa.
-7. **Compensação de latência**: use a estimativa (buffer de entrada + saída) ou meça e ajuste.
+7. **Compensação de latência**: use a estimativa (buffer de entrada + saída; com o padrão do driver, o
+   tamanho real do callback) ou meça e ajuste.
 
 ## 5. Mixagem
 

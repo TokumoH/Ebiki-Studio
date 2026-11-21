@@ -44,7 +44,7 @@ pub fn audio_devices() -> DeviceList {
 
 #[tauri::command]
 pub fn audio_status(state: State<AppState>) -> AudioStatus {
-    lock(&state.audio).status.clone()
+    lock(&state.audio).live_status()
 }
 
 #[derive(Debug, Deserialize)]

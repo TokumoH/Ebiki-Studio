@@ -50,7 +50,7 @@ interface State {
 
 export function createMockTransport(): Transport {
   const st: State = { session: null, undo: [], redo: [], savedAt: 0, revision: 0, playing: "stopped", frame: 0, lastGesture: null, recent: [],
-    audio: { mode: "device", outputName: "Saída simulada", inputName: null, outputId: null, inputId: null, sampleRate: SR_DEFAULT, bufferSize: 256, inputChannels: 2, estimatedLatencyMs: 10.7, inputGainDb: 0, error: null, warning: null }, monitor: null };
+    audio: { mode: "device", outputName: "Saída simulada", inputName: null, outputId: null, inputId: null, sampleRate: SR_DEFAULT, bufferSize: null, inputChannels: 2, estimatedLatencyMs: 20, inputGainDb: 0, error: null, warning: null, callbackFrames: 480 }, monitor: null };
   const listeners = new Map<string, Set<(p: unknown) => void>>();
   const emit = (ev: string, p: unknown) => listeners.get(ev)?.forEach((cb) => cb(p));
   // só no simulado: o E2E dispara eventos do núcleo (ex.: dispositivo desconectado)
@@ -221,11 +221,13 @@ export function createMockTransport(): Transport {
     },
     audio_test_tone: () => null,
     audio_configure: (a) => {
-      const bufferSize = a.req.bufferSize ?? 256;
+      // sem buffer fixo (padrão do driver): simula um período de 480 amostras
+      const bufferSize = a.req.bufferSize ?? null;
+      const frames = bufferSize ?? 480;
       if (!a.req.inputId) st.monitor = null;
       // como o núcleo: microfone pedido que não existe não derruba o áudio — segue sem entrada, com aviso
       const inputOk = !a.req.inputId || a.req.inputId === "sim-in";
-      st.audio = { mode: "device", outputName: "Saída simulada", inputName: a.req.inputId && inputOk ? "Entrada simulada" : null, outputId: a.req.outputId ?? null, inputId: a.req.inputId ?? null, sampleRate: sr(), bufferSize, inputChannels: inputOk && a.req.inputId ? 2 : 0, estimatedLatencyMs: (bufferSize * 2000) / sr(), inputGainDb: st.audio.inputGainDb ?? 0, error: null, warning: inputOk ? null : "Microfone indisponível (microfone não encontrado (desconectado?)): o áudio segue sem entrada." };
+      st.audio = { mode: "device", outputName: "Saída simulada", inputName: a.req.inputId && inputOk ? "Entrada simulada" : null, outputId: a.req.outputId ?? null, inputId: a.req.inputId ?? null, sampleRate: sr(), bufferSize, callbackFrames: frames, inputChannels: inputOk && a.req.inputId ? 2 : 0, estimatedLatencyMs: (frames * 2000) / sr(), inputGainDb: st.audio.inputGainDb ?? 0, error: null, warning: inputOk ? null : "Microfone indisponível (microfone não encontrado (desconectado?)): o áudio segue sem entrada." };
       return st.audio;
     },
     project_create: (a) => {
