@@ -4,6 +4,7 @@
 //! ([`DeviceHost`]); a aplicação conversa com ela por canal.
 
 use crate::core::EngineCore;
+use crate::resampler::{InputRateAdapter, OutputRateAdapter};
 use crate::telemetry::{Telemetry, LOST_INPUT, LOST_OUTPUT};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use cpal::{FromSample, SampleFormat, SizedSample};
@@ -40,7 +41,12 @@ pub struct DeviceRequest {
 pub struct RunningInfo {
     pub output_name: String,
     pub input_name: Option<String>,
+    /// Taxa do projeto (a engine sempre roda nela).
     pub sample_rate: u32,
+    /// Taxa em que o fone/alto-falante abriu; diferente de `sample_rate` = conversão em tempo real.
+    pub device_sample_rate: u32,
+    /// Taxa em que o microfone abriu (`None` = sem entrada).
+    pub input_device_rate: Option<u32>,
     pub buffer_size: Option<u32>,
     pub out_channels: u16,
     pub in_channels: u16,
@@ -162,6 +168,69 @@ pub(crate) fn pick_config(
         .filter_map(|c| rank(&c).map(|r| (r, c)))
         .min_by_key(|(r, _)| *r)
         .map(|(_, c)| c.with_sample_rate(rate))
+}
+
+/// Taxas comuns, tentadas quando o dispositivo não aceita a do projeto.
+const COMMON_RATES: [u32; 12] = [
+    48_000, 44_100, 96_000, 88_200, 32_000, 192_000, 176_400, 24_000, 22_050, 16_000, 11_025, 8_000,
+];
+
+/// Taxa em que o dispositivo vai abrir: a do projeto, se alguma configuração utilizável (formato
+/// conhecido, canais > 0) a aceita; senão a aceita mais próxima, preferindo as taxas comuns
+/// ([`COMMON_RATES`]) às pontas de faixa incomuns e, no empate de distância, a maior. `None` = nenhuma
+/// configuração utilizável. A diferença é convertida em tempo real ([`crate::resampler`]).
+pub(crate) fn pick_rate(configs: &[cpal::SupportedStreamConfigRange], want: u32) -> Option<u32> {
+    let usable: Vec<_> = configs
+        .iter()
+        .filter(|c| FORMATS.contains(&c.sample_format()) && c.channels() > 0)
+        .collect();
+    let accepts = |r: u32| {
+        usable
+            .iter()
+            .any(|c| c.min_sample_rate() <= r && r <= c.max_sample_rate())
+    };
+    if accepts(want) {
+        return Some(want);
+    }
+    let edges = usable
+        .iter()
+        .flat_map(|c| [c.min_sample_rate(), c.max_sample_rate()]);
+    COMMON_RATES
+        .iter()
+        .copied()
+        .chain(edges)
+        .filter(|r| *r > 0 && accepts(*r))
+        .min_by_key(|r| {
+            (
+                !COMMON_RATES.contains(r),
+                r.abs_diff(want),
+                std::cmp::Reverse(*r),
+            )
+        })
+}
+
+/// "44,1", "48", "22,05" (kHz no formato brasileiro).
+fn khz(rate: u32) -> String {
+    format!("{}", rate as f64 / 1000.0).replace('.', ",")
+}
+
+/// Aviso (PT-BR) de conversão de taxa em tempo real; `None` quando as taxas são iguais.
+pub(crate) fn rate_warning(output: bool, device_rate: u32, project_rate: u32) -> Option<String> {
+    (device_rate != project_rate).then(|| {
+        if output {
+            format!(
+                "Fone a {} kHz: o áudio é convertido de {} kHz em tempo real.",
+                khz(device_rate),
+                khz(project_rate)
+            )
+        } else {
+            format!(
+                "Microfone a {} kHz: a entrada é convertida para {} kHz em tempo real.",
+                khz(device_rate),
+                khz(project_rate)
+            )
+        }
+    })
 }
 
 /// Buffer pedido dentro da faixa que o dispositivo aceita (fora dela o stream não abre).
@@ -317,6 +386,8 @@ struct OpenInput {
     channels: usize,
     name: String,
     consumer: rtrb::Consumer<f32>,
+    /// Taxa em que o microfone abriu (a fila sempre recebe a taxa do projeto).
+    device_rate: u32,
 }
 
 /// Abre o microfone pedido. Falhar aqui **não** derruba o áudio: quem chama segue sem entrada.
@@ -329,12 +400,13 @@ fn open_input(
 ) -> Result<OpenInput, String> {
     let dev =
         find(h, id, false).map_err(|_| "microfone não encontrado (desconectado?)".to_owned())?;
-    let cfg = pick_config(
-        dev.supported_input_configs().map_err(|e| e.to_string())?,
-        rate,
-        2,
-    )
-    .ok_or_else(|| format!("o microfone não funciona a {} kHz", rate as f64 / 1000.0))?;
+    let configs: Vec<_> = dev
+        .supported_input_configs()
+        .map_err(|e| e.to_string())?
+        .collect();
+    let no_rate = || format!("o microfone não funciona a {} kHz", khz(rate));
+    let device_rate = pick_rate(&configs, rate).ok_or_else(no_rate)?;
+    let cfg = pick_config(configs.into_iter(), device_rate, 2).ok_or_else(no_rate)?;
     let fmt = cfg.sample_format();
     let buffer_size = fit_buffer(cfg.buffer_size(), buffer);
     let mut config: cpal::StreamConfig = cfg.into();
@@ -342,7 +414,7 @@ fn open_input(
     let ch = (config.channels as usize).max(1);
     let (mut prod, consumer) = rtrb::RingBuffer::<f32>::new(rate as usize * ch / 2);
     let tel = telemetry.clone();
-    let push = move |data: &[f32]| {
+    let mut write = move |data: &[f32]| {
         // só quadros inteiros: um corte no meio do quadro trocaria L/R para sempre
         let whole = (data.len().min(prod.slots()) / ch) * ch;
         if let Ok(mut chunk) = prod.write_chunk_uninit(whole) {
@@ -358,6 +430,14 @@ fn open_input(
             }
         }
     };
+    // microfone em outra taxa: converte para a do projeto antes da fila (gravação, medidores,
+    // monitores e afinador sempre veem a taxa do projeto)
+    let mut adapter =
+        (device_rate != rate).then(|| InputRateAdapter::new(ch, device_rate, rate, CB_FRAMES));
+    let push = move |data: &[f32]| match adapter.as_mut() {
+        Some(a) => a.process(data, &mut write),
+        None => write(data),
+    };
     let err = on_stream_error(telemetry.clone(), LOST_INPUT);
     let stream =
         by_format!(fmt, build_input, &dev, config, push, err).map_err(|e| e.to_string())?;
@@ -367,6 +447,7 @@ fn open_input(
         channels: ch,
         name: dev.to_string(),
         consumer,
+        device_rate,
     })
 }
 
@@ -390,14 +471,16 @@ fn open_streams(
         }
         None => h.default_output_device().ok_or(DeviceError::NoOutput)?,
     };
-    let out_cfg = pick_config(
-        out_dev
-            .supported_output_configs()
-            .map_err(|e| DeviceError::Backend(e.to_string()))?,
-        req.sample_rate,
-        2,
-    )
-    .ok_or(DeviceError::UnsupportedRate(req.sample_rate))?;
+    let out_configs: Vec<_> = out_dev
+        .supported_output_configs()
+        .map_err(|e| DeviceError::Backend(e.to_string()))?
+        .collect();
+    // fone que não aceita a taxa do projeto (Bluetooth a 44,1/16 kHz…): abre na mais próxima e converte
+    let device_rate = pick_rate(&out_configs, req.sample_rate)
+        .ok_or(DeviceError::UnsupportedRate(req.sample_rate))?;
+    let out_cfg = pick_config(out_configs.into_iter(), device_rate, 2)
+        .ok_or(DeviceError::UnsupportedRate(req.sample_rate))?;
+    warnings.extend(rate_warning(true, device_rate, req.sample_rate));
     let out_fmt = out_cfg.sample_format();
     let out_buffer = fit_buffer(out_cfg.buffer_size(), req.buffer_size);
     let mut out_config: cpal::StreamConfig = out_cfg.into();
@@ -410,6 +493,7 @@ fn open_streams(
     let mut in_ch = 0usize;
     let mut input_name = None;
     let mut input_missing = false;
+    let mut input_device_rate = None;
     let mut in_consumer: Option<rtrb::Consumer<f32>> = None;
     if let Some(id) = &req.input_id {
         match open_input(&h, id, req.sample_rate, req.buffer_size, &telemetry) {
@@ -417,6 +501,8 @@ fn open_streams(
                 in_ch = i.channels;
                 input_name = Some(i.name);
                 in_consumer = Some(i.consumer);
+                input_device_rate = Some(i.device_rate);
+                warnings.extend(rate_warning(false, i.device_rate, req.sample_rate));
                 streams.push(i.stream);
             }
             Err(why) => {
@@ -429,12 +515,10 @@ fn open_streams(
     }
 
     let mut in_buf = vec![0.0f32; CB_FRAMES * in_ch.max(1)];
-    let sr = req.sample_rate as f64;
     let tel_out = telemetry.clone();
-    let render = move |data: &mut [f32]| {
-        let started = Instant::now();
+    // engine na taxa do projeto: `data` tem no máximo CB_FRAMES quadros (direto ou pelo conversor)
+    let mut engine_render = move |data: &mut [f32]| {
         let frames = data.len() / out_ch;
-        tel_out.set_callback_frames(frames);
         let mut n_in = 0;
         if let Some(c) = in_consumer.as_mut() {
             let want = (frames * in_ch).min(in_buf.len());
@@ -467,8 +551,23 @@ fn open_streams(
             data.fill(0.0);
             tel_out.add_xrun();
         }
-        if started.elapsed().as_secs_f64() > frames as f64 / sr * 0.9 {
-            tel_out.add_xrun();
+    };
+    // taxa igual: caminho direto (sem custo); diferente: engine → conversor → dispositivo
+    let mut adapter = (device_rate != req.sample_rate)
+        .then(|| OutputRateAdapter::new(out_ch, req.sample_rate, device_rate, CB_FRAMES));
+    let dev_sr = device_rate as f64;
+    let tel_cb = telemetry.clone();
+    let render = move |data: &mut [f32]| {
+        let started = Instant::now();
+        // quadros e prazo do callback são os do dispositivo (latência e falhas de buffer)
+        let frames = data.len() / out_ch;
+        tel_cb.set_callback_frames(frames);
+        match adapter.as_mut() {
+            Some(a) => a.fill(data, &mut engine_render),
+            None => engine_render(data),
+        }
+        if started.elapsed().as_secs_f64() > frames as f64 / dev_sr * 0.9 {
+            tel_cb.add_xrun();
         }
     };
     let err = on_stream_error(telemetry, LOST_OUTPUT);
@@ -482,6 +581,8 @@ fn open_streams(
         output_name: out_dev.to_string(),
         input_name,
         sample_rate: req.sample_rate,
+        device_sample_rate: device_rate,
+        input_device_rate,
         buffer_size: match out_buffer {
             cpal::BufferSize::Fixed(b) => Some(b),
             cpal::BufferSize::Default => None,
@@ -567,6 +668,79 @@ mod tests {
             r(2, 48_000, 48_000, SampleFormat::U8),
         ];
         assert!(pick_config(cfgs.into_iter(), 48_000, 2).is_none());
+    }
+
+    #[test]
+    fn rate_is_the_project_rate_when_supported() {
+        let cfgs = vec![
+            r(2, 44_100, 44_100, SampleFormat::F32),
+            r(2, 8_000, 96_000, SampleFormat::I16),
+        ];
+        assert_eq!(pick_rate(&cfgs, 48_000), Some(48_000));
+        assert_eq!(pick_rate(&cfgs, 44_100), Some(44_100));
+    }
+
+    #[test]
+    fn unsupported_rate_picks_the_closest_supported_one() {
+        // fone Bluetooth: só 44,1 kHz (antes: UnsupportedRate → modo silencioso)
+        let bt = vec![r(2, 44_100, 44_100, SampleFormat::F32)];
+        assert_eq!(pick_rate(&bt, 48_000), Some(44_100));
+        // fone em modo chamada (microfone dele em uso): só 16 kHz, mono
+        let hfp = vec![r(1, 16_000, 16_000, SampleFormat::I16)];
+        assert_eq!(pick_rate(&hfp, 48_000), Some(16_000));
+        // várias taxas fixas: a mais próxima do projeto
+        let fixed = vec![
+            r(2, 44_100, 44_100, SampleFormat::F32),
+            r(2, 96_000, 96_000, SampleFormat::F32),
+            r(2, 192_000, 192_000, SampleFormat::F32),
+        ];
+        assert_eq!(pick_rate(&fixed, 48_000), Some(44_100));
+        assert_eq!(pick_rate(&fixed, 88_200), Some(96_000));
+        // empate de distância (46 050 está a 1 950 de 44 100 e de 48 000): a maior
+        let tie = vec![
+            r(2, 44_100, 44_100, SampleFormat::F32),
+            r(2, 48_000, 48_000, SampleFormat::F32),
+        ];
+        assert_eq!(pick_rate(&tie, 46_050), Some(48_000));
+        // faixa contínua que não contém a taxa: taxa comum dentro da faixa, não a ponta incomum
+        let range = vec![r(2, 8_000, 47_000, SampleFormat::F32)];
+        assert_eq!(pick_rate(&range, 48_000), Some(44_100));
+        // nenhuma taxa comum na faixa: a ponta mais próxima
+        let odd = vec![r(2, 50_000, 60_000, SampleFormat::F32)];
+        assert_eq!(pick_rate(&odd, 48_000), Some(50_000));
+        // a taxa escolhida tem configuração (o resto da abertura segue igual)
+        let c = pick_config(bt.into_iter(), 44_100, 2).expect("abre a 44,1 kHz");
+        assert_eq!(c.sample_rate(), 44_100);
+    }
+
+    #[test]
+    fn rate_ignores_unusable_configs() {
+        // formato desconhecido ou 0 canais não contam (pick_config também as recusa)
+        let cfgs = vec![
+            r(2, 48_000, 48_000, SampleFormat::U8),
+            r(0, 48_000, 48_000, SampleFormat::F32),
+            r(2, 44_100, 44_100, SampleFormat::F32),
+        ];
+        assert_eq!(pick_rate(&cfgs, 48_000), Some(44_100));
+        assert_eq!(pick_rate(&[], 48_000), None);
+        assert_eq!(
+            pick_rate(&[r(2, 48_000, 48_000, SampleFormat::U8)], 48_000),
+            None
+        );
+    }
+
+    #[test]
+    fn conversion_warning_in_portuguese() {
+        assert_eq!(rate_warning(true, 48_000, 48_000), None);
+        assert_eq!(
+            rate_warning(true, 44_100, 48_000).as_deref(),
+            Some("Fone a 44,1 kHz: o áudio é convertido de 48 kHz em tempo real.")
+        );
+        assert_eq!(
+            rate_warning(false, 16_000, 44_100).as_deref(),
+            Some("Microfone a 16 kHz: a entrada é convertida para 44,1 kHz em tempo real.")
+        );
+        assert_eq!(khz(22_050), "22,05");
     }
 
     #[test]

@@ -18,7 +18,7 @@
 | D3 | Só dispositivos que oferecem **f32** | `device.rs` `f32_config` | Microfones USB e placas no Linux com 16/24/32 bits inteiros eram recusados. Somado ao D1, deixava o app mudo |
 | D4 | Fone escolhido que sumiu derrubava tudo, sem usar o padrão do sistema | `device.rs` (`find` da saída) | Modo silencioso |
 | D5 | Buffer pedido fora da faixa aceita pelo dispositivo | `device.rs` (`BufferSize::Fixed` sem limitar) | O stream não abria: modo silencioso |
-| D6 | Taxa do projeto não suportada pelo fone (Bluetooth a 44,1 kHz, ou 16 kHz quando o microfone do fone está em uso) | `device.rs` (taxa exata) | Modo silencioso. **Não corrigido**: exige um conversor de taxa no tempo real (sugestão S-1) |
+| D6 | Taxa do projeto não suportada pelo fone (Bluetooth a 44,1 kHz, ou 16 kHz quando o microfone do fone está em uso) | `device.rs` (taxa exata) | Modo silencioso. **Corrigido em VER-2026-11-21-03 (S-1)**: o dispositivo abre na taxa aceita mais próxima e o áudio é convertido em tempo real |
 
 **Dupla verificação do diagnóstico:**
 1. Leitura do caminho de abertura e dos callbacks.
@@ -50,7 +50,7 @@ loop e contagem estão corretos.
 
 | Id | O que | Solução sugerida | Por que | Esforço |
 |---|---|---|---|---|
-| S-1 (D6, AU-16) | Fone que não aceita a taxa do projeto deixa o app mudo | Conversor de taxa em tempo real na saída (e na entrada), abrindo o dispositivo na taxa nativa | Fones Bluetooth e alguns USB só têm 44,1 kHz ou 16 kHz (modo chamada); hoje a única saída é mudar a taxa do projeto | G |
+| S-1 (D6, AU-16) ✅ VER-2026-11-21-03 | Fone que não aceita a taxa do projeto deixa o app mudo | Conversor de taxa em tempo real na saída (e na entrada), abrindo o dispositivo na taxa nativa | Fones Bluetooth e alguns USB só têm 44,1 kHz ou 16 kHz (modo chamada); hoje a única saída é mudar a taxa do projeto | G |
 | S-2 (AU-04) ✅ VER-2026-11-21-02 | "Aplicar" sempre grava um buffer fixo (256), mesmo com o driver no padrão; a latência mostrada e a compensação ficam erradas no WASAPI compartilhado | Opção "Padrão do driver (recomendado)" e publicar o tamanho real do callback | Takes atrasados com "Usar estimativa" | M |
 | S-3 (AU-09) ✅ VER-2026-11-21-04 | Audições de Harmonia/Bases/Partitura tocam pela WebAudio na saída padrão do sistema, não no fone escolhido | Tocar as audições pelo motor (mesma saída) | Confunde o diagnóstico de "não ouço nada" | M |
 | S-4 (AU-08) ✅ VER-2026-11-20-01 | Afinador lê a contagem de canais uma vez só; depois de trocar o microfone dá "afinador não está ligado" | Reler o status e religar ao mudar `inputChannels` | Estado velho após troca | P |
@@ -281,7 +281,9 @@ e teste de alinhamento da gravação.
   com tom/velocidade errados. Os clipes são decodificados na taxa do projeto, `Click`/`InputGain`/
   `TestTone` usam a taxa da engine e não há resampler no caminho. Além disso, `ensure_rate` compara só
   `request.sample_rate`. Converter para a taxa do dispositivo exige resampler ou recompilar o grafo
-  nessa taxa.
+  nessa taxa. **Resolvido em VER-2026-11-21-03:** a engine continua na taxa do projeto e um conversor
+  (`resampler.rs`) fica entre ela e o dispositivo, nos dois sentidos; `ensure_rate` segue correto
+  porque a taxa pedida continua sendo a do projeto.
 - **AU-17 (baixa):** `SetDeviceMonitor(Some)` com outra rota troca de canal na hora, com o ganho
   atual → estalo (core.rs:254).
 - Nota cpal 0.18 WASAPI: "Padrão do sistema" (output_id None) usa o endpoint virtual que segue a troca

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../ipc/api";
 import type { Track } from "../../ipc/types";
-import { refreshAudio, useAudio } from "../../core/audio";
+import { latencyEstimateSamples, refreshAudio, useAudio } from "../../core/audio";
 import { InputSection } from "./InputSection";
 import { parseRouteKey, routeKey, trackRouteOptions } from "./inputRoutes";
 import { run, useSession } from "../../core/session";
@@ -39,8 +39,9 @@ export function RecordingPanel() {
   if (!session) return null;
   const rec = session.recording;
   const channels = audio?.inputName ? (audio.inputChannels ?? 0) : 0;
-  // AU-04: com o buffer do driver, a estimativa usa o callback real (antes ficava em 2×256 fixo)
-  const estimate = 2 * (audio?.bufferSize ?? audio?.callbackFrames ?? 0);
+  // AU-04: com o buffer do driver, a estimativa usa o callback real (antes ficava em 2×256 fixo);
+  // S-1: fone em outra taxa → quadros do dispositivo convertidos para a taxa do projeto
+  const estimate = latencyEstimateSamples(audio);
   return (
     <div className="recording">
       <div className="recording-main">

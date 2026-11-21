@@ -36,6 +36,17 @@ pub struct AudioStatus {
     /// Tamanho real do callback do dispositivo (quadros), quando já rodou. Com `buffer_size = None`
     /// ("Padrão do driver") é ele que define a latência.
     pub callback_frames: Option<u32>,
+    /// Taxa em que o fone/alto-falante abriu (`None` = modo silencioso). Diferente de `sample_rate`:
+    /// o dispositivo não aceita a taxa do projeto e o áudio é convertido em tempo real (S-1).
+    pub device_sample_rate: Option<u32>,
+}
+
+impl AudioStatus {
+    /// Taxa que mede o tempo do buffer/callback: a do dispositivo (os quadros são dele). A conversão
+    /// de taxa soma ~0,5 ms por sentido (1,5 ms a 16 kHz), fora desta estimativa (VER-2026-11-21-03).
+    pub fn latency_rate(&self) -> u32 {
+        self.device_sample_rate.unwrap_or(self.sample_rate)
+    }
 }
 
 /// Latência de ida e volta estimada (ms): entrada + saída, cada uma com `frames` quadros.
@@ -157,7 +168,9 @@ impl AudioRuntime {
         match DeviceHost::start(core, request.clone()) {
             Ok(host) => {
                 let info = host.info.clone();
-                let lat = info.buffer_size.map(|b| round_trip_ms(b, info.sample_rate));
+                let lat = info
+                    .buffer_size
+                    .map(|b| round_trip_ms(b, info.device_sample_rate));
                 self.status = AudioStatus {
                     mode: "device".into(),
                     output_name: Some(info.output_name.clone()),
@@ -172,6 +185,7 @@ impl AudioRuntime {
                     error: None,
                     warning: (!info.warnings.is_empty()).then(|| info.warnings.join(" ")),
                     callback_frames: None,
+                    device_sample_rate: Some(info.device_sample_rate),
                 };
                 self.missing = Missing {
                     input: info.input_missing,
@@ -226,7 +240,7 @@ impl AudioRuntime {
         let cf = self.telemetry.as_ref().and_then(|t| t.callback_frames());
         s.callback_frames = cf;
         if s.mode == "device" && s.buffer_size.is_none() {
-            s.estimated_latency_ms = cf.map(|f| round_trip_ms(f, s.sample_rate));
+            s.estimated_latency_ms = cf.map(|f| round_trip_ms(f, s.latency_rate()));
         }
         s
     }
@@ -486,5 +500,43 @@ mod latency_tests {
             ..Default::default()
         };
         assert_eq!(rt2.live_status().estimated_latency_ms, Some(10.7));
+    }
+
+    #[test]
+    fn converted_device_latency_uses_the_device_rate() {
+        // projeto a 48 kHz, fone Bluetooth a 44,1 kHz: 441 quadros do driver = 10 ms por sentido
+        let (_h, core) = create_engine(EngineConfig::default());
+        let tel = core.telemetry();
+        tel.set_callback_frames(441);
+        let rt = AudioRuntime {
+            status: AudioStatus {
+                mode: "device".into(),
+                sample_rate: 48_000,
+                device_sample_rate: Some(44_100),
+                buffer_size: None,
+                ..Default::default()
+            },
+            telemetry: Some(tel),
+            ..Default::default()
+        };
+        let s = rt.live_status();
+        assert!((s.estimated_latency_ms.unwrap() - 20.0).abs() < 1e-9);
+        assert_eq!(s.latency_rate(), 44_100);
+        // sem dispositivo aberto (modo silencioso): cai na taxa do projeto
+        let null = AudioStatus {
+            sample_rate: 48_000,
+            ..Default::default()
+        };
+        assert_eq!(null.latency_rate(), 48_000);
+    }
+
+    #[test]
+    fn status_serializes_the_device_rate_in_camel_case() {
+        let s = AudioStatus {
+            device_sample_rate: Some(44_100),
+            ..Default::default()
+        };
+        let v = serde_json::to_value(&s).unwrap();
+        assert_eq!(v["deviceSampleRate"], 44_100);
     }
 }

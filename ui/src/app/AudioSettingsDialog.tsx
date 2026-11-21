@@ -33,6 +33,11 @@ export function formatRate(sampleRate: number): string {
   return `${(sampleRate / 1000).toLocaleString("pt-BR")} kHz`;
 }
 
+/** " · convertendo para 44,1 kHz" quando o fone abriu em outra taxa (S-1); "" quando não converte. */
+export function conversionNote(sampleRate: number, deviceSampleRate: number | null | undefined): string {
+  return deviceSampleRate && deviceSampleRate !== sampleRate ? ` · convertendo para ${formatRate(deviceSampleRate)}` : "";
+}
+
 const signed = (db: number) => `${db > 0 ? "+" : ""}${db} dB`;
 
 function HeadphonesIcon() {
@@ -140,9 +145,11 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
   };
 
   const sampleRate = status?.sampleRate ?? 48000;
+  // buffer e callback contam quadros do DISPOSITIVO: medem o tempo na taxa dele (S-1: pode diferir)
+  const deviceRate = status?.deviceSampleRate || sampleRate;
   // com o buffer do driver, a latência vem do callback real (quando o dispositivo já rodou)
   const effective = buffer || status?.callbackFrames || 0;
-  const latency = effective ? roundTripMs(effective, sampleRate) : null;
+  const latency = effective ? roundTripMs(effective, deviceRate) : null;
   const liveChannels = status?.inputName ? Math.min(status.inputChannels ?? 0, 8) : 0;
   // os medidores mostram o dispositivo EM USO; outro escolhido só vale depois de Aplicar
   const pendingInput = inp !== (status?.inputId ?? "");
@@ -163,6 +170,7 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
     >
       <p className="audio-system">
         Sistema de áudio: {devices?.host ?? "…"} · {formatRate(sampleRate)}
+        {conversionNote(sampleRate, status?.deviceSampleRate)}
       </p>
 
       <section className="audio-section" aria-labelledby="audio-out-title">
@@ -265,8 +273,8 @@ export function AudioSettingsDialog({ onChanged }: { onChanged?: (s: AudioStatus
         <Field
           label={
             latency === null
-              ? `Buffer — latência definida pelo sistema (${formatRate(sampleRate)})`
-              : `Buffer — ~${formatDecimal(latency, 1)} ms de ida e volta a ${formatRate(sampleRate)}${!buffer && status?.callbackFrames ? ` (driver: ${status.callbackFrames} amostras)` : ""}`
+              ? `Buffer — latência definida pelo sistema (${formatRate(deviceRate)})`
+              : `Buffer — ~${formatDecimal(latency, 1)} ms de ida e volta a ${formatRate(deviceRate)}${!buffer && status?.callbackFrames ? ` (driver: ${status.callbackFrames} amostras)` : ""}`
           }
         >
           <select className="select" value={buffer} onChange={(e) => setBuffer(Number(e.target.value))} aria-label="Tamanho do buffer">

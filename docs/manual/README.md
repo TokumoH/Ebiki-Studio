@@ -88,6 +88,11 @@ sublinhado pontilhado têm explicação. Desligue em *Exibir › Legendas ao pas
    - **Desconectou com o app aberto:** o áudio é reaberto sozinho (aviso na tela); quando o
      dispositivo volta, ele é usado de novo em até 2 segundos.
    - Dispositivos que só trabalham com amostras inteiras (16/24/32 bits) também funcionam.
+   - **Fone ou microfone que não aceita a taxa do projeto** (fones Bluetooth a 44,1 kHz, ou a 16 kHz
+     quando o microfone deles está em uso; alguns USB): abre na taxa aceita mais próxima e o áudio é
+     **convertido em tempo real** — o projeto não muda de taxa nem de afinação. O topo mostra
+     "convertendo para 44,1 kHz" e a barra de status avisa. A conversão soma cerca de 0,5 ms (1,5 ms
+     com fones a 16 kHz).
 3. **Importar áudio** (*Importar* ou Ctrl+I, ou arraste arquivos para a janela): WAV, AIFF, FLAC,
    MP3, OGG, AAC/M4A. O arquivo é copiado para o projeto e convertido para a taxa do projeto;
    o original nunca é alterado.

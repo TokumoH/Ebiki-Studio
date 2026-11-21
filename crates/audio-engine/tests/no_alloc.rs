@@ -120,6 +120,43 @@ fn process_does_not_allocate() {
     h.collect_garbage();
 }
 
+/// S-1: o conversor de taxa (fone/microfone em outra taxa) também roda no callback sem alocar.
+#[test]
+fn rate_conversion_does_not_allocate() {
+    use audio_engine::resampler::{InputRateAdapter, OutputRateAdapter};
+    let (mut h, mut core) = create_engine(EngineConfig {
+        sample_rate: SR,
+        ..Default::default()
+    });
+    h.play().unwrap();
+    h.play_test_tone(5.0, -12.0).unwrap();
+    let mut out_a = OutputRateAdapter::new(2, SR, 44_100, 4096);
+    let mut in_a = InputRateAdapter::new(2, 16_000, SR, 4096);
+    let mut dev = vec![0.0f32; 4096 * 2];
+    let mic = vec![0.1f32; 4096 * 2];
+    let mut received = 0usize;
+    reset_violation_count();
+    assert_no_alloc(|| {
+        for n in [4096usize, 1, 441, 512, 7, 2048, 4096, 333]
+            .iter()
+            .cycle()
+            .take(400)
+        {
+            out_a.fill(&mut dev[..n * 2], |eng: &mut [f32]| {
+                core.process(eng, 2, &[], 0)
+            });
+            in_a.process(&mic[..n * 2], |x| received += x.len());
+        }
+    });
+    assert_eq!(
+        violation_count(),
+        0,
+        "o conversor alocou memória no callback"
+    );
+    assert!(received > 0);
+    h.collect_garbage();
+}
+
 #[test]
 fn guard_detects_allocation() {
     reset_violation_count();

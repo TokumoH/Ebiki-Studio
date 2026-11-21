@@ -208,6 +208,8 @@ export const AudioStatus = z.object({
   warning: z.string().nullable().default(null),
   /** Tamanho real do callback do dispositivo (amostras), quando já rodou. */
   callbackFrames: z.number().int().nullable().default(null),
+  /** Taxa em que o fone abriu; diferente de `sampleRate` = convertida em tempo real (S-1). */
+  deviceSampleRate: z.number().int().nullable().default(null),
 });
 /** "Ouvir entrada": canal (0-based) ou par estéreo, ganho em dB. */
 export const DeviceMonitor = z.object({ left: z.number().int().min(0), right: z.number().int().min(0).nullable(), gainDb: z.number() });

@@ -9,7 +9,7 @@
 | Usuário responsável | TokumoH |
 | Status | ativo |
 | Commits | origem: `269e11d`; README por módulo em 2026-11-11 (ver `git log -- ui/src/core/README.md`) |
-| Arquivos | 13 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
+| Arquivos | 14 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
 
 ## Propósito
 
@@ -39,6 +39,7 @@ Camadas com direção única de dependência (app → panels → contexts → co
 | Arquivo ou subdiretório | O que contém |
 |---|---|
 | [audio.ts](audio.ts) | Estado do dispositivo de áudio compartilhado pela interface (barra de status, Configurações de áudio, Gravação, afinador), `setInputGain` e a abertura do diálogo de áudio (`useAudioSettingsUi`/`openAudioSettings`, usada pelo menu e pelo painel Gravação). |
+| [audio.test.ts](audio.test.ts) | Testes de `latencyEstimateSamples`: buffer fixo, callback real e fone convertido (S-1, quadros do dispositivo → amostras do projeto) |
 | [audition.test.ts](audition.test.ts) | Audição pelo motor (S-3): estado "tocando" pela duração, Parar chama o motor, substituição e parada durante o preparo. |
 | [audition.ts](audition.ts) | Audição: pede ao núcleo que toque o trecho pelo motor de áudio (fone escolhido no app), um de cada vez; marca "tocando" pela duração devolvida (S-3). |
 | [bars.test.ts](bars.test.ts) | 4/4 nos compassos 1–2 e 3/4 a partir do compasso 3 (tick 7680) |

@@ -5,7 +5,7 @@ import { api } from "../ipc/api";
 import { useAudio, useAudioSettingsUi } from "../core/audio";
 import { useLive } from "../core/live";
 import type { MetersView } from "../ipc/types";
-import { AudioSettingsDialog, formatRate, roundTripMs } from "./AudioSettingsDialog";
+import { AudioSettingsDialog, conversionNote, formatRate, roundTripMs } from "./AudioSettingsDialog";
 
 /** Transporte simulado que registra os comandos chamados. */
 function spyTransport(): { t: Transport; calls: { cmd: string; args?: Record<string, unknown> }[] } {
@@ -75,6 +75,25 @@ describe("AudioSettingsDialog", () => {
     expect(roundTripMs(256, 96000)).toBeCloseTo(5.33, 2);
     expect(roundTripMs(256, 0)).toBeCloseTo(10.67, 2); // taxa desconhecida: 48 kHz
     expect(formatRate(48000)).toBe("48 kHz");
+  });
+
+  it("fone em outra taxa: mostra a conversão e mede a latência na taxa do fone (S-1)", async () => {
+    // projeto a 48 kHz, fone Bluetooth que só abre a 44,1 kHz
+    const base = spy.t;
+    setTransport({
+      ...base,
+      invoke: async <T,>(cmd: string, args?: Record<string, unknown>) => {
+        const r = await base.invoke<T>(cmd, args);
+        return (cmd === "audio_status" ? { ...(r as object), deviceSampleRate: 44100 } : r) as T;
+      },
+    });
+    await openDialog();
+    expect(screen.getByText("Sistema de áudio: Simulado · 48 kHz · convertendo para 44,1 kHz")).toBeInTheDocument();
+    // 480 quadros do driver a 44,1 kHz (não a 48 kHz)
+    expect(screen.getByText("Buffer — ~21,8 ms de ida e volta a 44,1 kHz (driver: 480 amostras)")).toBeInTheDocument();
+    expect(conversionNote(48000, 48000)).toBe("");
+    expect(conversionNote(48000, null)).toBe("");
+    expect(conversionNote(48000, 16000)).toBe(" · convertendo para 16 kHz");
   });
 
   it("buffer no padrão do driver: Aplicar não grava um tamanho fixo (AU-04)", async () => {

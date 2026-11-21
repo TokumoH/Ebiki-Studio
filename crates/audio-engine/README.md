@@ -9,7 +9,7 @@
 | Usuário responsável | TokumoH |
 | Status | ativo |
 | Commits | origem: `83d852a`; README por módulo em 2026-11-11 (ver `git log -- crates/audio-engine/README.md`) |
-| Arquivos | 25 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
+| Arquivos | 27 item(ns) — ver "Onde" (inclui as subpastas, que não têm README próprio) |
 
 ## Propósito
 
@@ -52,6 +52,7 @@ Isolar o técnico mantém o domínio puro e permite trocar a biblioteca sem mexe
 | [src/offline.rs](src/offline.rs) | Render offline com o mesmo núcleo do tempo real (exportação e simulação). |
 | [src/preview.rs](src/preview.rs) | Audição (prévia) de Harmonia, Bases e Partitura tocada pelo núcleo (S-3): trecho pré-renderizado somado à saída depois do master, no fone escolhido; não grava nem exporta, e o trecho usado volta pela fila de lixo. |
 | [src/recorder.rs](src/recorder.rs) | Gravação: o núcleo copia a entrada para filas lock-free; threads de disco gravam WAV float 32-bit. |
+| [src/resampler.rs](src/resampler.rs) | Conversor de taxa em tempo real (S-1): sinc com janela de Kaiser (48 coeficientes, alongado na mesma proporção ao reduzir a taxa), posição racional exata, adaptadores de saída (pull) e de entrada (push) sem alocação no callback (VER-2026-11-21-03). |
 | [src/telemetry.rs](src/telemetry.rs) | Telemetria lock-free publicada pela thread de áudio. |
 | [src/test_tone.rs](src/test_tone.rs) | Tom de teste ("Testar som"): senoide de 440 Hz com rampas, somada à saída do dispositivo depois do master (não grava nem exporta). |
 | [src/transport.rs](src/transport.rs) | Estados do transporte (ver diagrama na arquitetura, seção 5.5). |
@@ -61,6 +62,7 @@ Isolar o técnico mantém o domínio puro e permite trocar a biblioteca sem mexe
 | [tests/input_gain.rs](tests/input_gain.rs) | Ganho de entrada em medidores, afinador, monitores, take gravado e muitos canais; rampa, limites e NaN; tom de teste (nível, duração, fora do master e da gravação). |
 | [tests/input_monitor.rs](tests/input_monitor.rs) | Entrada ao vivo: medidores por canal e "Ouvir entrada" (monitor direto do dispositivo). |
 | [tests/no_alloc.rs](tests/no_alloc.rs) | R1: o núcleo não pode alocar nem liberar memória no callback. |
+| [tests/rate_conversion.rs](tests/rate_conversion.rs) | S-1: engine na taxa do projeto + conversor mantém a altura (tom de 440 Hz num fone a 44,1/16/96 kHz) e a entrada convertida chega na taxa do projeto. |
 | [tests/recording.rs](tests/recording.rs) | 2 canais de entrada intercalados: canal 0 = seno, canal 1 = 0,5 constante |
 | [tests/common/](tests/common/) | Subdiretório (coberto por este README) |
 | [tests/common/mod.rs](tests/common/mod.rs) | Rampa 0, 1, 2, … (identifica a amostra de origem pelo valor). |

@@ -11,6 +11,9 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
   estimativa de compensação usam o tamanho real do callback (takes deixam de sair atrasados no Windows).
 - **Audições no fone escolhido**: "Ouvir" da Harmonia, das Bases e da Partitura toca pelo motor de áudio, no
   mesmo fone/saída do resto do app (antes saía no dispositivo padrão do sistema).
+- **Fone ou microfone que não aceita a taxa do projeto** (fones Bluetooth a 44,1 kHz ou 16 kHz, alguns USB):
+  antes o app ficava em modo silencioso (ou sem microfone); agora o dispositivo abre na taxa mais próxima e o
+  áudio é convertido em tempo real, com aviso — sem mudar a taxa nem a afinação do projeto.
 
 ## [0.4.1] - 2026-11-21
 

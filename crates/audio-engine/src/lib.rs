@@ -23,6 +23,7 @@ pub mod null_device;
 pub mod offline;
 pub mod preview;
 pub mod recorder;
+pub mod resampler;
 pub mod telemetry;
 pub mod test_tone;
 pub mod transport;

@@ -14,6 +14,18 @@ export const useAudio = create<AudioState>((set) => ({
   setStatus: (status) => set({ status }),
 }));
 
+/**
+ * "Usar estimativa" da gravação, em amostras da taxa do PROJETO: entrada + saída (buffer fixo ou
+ * callback real do driver). Buffer e callback contam quadros do dispositivo; num fone convertido (S-1)
+ * a taxa dele difere e os quadros são reescalados para a taxa do projeto. 0 = desconhecido.
+ */
+export function latencyEstimateSamples(s: AudioStatus | null | undefined): number {
+  const frames = s?.bufferSize ?? s?.callbackFrames ?? 0;
+  if (!s || !frames) return 0;
+  const ratio = s.deviceSampleRate ? s.sampleRate / s.deviceSampleRate : 1;
+  return Math.round(2 * frames * ratio);
+}
+
 /** Relê o estado do dispositivo (ao abrir o workspace ou um painel). */
 export async function refreshAudio(): Promise<AudioStatus> {
   const s = await api.audioStatus();
