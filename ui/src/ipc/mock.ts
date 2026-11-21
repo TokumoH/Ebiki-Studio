@@ -439,7 +439,7 @@ export function createMockTransport(): Transport {
       return h(args) as T;
     },
     async invokeBinary(cmd, args = {}) {
-      const mb = music.binary(cmd, args) ?? edit.binary(cmd, args);
+      const mb = edit.binary(cmd, args);
       if (mb) return mb;
       if (cmd !== "waveform_peaks") throw { code: "ui.unknown_command", message: cmd };
       const src = s().sources.find((x) => x.id === args.sourceId) ?? fail("app.source_unavailable", "Áudio indisponível.");

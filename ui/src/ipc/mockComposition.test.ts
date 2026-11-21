@@ -31,8 +31,9 @@ describe("transporte simulado de composição", () => {
     const ins = await c.harmonyInsertProgression({ realize: { progression: list[0]!.progression.ref, key: C }, atTick: 0 });
     expect(ins.view.tracks).toHaveLength(1);
     expect((await api.undo()).tracks).toHaveLength(0);
-    const wav = await c.harmonyAudition({ progression: list[0]!.progression.ref, key: C });
-    expect(new TextDecoder().decode(wav.slice(0, 4))).toBe("RIFF");
+    const play = await c.harmonyAudition({ progression: list[0]!.progression.ref, key: C });
+    expect(play.seconds).toBeGreaterThan(0); // toca no motor (S-3): a UI só recebe a duração
+    await expect(c.auditionStop()).resolves.toBeUndefined();
   });
 
   it("progressões do usuário com desfazer da biblioteca", async () => {

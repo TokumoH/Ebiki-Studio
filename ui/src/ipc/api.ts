@@ -119,15 +119,7 @@ export const api = {
 // (import no fim do arquivo de propósito: seção só acrescentada, para facilitar o merge)
 import type { BaseKey, BaseQuery, GenerateBaseRequest, HarmonyKey, InsertBaseRequest, NewUserBase, RealizeRequest, SaveGeneratedBaseRequest, UserProgressionInput } from "./types";
 
-async function callBinary(cmd: string, args?: Record<string, unknown>): Promise<ArrayBuffer> {
-  try {
-    return await transport().invokeBinary(cmd, args);
-  } catch (e) {
-    throw toFailure(e);
-  }
-}
-
-/** Comandos de composição (harmonia, bases, biblioteca e sintetizador). Áudio de audição = WAV. */
+/** Comandos de composição (harmonia, bases, biblioteca e sintetizador). Audições tocam pelo motor (S-3). */
 export const compositionApi = {
   // harmonia
   harmonyKeys: () => call(S.HarmonyKeysCatalog, "harmony_keys"),
@@ -136,7 +128,7 @@ export const compositionApi = {
   harmonyUserProgressions: () => call(S.ProgressionView.array(), "harmony_user_progressions"),
   harmonySuggestNext: (req: { key: HarmonyKey; history: string[]; limit?: number }) => call(S.ChordSuggestion.array(), "harmony_suggest_next", { req }),
   harmonyRealize: (req: RealizeRequest) => call(S.Realization, "harmony_realize", { req }),
-  harmonyAudition: (req: RealizeRequest) => callBinary("harmony_audition", { req }),
+  harmonyAudition: (req: RealizeRequest) => call(S.AuditionPlay, "harmony_audition", { req }),
   harmonyInsertProgression: (req: { realize: RealizeRequest; atTick: number; trackId?: string | null }) => call(S.InsertedClip, "harmony_insert_progression", { req }),
   harmonyUserProgressionAdd: (input: UserProgressionInput) => call(S.ProgressionView, "harmony_user_progression_add", { input }),
   harmonyUserProgressionEdit: (id: string, input: UserProgressionInput) => call(S.ProgressionView, "harmony_user_progression_edit", { id, input }),
@@ -150,10 +142,12 @@ export const compositionApi = {
   basesSearch: (query: BaseQuery) => call(S.LibraryBase.array(), "bases_search", { query }),
   basesAddUser: (path: string, meta: NewUserBase) => call(S.LibraryBase, "bases_add_user", { path, meta }),
   basesGenerate: (req: GenerateBaseRequest) => call(S.GeneratedBase, "bases_generate", { req }),
-  basesGeneratedAudition: (req: GenerateBaseRequest) => callBinary("bases_generated_audition", { req }),
+  basesGeneratedAudition: (req: GenerateBaseRequest) => call(S.AuditionPlay, "bases_generated_audition", { req }),
   basesSaveGenerated: (req: SaveGeneratedBaseRequest) => call(S.LibraryBase, "bases_save_generated", { req }),
   basesRemove: (id: string) => call(S.LibraryHistory, "bases_remove", { id }),
-  basesAudition: (id: string) => callBinary("bases_audition", { id }),
+  basesAudition: (id: string) => call(S.AuditionPlay, "bases_audition", { id }),
+  /** Para a audição que o motor estiver tocando (S-3). */
+  auditionStop: () => call(Void, "audition_stop"),
   basesMismatch: (req: { baseId: string; atTick: number; projectKey?: BaseKey | null }) => call(S.MismatchReport, "bases_mismatch", { req }),
   basesInsert: (req: InsertBaseRequest) => call(S.InsertBaseOutcome, "bases_insert", { req }),
   // sintetizador
@@ -190,8 +184,8 @@ export const musicApi = {
   /** Bytes lidos na UI (GP3–GP6 já convertidos para GP7 pelo alphaTab — ADR-0020). */
   scoreImportBytes: (name: string, bytes: Uint8Array) => call(S.ScoreImportResult, "score_import_bytes", { req: { name, bytes: Array.from(bytes) } }),
   scoreExport: (scoreId: string, path: string, format: ScoreExportFormat) => call(Void, "score_export", { req: { scoreId, path, format } }),
-  /** WAV float 32 em memória (para `AudioContext.decodeAudioData`). */
-  scoreAudition: (scoreId: string) => binary("score_audition", { scoreId }),
+  /** Toca a partitura pelo motor de áudio, no fone escolhido no app (S-3); devolve a duração. */
+  scoreAudition: (scoreId: string) => call(S.AuditionPlay, "score_audition", { scoreId }),
   scoreRenderToTrack: (scoreId: string, trackId: string | null, atTick = 0) => call(Session, "score_render_to_track", { req: { scoreId, trackId, atTick } }),
   scoreValidate: (scoreId: string, scale: number[] | null) => call(S.ScoreReport, "score_validate", { req: { scoreId, scale } }),
   // letra

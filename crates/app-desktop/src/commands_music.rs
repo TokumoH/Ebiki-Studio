@@ -171,11 +171,15 @@ pub fn score_export(state: State<AppState>, req: ScoreExportReq) -> Res<()> {
     lock(&state.studio).score_export(id(&req.score_id)?, &p, req.format)
 }
 
-/// WAV float 32 (bytes crus → `ArrayBuffer` no JS) para audição imediata.
+/// Audição da partitura pelo motor, no fone escolhido no app (S-3); devolve a duração.
 #[tauri::command]
-pub fn score_audition(state: State<AppState>, score_id: String) -> Res<tauri::ipc::Response> {
-    let bytes = lock(&state.studio).score_audition(id(&score_id)?)?;
-    Ok(tauri::ipc::Response::new(bytes))
+pub fn score_audition(
+    state: State<AppState>,
+    score_id: String,
+) -> Res<crate::commands_composition::AuditionPlay> {
+    let mut studio = lock(&state.studio);
+    let bytes = studio.score_audition(id(&score_id)?)?;
+    crate::commands_composition::play(&mut studio, &bytes)
 }
 
 #[derive(Debug, Deserialize)]

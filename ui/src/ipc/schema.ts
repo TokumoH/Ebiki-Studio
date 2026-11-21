@@ -350,6 +350,8 @@ export const InsertBaseOutcome = z.discriminatedUnion("status", [
 ]);
 
 export const SynthStatus = z.object({ engine: z.enum(["soundfont", "simple"]), soundfontPath: z.string().nullable(), bankName: z.string().nullable(), presetCount: z.number().int() });
+/** Audição tocando no motor de áudio (S-3): duração em segundos, para a UI saber quando acabou. */
+export const AuditionPlay = z.object({ seconds: z.number().nonnegative() });
 
 // ------------------------------------------------------------------------------------------------
 // Música (Fases 6–8): letra sincronizada, partituras e afinação. Contrato: specs

@@ -338,3 +338,41 @@ fn insert_latency_is_compensated_on_playback() {
         "efeito em bypass não adianta a leitura"
     );
 }
+
+#[test]
+fn preview_plays_on_the_device_output_outside_the_master_and_is_freed_off_thread() {
+    // S-3: a audição toca no fone escolhido (saída do dispositivo), mesmo com o master mudo
+    let (mut h, mut core) = audio_engine::create_engine(audio_engine::EngineConfig::default());
+    h.play_preview(audio_engine::preview::PreviewClip::from_planar(&[
+        vec![0.25; 1000],
+        vec![-0.25; 1000],
+    ]))
+    .unwrap();
+    let mut out = vec![0.0f32; 512 * 2];
+    core.process(&mut out, 2, &[], 0);
+    assert!(out
+        .chunks_exact(2)
+        .all(|f| (f[0] - 0.25).abs() < 1e-6 && (f[1] + 0.25).abs() < 1e-6));
+    let mut out = vec![0.0f32; 512 * 2];
+    core.process(&mut out, 2, &[], 0);
+    assert!(
+        (out[(487) * 2] - 0.25).abs() < 1e-6,
+        "ainda no trecho (1000 quadros)"
+    );
+    assert_eq!(out[489 * 2], 0.0, "acabou: silêncio depois do fim");
+    assert!(
+        h.collect_garbage() >= 1,
+        "trecho devolvido para liberar fora do tempo real"
+    );
+    // parar no meio
+    h.play_preview(audio_engine::preview::PreviewClip::from_planar(&[
+        vec![0.5; 10_000],
+    ]))
+    .unwrap();
+    let mut out = vec![0.0f32; 64 * 2];
+    core.process(&mut out, 2, &[], 0);
+    h.stop_preview().unwrap();
+    let mut out = vec![0.0f32; 64 * 2];
+    core.process(&mut out, 2, &[], 0);
+    assert!(out.iter().all(|x| *x == 0.0), "parado");
+}

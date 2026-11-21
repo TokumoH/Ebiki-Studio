@@ -117,6 +117,24 @@ fn project_bpm(state: &AppState) -> f64 {
 
 // ------------------------------------------------------------------ harmonia
 
+/// Audição tocada pelo motor, no fone escolhido no app (S-3): devolve só a duração.
+#[derive(Debug, serde::Serialize)]
+pub struct AuditionPlay {
+    pub seconds: f64,
+}
+
+pub(crate) fn play(studio: &mut app_core::Studio, wav: &[u8]) -> Res<AuditionPlay> {
+    Ok(AuditionPlay {
+        seconds: studio.play_preview_wav(wav)?,
+    })
+}
+
+/// Para a audição em andamento.
+#[tauri::command]
+pub fn audition_stop(state: State<AppState>) -> Res<()> {
+    lock(&state.studio).stop_preview()
+}
+
 #[tauri::command]
 pub fn harmony_keys() -> KeysCatalog {
     keys_catalog()
@@ -196,11 +214,12 @@ pub async fn harmony_audition<R: tauri::Runtime>(
     app: AppHandle<R>,
     state: State<'_, AppState>,
     req: RealizeRequest,
-) -> Res<tauri::ipc::Response> {
+) -> Res<AuditionPlay> {
     let bpm = project_bpm(&state);
     let r = with_composer!(app, state, |c| c.realize(&req, bpm))?;
-    let bytes = lock(&state.studio).audition_realization(&r)?;
-    Ok(tauri::ipc::Response::new(bytes))
+    let mut studio = lock(&state.studio);
+    let bytes = studio.audition_realization(&r)?;
+    play(&mut studio, &bytes)
 }
 
 #[derive(Debug, Deserialize)]
@@ -326,12 +345,13 @@ pub async fn bases_generated_audition<R: tauri::Runtime>(
     app: AppHandle<R>,
     state: State<'_, AppState>,
     req: GenerateBaseRequest,
-) -> Res<tauri::ipc::Response> {
+) -> Res<AuditionPlay> {
     let g = with_composer!(app, state, |c| c.generate_base(&req))?;
     let tempo = shared_kernel::TempoMap::new(g.bpm, g.meter.numerator(), g.meter.denominator())
         .map_err(|e| bad(&e.to_string()))?;
-    let bytes = lock(&state.studio).audition_midi(&g.events, &tempo, AUDITION_TAIL_SECONDS)?;
-    Ok(tauri::ipc::Response::new(bytes))
+    let mut studio = lock(&state.studio);
+    let bytes = studio.audition_midi(&g.events, &tempo, AUDITION_TAIL_SECONDS)?;
+    play(&mut studio, &bytes)
 }
 
 #[tauri::command]
@@ -361,10 +381,10 @@ pub async fn bases_audition<R: tauri::Runtime>(
     app: AppHandle<R>,
     state: State<'_, AppState>,
     id: String,
-) -> Res<tauri::ipc::Response> {
+) -> Res<AuditionPlay> {
     let id = base_id(&id)?;
     let bytes = with_composer!(app, state, |c| lock(&state.studio).audition_base(c, id))?;
-    Ok(tauri::ipc::Response::new(bytes))
+    play(&mut lock(&state.studio), &bytes)
 }
 
 #[derive(Debug, Deserialize)]

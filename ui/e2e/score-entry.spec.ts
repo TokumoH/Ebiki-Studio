@@ -28,6 +28,10 @@ test("Digitar notas: o exemplo C,C,C,x,x,x,D,D,D entra de uma vez e sai com um C
   await expect(status).toContainText("Comp. 3");
   await page.keyboard.press("ArrowLeft");
   await expect(page.getByRole("list", { name: /Eventos do compasso/ })).toContainText("D4");
+  // Ouvir toca pelo motor (S-3): o botão vira Parar enquanto toca e volta ao parar
+  await page.getByRole("button", { name: "▶ Ouvir" }).click();
+  await page.getByRole("button", { name: "■ Parar" }).click();
+  await expect(page.getByRole("button", { name: "▶ Ouvir" })).toBeVisible();
   // um único Ctrl+Z desfaz o lote inteiro
   await page.getByRole("application", { name: "Editor de partitura" }).focus();
   await page.keyboard.press("Control+z");

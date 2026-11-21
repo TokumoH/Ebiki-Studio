@@ -49,6 +49,7 @@ Os casos de uso dependem só de portas: testáveis com adaptadores falsos e sem 
 | [src/music_support.rs](src/music_support.rs) | Apoio comum aos casos de uso das Fases 6–8 (Pure Fabrication): acesso ao projeto aberto, |
 | [src/notation_service.rs](src/notation_service.rs) | Casos de uso de notação (Fase 7): criar/editar/importar/exportar partituras, ouvir e renderizar |
 | [src/ports.rs](src/ports.rs) | Portas (interfaces) implementadas pela infraestrutura. |
+| [src/preview.rs](src/preview.rs) | Audição pelo motor (S-3): decodifica o WAV da audição (PCM 16/float 32), ajusta à taxa do dispositivo (linear) e entrega à engine (`play_preview_wav`/`stop_preview`). |
 | [src/render.rs](src/render.rs) | Renderização offline (exportação, stems, análise) e medições. |
 | [src/session.rs](src/session.rs) | Sessão: agregados de um projeto aberto e adaptação de comandos de cada contexto. |
 | [src/studio.rs](src/studio.rs) | 'Studio': serviço de aplicação (Pure Fabrication / Controller do GRASP) que coordena casos de uso, |

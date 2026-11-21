@@ -27,3 +27,5 @@ pub mod edit_service;
 pub mod device_monitor;
 // Ganho de entrada e tom de teste ("Testar som"): configuração do dispositivo.
 pub mod input_gain;
+// Fase S-3: audições pelo motor
+pub mod preview;

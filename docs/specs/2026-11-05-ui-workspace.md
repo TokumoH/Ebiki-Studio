@@ -127,7 +127,8 @@ flowchart TB
 Painéis inferiores "Harmonia" (`contexts/harmony`) e "Bases" (`contexts/library`), Fases 4–5.
 Contrato IPC: `docs/specs/2026-11-05-fase-5-harmonia-e-4-bases.md` §11.5. Os dois contextos não se
 importam: o tom escolhido na Harmonia chega às Bases por `core/composition.ts` (estado de UI
-compartilhado), e a audição (WAV → WebAudio) é um serviço técnico em `core/audition.ts`.
+compartilhado), e a audição é um serviço técnico em `core/audition.ts` (desde o S-3 da varredura 6, o núcleo toca o trecho
+pelo motor de áudio, no fone escolhido no app; antes era WAV → WebAudio na saída padrão do sistema).
 
 ### H.1 Painel Harmonia
 

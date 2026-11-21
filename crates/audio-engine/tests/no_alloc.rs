@@ -69,6 +69,11 @@ fn process_does_not_allocate() {
     // ganho de entrada (rampa no rascunho pré-alocado) e tom de teste: também sem alocar
     h.set_input_gain_db(12.0).unwrap();
     h.play_test_tone(5.0, -12.0).unwrap();
+    // prévia (audição) longa: tocando durante todos os blocos medidos (S-3)
+    h.play_preview(audio_engine::preview::PreviewClip::from_planar(&[
+        vec![0.1; 48_000 * 10],
+    ]))
+    .unwrap();
     let mut out = vec![0.0f32; 2048 * 2];
     let input = vec![0.1f32; 2048 * 2];
     // a primeira chamada troca o grafo: o grafo antigo vai para a fila de lixo, sem liberar
@@ -96,6 +101,13 @@ fn process_does_not_allocate() {
     h.set_device_monitor(None).unwrap();
     h.set_input_gain_db(0.0).unwrap();
     h.play_test_tone(0.1, -6.0).unwrap();
+    // troca e parada da prévia: o trecho antigo vai para o lixo sem alocar no callback
+    h.play_preview(audio_engine::preview::PreviewClip::from_planar(&[vec![
+        0.2;
+        64
+    ]]))
+    .unwrap();
+    h.stop_preview().unwrap();
     reset_violation_count();
     assert_no_alloc(|| {
         core.process(&mut out, 2, &input, 2);

@@ -50,6 +50,7 @@ Isolar o técnico mantém o domínio puro e permite trocar a biblioteca sem mexe
 | [src/metronome.rs](src/metronome.rs) | Clique de metrônomo sintetizado (sem alocação). |
 | [src/null_device.rs](src/null_device.rs) | Dispositivo "nulo": thread que chama o núcleo em tempo real simulado, sem placa de som. |
 | [src/offline.rs](src/offline.rs) | Render offline com o mesmo núcleo do tempo real (exportação e simulação). |
+| [src/preview.rs](src/preview.rs) | Audição (prévia) de Harmonia, Bases e Partitura tocada pelo núcleo (S-3): trecho pré-renderizado somado à saída depois do master, no fone escolhido; não grava nem exporta, e o trecho usado volta pela fila de lixo. |
 | [src/recorder.rs](src/recorder.rs) | Gravação: o núcleo copia a entrada para filas lock-free; threads de disco gravam WAV float 32-bit. |
 | [src/telemetry.rs](src/telemetry.rs) | Telemetria lock-free publicada pela thread de áudio. |
 | [src/test_tone.rs](src/test_tone.rs) | Tom de teste ("Testar som"): senoide de 440 Hz com rampas, somada à saída do dispositivo depois do master (não grava nem exporta). |

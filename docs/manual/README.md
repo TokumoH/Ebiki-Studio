@@ -186,6 +186,8 @@ o arquivo foi salvo, com **Mostrar na pasta** (abre o gerenciador de arquivos co
   atual (vira áudio numa faixa nova; desfazível).
 - **Próximo acorde**: monte uma sequência clicando nas sugestões (cada uma mostra o motivo).
 - Cadastre suas próprias progressões.
+- Toda audição (**Ouvir** da Harmonia, das Bases e da Partitura) toca no mesmo **Fone / alto-falantes (saída)**
+  escolhido em *Configurações de áudio*, uma de cada vez; uma nova audição substitui a anterior.
 
 ## 8. Bases instrumentais
 

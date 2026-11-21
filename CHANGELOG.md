@@ -9,6 +9,8 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 
 - **Buffer "Padrão do driver (recomendado)"**: o app não força mais 256 amostras; a latência mostrada e a
   estimativa de compensação usam o tamanho real do callback (takes deixam de sair atrasados no Windows).
+- **Audições no fone escolhido**: "Ouvir" da Harmonia, das Bases e da Partitura toca pelo motor de áudio, no
+  mesmo fone/saída do resto do app (antes saía no dispositivo padrão do sistema).
 
 ## [0.4.1] - 2026-11-21
 

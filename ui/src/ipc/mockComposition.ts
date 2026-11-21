@@ -186,34 +186,6 @@ const BASE_STARTERS = (): LibraryBase[] => [
   { id: uuid(), name: "Loop de bateria 96", kind: { kind: "userAudio", path: "loop-96.wav", progression: "i iv" }, bpm: 96, key: { tonic: 9, mode: "minor" }, meter: { numerator: 4, denominator: 4 }, genre: "pop", instruments: ["drums"], tags: ["loop"] },
 ];
 
-/** WAV PCM 16 bits estéreo curto e válido (tom de 440 Hz com fade), para a WebAudio decodificar. */
-export function tinyWav(seconds = 0.25, rate = 8000): ArrayBuffer {
-  const frames = Math.max(1, Math.round(seconds * rate));
-  const buf = new ArrayBuffer(44 + frames * 4);
-  const dv = new DataView(buf);
-  const str = (o: number, s: string) => [...s].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
-  str(0, "RIFF");
-  dv.setUint32(4, 36 + frames * 4, true);
-  str(8, "WAVE");
-  str(12, "fmt ");
-  dv.setUint32(16, 16, true);
-  dv.setUint16(20, 1, true);
-  dv.setUint16(22, 2, true);
-  dv.setUint32(24, rate, true);
-  dv.setUint32(28, rate * 4, true);
-  dv.setUint16(32, 4, true);
-  dv.setUint16(34, 16, true);
-  str(36, "data");
-  dv.setUint32(40, frames * 4, true);
-  for (let i = 0; i < frames; i++) {
-    const env = Math.min(1, i / 200, (frames - i) / 200);
-    const v = Math.round(Math.sin((2 * Math.PI * 440 * i) / rate) * 0.2 * env * 32767);
-    dv.setInt16(44 + i * 4, v, true);
-    dv.setInt16(46 + i * 4, v, true);
-  }
-  return buf;
-}
-
 interface LibSnapshot {
   user: UserProg[];
   bases: LibraryBase[];
@@ -491,9 +463,18 @@ export function withCompositionMock(inner: Transport): Transport {
       }
       return synth;
     },
+    // audições pelo motor (S-3): o simulado valida o pedido e devolve só a duração
+    harmony_audition: (a) => ({ seconds: resolve(a.req.progression, a.req.key).chords.reduce((t, c) => t + c.beats * 0.5, 0) }),
+    bases_generated_audition: (a) => {
+      generate(a.req);
+      return { seconds: 2 };
+    },
+    bases_audition: (a) => {
+      baseOf(a.id);
+      return { seconds: 2 };
+    },
+    audition_stop: () => null,
   };
-
-  const BINARY = new Set(["harmony_audition", "bases_generated_audition", "bases_audition"]);
 
   return {
     ...inner,
@@ -502,14 +483,6 @@ export function withCompositionMock(inner: Transport): Transport {
       if (!h) return inner.invoke<T>(cmd, args);
       await new Promise((r) => setTimeout(r, 0));
       return (await h(args as Record<string, any>)) as T;
-    },
-    async invokeBinary(cmd, args = {}) {
-      if (!BINARY.has(cmd)) return inner.invokeBinary(cmd, args);
-      const a = args as Record<string, any>;
-      if (cmd === "harmony_audition") resolve(a.req.progression, a.req.key);
-      if (cmd === "bases_generated_audition") generate(a.req);
-      if (cmd === "bases_audition") baseOf(a.id);
-      return tinyWav();
     },
     async pickOpen(opts) {
       const exts = opts.filters?.flatMap((f) => f.extensions) ?? [];

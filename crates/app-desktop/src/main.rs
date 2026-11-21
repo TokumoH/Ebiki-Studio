@@ -187,6 +187,7 @@ pub fn with_commands<R: tauri::Runtime>(b: tauri::Builder<R>) -> tauri::Builder<
         commands_composition::harmony_suggest_next,
         commands_composition::harmony_realize,
         commands_composition::harmony_audition,
+        commands_composition::audition_stop,
         commands_composition::harmony_insert_progression,
         commands_composition::harmony_user_progression_add,
         commands_composition::harmony_user_progression_edit,

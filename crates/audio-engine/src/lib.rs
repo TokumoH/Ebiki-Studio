@@ -21,6 +21,7 @@ pub mod input_tap;
 pub mod metronome;
 pub mod null_device;
 pub mod offline;
+pub mod preview;
 pub mod recorder;
 pub mod telemetry;
 pub mod test_tone;

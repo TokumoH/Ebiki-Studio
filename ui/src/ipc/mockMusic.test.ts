@@ -26,8 +26,8 @@ describe("núcleo simulado — música (contrato da API)", () => {
     expect(xml).toContain("<fret>2</fret>");
     const report = await musicApi.scoreValidate(scoreId, null);
     expect(report.measureIssues).toEqual([]);
-    const wav = await musicApi.scoreAudition(scoreId);
-    expect(new TextDecoder().decode(new Uint8Array(wav, 0, 4))).toBe("RIFF");
+    const play = await musicApi.scoreAudition(scoreId);
+    expect(play.seconds).toBeGreaterThan(0); // toca no motor (S-3): a UI só recebe a duração
     v = await api.undo();
     const back = await musicApi.scoreGet(scoreId);
     expect(back.parts[1]!.measures[0]!.voices[0]!.events[0]!.kind.type).toBe("rest");

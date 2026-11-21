@@ -154,6 +154,17 @@ impl EngineHandle {
         })
     }
 
+    /// Toca uma prévia (audição) na saída do dispositivo, fora do master: sai no fone escolhido no app,
+    /// não é gravada nem exportada. `clip` já na taxa da engine. Substitui a prévia anterior.
+    pub fn play_preview(&mut self, clip: crate::preview::PreviewClip) -> Result<(), EngineError> {
+        self.send(Message::PlayPreview(Box::new(clip)))
+    }
+
+    /// Para a prévia em andamento (se houver).
+    pub fn stop_preview(&mut self) -> Result<(), EngineError> {
+        self.send(Message::StopPreview)
+    }
+
     /// Libera objetos devolvidos pelo núcleo. Retorna quantos foram liberados.
     pub fn collect_garbage(&mut self) -> usize {
         let mut n = 0;

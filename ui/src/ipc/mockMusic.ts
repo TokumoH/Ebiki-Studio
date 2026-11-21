@@ -507,31 +507,9 @@ function unitsAt(lines: LyricLine[], g: "syllable" | "word" | "line"): LyricUnit
 
 const NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-function wavBytes(seconds: number, sr: number, hz: number): ArrayBuffer {
-  const n = Math.round(seconds * sr);
-  const buf = new ArrayBuffer(44 + n * 2);
-  const d = new DataView(buf);
-  const str = (o: number, s: string) => [...s].forEach((c, i) => d.setUint8(o + i, c.charCodeAt(0)));
-  str(0, "RIFF");
-  d.setUint32(4, 36 + n * 2, true);
-  str(8, "WAVE");
-  str(12, "fmt ");
-  d.setUint32(16, 16, true);
-  d.setUint16(20, 1, true);
-  d.setUint16(22, 1, true);
-  d.setUint32(24, sr, true);
-  d.setUint32(28, sr * 2, true);
-  d.setUint16(32, 2, true);
-  d.setUint16(34, 16, true);
-  str(36, "data");
-  d.setUint32(40, n * 2, true);
-  for (let i = 0; i < n; i++) d.setInt16(44 + i * 2, Math.round(0.2 * 32767 * Math.sin((2 * Math.PI * hz * i) / sr) * Math.min(1, (n - i) / 2000)), true);
-  return buf;
-}
-
 // ------------------------------------------------------------------------------- comandos
 
-export function musicHandlers(ctx: MockCtx): { handlers: Record<string, (a: Record<string, any>) => unknown>; binary: (cmd: string, a: Record<string, unknown>) => ArrayBuffer | null } {
+export function musicHandlers(ctx: MockCtx): { handlers: Record<string, (a: Record<string, any>) => unknown> } {
   const { s, mutate, view, fail, sr, uuid } = ctx;
   const store = (v: SessionView = s()): MusicStore => ((v as MusicSession)._music ??= { scores: [], maps: {} });
   const sync = (v: SessionView) => {
@@ -761,13 +739,13 @@ export function musicHandlers(ctx: MockCtx): { handlers: Record<string, (a: Reco
     },
   };
 
-  const binary = (cmd: string, a: Record<string, unknown>): ArrayBuffer | null => {
-    if (cmd !== "score_audition") return null;
+  // audição pelo motor (S-3): o simulado só valida e devolve a duração (0,5 s por nota)
+  handlers.score_audition = (a) => {
     const sc = scoreOf(s(), String(a.scoreId));
-    const pitches: Pitch[] = [];
-    forEachNote(sc, (n) => pitches.push(n.pitch));
-    const first = pitches[0] ?? fail("app.empty_score", "A partitura não tem notas para tocar.");
-    return wavBytes(0.4, 22_050, 440 * Math.pow(2, (midiOf(first) - 69) / 12));
+    let notes = 0;
+    forEachNote(sc, () => notes++);
+    if (notes === 0) fail("app.empty_score", "A partitura não tem notas para tocar.");
+    return { seconds: notes * 0.5 };
   };
-  return { handlers, binary };
+  return { handlers };
 }

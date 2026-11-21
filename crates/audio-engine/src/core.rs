@@ -40,6 +40,9 @@ pub enum Message {
         frames: u64,
         amplitude: f32,
     },
+    /// Prévia (audição) na saída do dispositivo, fora do master; substitui a anterior.
+    PlayPreview(Box<crate::preview::PreviewClip>),
+    StopPreview,
 }
 
 /// Objetos devolvidos para liberação fora do tempo real.
@@ -47,6 +50,7 @@ pub enum Garbage {
     Graph(Box<RenderGraph>),
     Recorder(Box<RecorderRt>),
     InputTap(Box<InputTapRt>),
+    Preview(Box<crate::preview::PreviewClip>),
 }
 
 /// Itens de lixo que o núcleo segura se a fila encher (controle sem coletar).
@@ -74,6 +78,7 @@ pub struct EngineCore {
     input_gain: InputGain,
     input_scratch: Vec<f32>,
     test_tone: TestTone,
+    preview: crate::preview::Preview,
     master_l: Vec<f32>,
     master_r: Vec<f32>,
     click_l: Vec<f32>,
@@ -112,6 +117,7 @@ impl EngineCore {
             input_gain: InputGain::new(sr),
             input_scratch: vec![0.0; INPUT_SCRATCH_SAMPLES],
             test_tone: TestTone::default(),
+            preview: Default::default(),
             master_l: vec![0.0; MAX_BLOCK],
             master_r: vec![0.0; MAX_BLOCK],
             click_l: vec![0.0; MAX_BLOCK],
@@ -264,6 +270,16 @@ impl EngineCore {
                     let sr = self.graph.sample_rate;
                     self.test_tone.start(frames, amplitude, sr);
                 }
+                Message::PlayPreview(clip) => {
+                    if let Some(old) = self.preview.play(clip) {
+                        self.discard(Garbage::Preview(old));
+                    }
+                }
+                Message::StopPreview => {
+                    if let Some(old) = self.preview.stop() {
+                        self.discard(Garbage::Preview(old));
+                    }
+                }
             }
         }
     }
@@ -355,6 +371,9 @@ impl EngineCore {
                 }
                 self.add_device_monitor(out, out_channels, block_in, in_channels);
                 self.test_tone.add_to(out, out_channels);
+                if let Some(done) = self.preview.add_to(out, out_channels) {
+                    self.discard(Garbage::Preview(done));
+                }
             }
             done += n;
         }

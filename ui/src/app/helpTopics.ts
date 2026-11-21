@@ -157,7 +157,7 @@ export const HELP_TOPICS: HelpTopic[] = [
     keywords: "sem som áudio baixo volume estalos buffer latência dispositivo microfone fone ganho permissão erro travar",
     intro: "Os problemas mais comuns e como resolver.",
     steps: [
-      "Sem som ou som baixo: em Arquivo › Configurações de áudio, confira o Fone / alto-falantes (saída) e clique em Testar som. Se o tom soar baixo, o volume do sistema operacional ou do fone está baixo — o Ebiki não reduz o volume. A barra de status avisa o modo silencioso.",
+      "Sem som ou som baixo: em Arquivo › Configurações de áudio, confira o Fone / alto-falantes (saída) e clique em Testar som. Se o tom soar baixo, o volume do sistema operacional ou do fone está baixo — o Ebiki não reduz o volume. A barra de status avisa o modo silencioso. As audições (Ouvir da Harmonia, Bases e Partitura) usam essa mesma saída.",
       "Gravação baixa: no Microfone (entrada), suba o Ganho (até +24 dB) até os trechos fortes ficarem na faixa verde dos medidores; abaixo de −30 dB aparece o aviso \"Sinal baixo\".",
       "Microfone ou fone desconectado: o áudio é reaberto sozinho na saída disponível e segue sem a entrada; quando o dispositivo volta, ele é usado de novo. Um microfone ausente ou incompatível nunca deixa o app mudo — a barra de status mostra o aviso.",
       "Modo silencioso mesmo com fone: o fone pode não aceitar a taxa do projeto (alguns fones Bluetooth só funcionam a 44,1 kHz, ou a 16 kHz quando o microfone deles está em uso). Escolha outro fone/alto-falante ou um projeto a 44,1 kHz.",

@@ -5,6 +5,7 @@ import { transport } from "../../ipc/transport";
 import type { Articulation, Dynamic, InstrumentKind, NoteDuration, NoteValue, Score, ScoreEvent, ScoreExportFormat, ScoreReport, Step, VoiceEdit } from "../../ipc/types";
 import { endGesture, errorMessage, newGesture, run, useSession } from "../../core/session";
 import { notify } from "../../core/toasts";
+import { audition as playAudition, stopAudition, useAudition } from "../../core/audition";
 import { Button, Dialog, EmptyState, Field, Toggle } from "../../shared/components";
 import {
   DURATION_LABELS,
@@ -82,7 +83,6 @@ export function ScorePanel() {
   const [creating, setCreating] = useState(false);
   const [transposing, setTransposing] = useState(false);
   const [exportFmt, setExportFmt] = useState<ScoreExportFormat>("musicXml");
-  const [playing, setPlaying] = useState(false);
   const [tab, setTab] = useState({ string: 1, fret: 0 });
   /** Modo do mouse na pauta: selecionar eventos ou inserir notas por clique. */
   const [mode, setMode] = useState<"select" | "insert">("select");
@@ -90,7 +90,6 @@ export function ScorePanel() {
   const [accidental, setAccidental] = useState<number | null>(null);
   const accRef = useRef(accidental);
   accRef.current = accidental;
-  const audio = useRef<{ ctx: AudioContext; src: AudioBufferSourceNode } | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const editor = useRef<HTMLDivElement>(null);
   // foco pendente (partitura recém-criada): aplicado quando o editor estiver montado, sem depender de atraso fixo
@@ -140,18 +139,12 @@ export function ScorePanel() {
     queue.current = queue.current.then(() => reload(selected)).catch((e: unknown) => notify.error(errorMessage(e)));
   }, [session, selected, reload]);
 
+  // audição pelo motor (S-3): mesmo serviço da Harmonia e das Bases, no fone escolhido no app
+  const auditionId = selected ? `score:${selected}` : null;
+  const playing = useAudition((st) => auditionId !== null && (st.playing === auditionId || st.loading === auditionId));
   const stopAudio = useCallback(() => {
-    const a = audio.current;
-    audio.current = null;
-    setPlaying(false);
-    if (a) {
-      try {
-        a.src.stop();
-      } catch {
-        /* já parado */
-      }
-      void a.ctx.close();
-    }
+    const st = useAudition.getState();
+    if (st.playing?.startsWith("score:") || st.loading?.startsWith("score:")) stopAudition();
   }, []);
   useEffect(() => stopAudio, [stopAudio]);
 
@@ -350,19 +343,10 @@ export function ScorePanel() {
   };
 
   const audition = async () => {
-    if (!selected) return;
+    if (!selected || !auditionId) return;
     if (playing) return stopAudio();
     try {
-      const bytes = await musicApi.scoreAudition(selected);
-      const ctx = new AudioContext();
-      const buf = await ctx.decodeAudioData(bytes.slice(0));
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      src.connect(ctx.destination);
-      src.onended = () => audio.current?.src === src && stopAudio();
-      audio.current = { ctx, src };
-      src.start();
-      setPlaying(true);
+      await playAudition(auditionId, () => musicApi.scoreAudition(selected));
     } catch (e) {
       notify.error(errorMessage(e));
     }
