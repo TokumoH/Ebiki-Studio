@@ -3,19 +3,35 @@
 Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/); versões seguem [SemVer](https://semver.org/lang/pt-BR/).
 
-## [Não lançado]
+## [0.4.1] - 2026-11-21
+
+Correções de áudio: o app não fica mais mudo por causa do microfone e se recupera quando um dispositivo é
+desconectado.
+
+### Novidades
+
+- **Dispositivo desconectado com o app aberto:** o áudio é reaberto sozinho, com aviso na tela; quando o
+  microfone ou o fone volta, ele é usado de novo.
 
 ### Corrigido
 
 - **Sem som** quando o microfone salvo estava desconectado ou não aceitava a taxa do projeto: agora o áudio
   abre só com a saída e avisa. Fone escolhido que sumiu passa a usar o padrão do sistema.
-- **Dispositivo desconectado com o app aberto** é tratado: o áudio é reaberto sozinho, com aviso; quando o
-  dispositivo volta, ele é usado de novo.
 - Microfones e placas que só trabalham com amostras inteiras (16/24/32 bits) passam a funcionar.
 - Entradas da faixa mostram só os canais do microfone atual; latência acumulada do microfone; diálogo mostra
   o modo silencioso.
 - Afinador acompanha o microfone atual (religa ou desliga com aviso); aviso de falhas de buffer só enquanto
   elas acontecem; parar a gravação depois de desconectar o dispositivo não trava a tela.
+
+### Downloads
+
+Mesmos formatos da 0.4.0 (Windows `.exe`/`.msi`, macOS `.dmg` universal, Linux `.deb`/`.rpm`/`.AppImage`),
+com `SHA256SUMS.txt`. Quem tem a 0.2.1, 0.3.0 ou 0.4.0 recebe esta versão em *Ajuda › Verificar atualizações…*.
+Ainda sem som? Abra *Arquivo › Configurações de áudio*: o diálogo agora diz se o app está em modo silencioso e
+por quê (um fone que não aceita a taxa do projeto ainda precisa trocar de fone ou de taxa).
+
+Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
+Licença: GPL-3.0-or-later (nome e logo reservados).
 
 ## [0.4.0] - 2026-11-17
 
@@ -219,6 +235,7 @@ Confira a integridade com `SHA256SUMS.txt` (ex.: `sha256sum -c SHA256SUMS.txt --
 Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
 Licença: GPL-3.0-or-later (nome e logo reservados).
 
+[0.4.1]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.4.1
 [0.4.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.4.0
 [0.3.0]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.3.0
 [0.2.1]: https://github.com/TokumoH/Ebiki-Studio/releases/tag/v0.2.1
