@@ -5,6 +5,11 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 
 ## [Não lançado]
 
+## [0.4.2] - 2026-11-21
+
+Mais correções de som: fones que não aceitam a taxa do projeto (como muitos Bluetooth) passam a tocar, e as
+audições saem no mesmo fone que o resto do app.
+
 ### Corrigido
 
 - **Buffer "Padrão do driver (recomendado)"**: o app não força mais 256 amostras; a latência mostrada e a
@@ -14,6 +19,17 @@ Todas as mudanças relevantes do Ebiki Studio. Formato baseado em
 - **Fone ou microfone que não aceita a taxa do projeto** (fones Bluetooth a 44,1 kHz ou 16 kHz, alguns USB):
   antes o app ficava em modo silencioso (ou sem microfone); agora o dispositivo abre na taxa mais próxima e o
   áudio é convertido em tempo real, com aviso — sem mudar a taxa nem a afinação do projeto.
+
+### Downloads
+
+Mesmos formatos da 0.4.1 (Windows `.exe`/`.msi`, macOS `.dmg` universal, Linux `.deb`/`.rpm`/`.AppImage`),
+com `SHA256SUMS.txt`. Quem tem a 0.2.1, 0.3.0, 0.4.0 ou 0.4.1 recebe esta versão em *Ajuda › Verificar
+atualizações…*. Quem já tinha aplicado as configurações de áudio continua com o buffer salvo (256): para usar o
+padrão do driver, abra *Arquivo › Configurações de áudio › Desempenho*, escolha **Padrão do driver
+(recomendado)** e clique em **Aplicar**.
+
+Manual: [docs/manual/README.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/docs/manual/README.md) · Privacidade: [PRIVACY.md](https://github.com/TokumoH/Ebiki-Studio/blob/branchTrabalho/PRIVACY.md) ·
+Licença: GPL-3.0-or-later (nome e logo reservados).
 
 ## [0.4.1] - 2026-11-21
 

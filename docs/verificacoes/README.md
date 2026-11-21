@@ -74,6 +74,7 @@ Um arquivo por commit casa 1:1 com o histórico do git.
 | [VER-2026-11-21-02-buffer-padrao-do-driver.md](VER-2026-11-21-02-buffer-padrao-do-driver.md) | Buffer "Padrão do driver" e latência pelo callback real (S-2) |
 | [VER-2026-11-21-03-conversor-de-taxa.md](VER-2026-11-21-03-conversor-de-taxa.md) | Conversor de taxa em tempo real: fone/microfone em outra taxa deixa de ficar mudo (S-1) |
 | [VER-2026-11-21-04-audicoes-pelo-motor.md](VER-2026-11-21-04-audicoes-pelo-motor.md) | Audições de Harmonia, Bases e Partitura pelo motor de áudio (S-3) |
+| [VER-2026-11-21-05-release-v0-4-2.md](VER-2026-11-21-05-release-v0-4-2.md) | Versão 0.4.2 (conversor de taxa, buffer do driver, audições pelo motor) |
 
 ## Lógica
 
